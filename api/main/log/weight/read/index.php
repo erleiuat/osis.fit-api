@@ -15,7 +15,7 @@ $_wLog = new WeightLog($_DBC);
 // ------------------ SCRIPT -----------------
 try {
 
-    $authUser = Security::auth();
+    $authUser = Sec::auth();
     $_LOG->user_id = $authUser->id;
     
     $_wLog->user_id = $authUser->id;

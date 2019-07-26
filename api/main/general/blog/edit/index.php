@@ -14,11 +14,11 @@ $_Article = new Article($_DBC);
 // ------------------ SCRIPT -----------------
 try {
 
-    $authUser = Security::auth();
+    $authUser = Sec::auth();
     $_LOG->user_id = $authUser->id;
     $data = Core::getData(['url', 'title']);
 
-    Security::permit($authUser->level, ['moderator', 'admin']);
+    Sec::permit($authUser->level, ['moderator', 'admin']);
     
     $_Article->url = Validate::string($data->url, 1);    
     $_Article->title = Validate::string($data->title, 1);

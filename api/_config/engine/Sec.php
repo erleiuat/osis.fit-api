@@ -2,21 +2,21 @@
 
 use \Firebase\JWT\JWT;
 
-class Security {
+class Sec {
 
     public static function doAuthToken($user) {
 
         try {
 
             $now = time();
-            $phrase = Setup::sec_phrase.$user->mail;
+            $phrase = Env::sec_phrase.$user->mail;
             $phrase_hash = password_hash($phrase, PASSWORD_BCRYPT);
             $half = (int) ( (strlen($phrase) / 2) );
 
             $t_sec = [
-                "iss" => Setup::tkn_issuer,
+                "iss" => Env::tkn_issuer,
                 "iat" => $now,
-                "exp" => $now + Setup::tkn_lifetime,
+                "exp" => $now + Env::tkn_lifetime,
                 "nbf" => $now,
                 "data" => [
                     "phrase1" => substr($phrase_hash, 0, $half)
@@ -24,9 +24,9 @@ class Security {
             ];
         
             $t_app = [
-                "iss" => Setup::tkn_issuer,
+                "iss" => Env::tkn_issuer,
                 "iat" => $now,
-                "exp" => $now + Setup::tkn_lifetime,
+                "exp" => $now + Env::tkn_lifetime,
                 "nbf" => $now,
                 "data" => [
                     "phrase2" => substr($phrase_hash, $half),
@@ -38,16 +38,16 @@ class Security {
                 ]
             ];
 
-            $sec_jwt = JWT::encode($t_sec, Setup::tkn_secret_sec);
-            $app_jwt = JWT::encode($t_app, Setup::tkn_secret_app);
+            $sec_jwt = JWT::encode($t_sec, Env::tkn_secret_sec);
+            $app_jwt = JWT::encode($t_app, Env::tkn_secret_app);
             
             $c = [
-                "name" => Setup::coo_name,
+                "name" => Env::coo_name,
                 "data" => $sec_jwt,
-                "expire" => $now + Setup::coo_lifetime,
-                "path" => Setup::coo_path,
-                "domain" => Setup::coo_domain,
-                "secure" => Setup::coo_secure,
+                "expire" => $now + Env::coo_lifetime,
+                "path" => Env::coo_path,
+                "domain" => Env::coo_domain,
+                "secure" => Env::coo_secure,
                 "httponly" => true
             ];
 
@@ -55,7 +55,7 @@ class Security {
 
             if($cookie) return [
                 "token" => $app_jwt,
-                "expire" => $now + Setup::coo_lifetime
+                "expire" => $now + Env::coo_lifetime
             ];
 
             throw new Exception("cookie_error", 500);
@@ -71,12 +71,12 @@ class Security {
         $now = time();
 
         $c = [
-            "name" => Setup::coo_name,
+            "name" => Env::coo_name,
             "data" => false,
             "expire" => $now - 3600,
-            "path" => Setup::coo_path,
-            "domain" => Setup::coo_domain,
-            "secure" => Setup::coo_secure,
+            "path" => Env::coo_path,
+            "domain" => Env::coo_domain,
+            "secure" => Env::coo_secure,
             "httponly" => true
         ];
 
@@ -90,7 +90,7 @@ class Security {
 
     public static function auth($required = true){
 
-        if (!isset($_COOKIE[Setup::coo_name]) || !isset(getallheaders()['Authorization'])) {
+        if (!isset($_COOKIE[Env::coo_name]) || !isset(getallheaders()['Authorization'])) {
             if($required) throw new Exception("Required Tokens not found.", 403);
             else return false;
         }
@@ -100,12 +100,12 @@ class Security {
             throw new Exception("App-Token invalid.", 403);
         }
 
-        $token_sec = JWT::decode($_COOKIE[Setup::coo_name], Setup::tkn_secret_sec, Setup::tkn_algorithm);
-        $token_app = JWT::decode($data, Setup::tkn_secret_app, Setup::tkn_algorithm);
+        $token_sec = JWT::decode($_COOKIE[Env::coo_name], Env::tkn_secret_sec, Env::tkn_algorithm);
+        $token_app = JWT::decode($data, Env::tkn_secret_app, Env::tkn_algorithm);
 
         $phrase = $token_sec->data->phrase1 . $token_app->data->phrase2;
 
-        if(!password_verify(Setup::sec_phrase.$token_app->data->user->mail, $phrase)){
+        if(!password_verify(Env::sec_phrase.$token_app->data->user->mail, $phrase)){
             throw new Exception("Token-Phrase validation failed", 403);
         }
         

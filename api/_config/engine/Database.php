@@ -12,10 +12,10 @@ class Database {
     public function __construct() {
 
         $this->conn = null;
-        $this->host = Setup::db_host;
-        $this->db_name = Setup::db_database;
-        $this->username = Setup::db_user;
-        $this->password = Setup::db_password;
+        $this->host = Env::db_host;
+        $this->db_name = Env::db_database;
+        $this->username = Env::db_user;
+        $this->password = Env::db_password;
 
         try {
 

@@ -27,7 +27,7 @@ try {
     $lastname = (isset($data->lastname) ? (Validate::string($data->lastname, 0)) : '');
     $lang = (isset($data->language) ? (Validate::string($data->language, 0, 5)) : 'en');
 
-    $authUser = Security::auth(false);
+    $authUser = Sec::auth(false);
     $_LOG->user_id = ($authUser ? $authUser->id : 'none');
 
     include_once 'ContactMail.php';

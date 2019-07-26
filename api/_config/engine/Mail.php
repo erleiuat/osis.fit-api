@@ -36,8 +36,8 @@ class Mail {
         $this->mail->isHTML(true);
         $this->mail->CharSet = "UTF-8";
 
-        $this->from_name = Setup::mail_from_name;
-        $this->from_adress = Setup::mail_from_adress;
+        $this->from_name = Env::mail_from_name;
+        $this->from_adress = Env::mail_from_adress;
 
     }
 

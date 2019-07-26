@@ -27,7 +27,7 @@ try {
         if ($_Auth->password_login($password)) {
 
             $_Auth->read_token();
-            $authInfo = Security::doAuthToken($_Auth);
+            $authInfo = Sec::doAuthToken($_Auth);
             $_REP->addContent("auth", $authInfo);
 
         } else {

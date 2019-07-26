@@ -13,10 +13,10 @@ include_once LOCATION.'_config/Security.php'; /* Load Security-Methods */
 // ------------------ SCRIPT -----------------
 try {
 
-    $authUser = Security::authRequest();
+    $authUser = Sec::authRequest();
     $_LOG->user_id = $_Auth->id;
 
-    Security::removeAuth();
+    Sec::removeAuth();
 
 } catch (\Exception $e) {
     $_REP->setStatus((($e->getCode()) ? $e->getCode() : 500), $e->getMessage());

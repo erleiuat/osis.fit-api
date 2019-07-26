@@ -15,7 +15,7 @@ $_Food = new Food($_DBC);
 // ------------------ SCRIPT -----------------
 try {
 
-    $authUser = Security::auth();
+    $authUser = Sec::auth();
     $_LOG->user_id = $authUser->id;
     $data = Core::getData(['id']);
     

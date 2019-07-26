@@ -22,7 +22,7 @@ $_cLog = new CalorieLog($_DBC);
 // ------------------ SCRIPT -----------------
 try {
 
-    $authUser = Security::auth();
+    $authUser = Sec::auth();
     $_LOG->user_id = $authUser->id;
 
     $_user->id = $authUser->id;

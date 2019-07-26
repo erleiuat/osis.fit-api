@@ -14,7 +14,7 @@ $_Article = new Article($_DBC);
 // ------------------ SCRIPT -----------------
 try {
 
-    $authUser = Security::auth(false);
+    $authUser = Sec::auth(false);
     $_LOG->user_id = ($authUser ? $authUser->id : 'none');
     $data = Core::getData();
 
