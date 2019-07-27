@@ -32,7 +32,7 @@ class Env {
     const coo_path = "/";
 
     /* Access Token */
-    const tkn_lifetime = (3*60);
+    const tkn_lifetime = (1);
     //const tkn_lifetime = (3*60*60);                 /* Lifetime in seconds */
     const tkn_issuer = "osis.fit Application";
     const tkn_algorithm = ['HS256'];

@@ -1,21 +1,22 @@
 
-CREATE DATABASE IF NOT EXISTS `osis.fit` CHARACTER SET `utf8`;
+DROP DATABASE IF EXISTS `osis.fit`;
+CREATE DATABASE `osis.fit` CHARACTER SET `utf8`;
 USE `osis.fit`;
 
 -- ------------------------------------------------------------------------------------
 
-CREATE TABLE IF NOT EXISTS `user` (
+CREATE TABLE `user` (
     id                  INT NOT NULL AUTO_INCREMENT,
     mail                VARCHAR(89) NOT NULL,
-    password            VARCHAR(255) NOT NULL,
     level               ENUM('user', 'moderator', 'admin') NOT NULL DEFAULT 'user',
+    password            VARCHAR(255) NOT NULL,
 
     UNIQUE INDEX uniqueMail (mail),
     PRIMARY KEY (id)
 );
 
 
-CREATE TABLE IF NOT EXISTS `log` (
+CREATE TABLE `log` (
     id                  INT NOT NULL AUTO_INCREMENT,
     user_id             INT,
 
@@ -31,59 +32,41 @@ CREATE TABLE IF NOT EXISTS `log` (
 );
 
 
-CREATE TABLE IF NOT EXISTS `article` (
-    id                  INT NOT NULL AUTO_INCREMENT,
-    user_id             INT NOT NULL,
-
-    url                 VARCHAR(60) NOT NULL,
-    title               VARCHAR(60) NOT NULL,
-    keywords            VARCHAR(255),
-    content             MEDIUMTEXT,
-    language            ENUM('de', 'en') NOT NULL DEFAULT 'en',
-
-    creation_stamp      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    update_stamp        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    publication_date    DATE,
-
-    UNIQUE INDEX uniqueUrl (url),
-    PRIMARY KEY (id),
-    FOREIGN KEY (user_id) REFERENCES user(id)
-);
-
-CREATE TABLE IF NOT EXISTS `article_preview` (
-    article_id          INT NOT NULL,
-
-    color               VARCHAR(60),
-    dark                ENUM('true', 'false') DEFAULT 'false',
-    description         VARCHAR(280),
-
-    img_url             VARCHAR(255),
-    img_lazy            VARCHAR(255),
-    img_phrase          VARCHAR(255),
-
-    PRIMARY KEY (article_id),
-    FOREIGN KEY (article_id) REFERENCES article(id)
-);
-
 -- ------------------------------------------------------------------------------------
 
-CREATE TABLE IF NOT EXISTS `user_status` (
+
+CREATE TABLE `user_status` (
     user_id             INT NOT NULL,
 
     state               ENUM('unverified', 'verified', 'locked', 'deleted') NOT NULL DEFAULT 'unverified',
     deleted             ENUM('true', 'false') NOT NULL DEFAULT 'false',
-    refresh_jti         VARCHAR(255),
-    verify_code         VARCHAR(255),
+    auth_total          INT DEFAULT 0,
+    auth_stamp          TIMESTAMP,
 
     verify_stamp        TIMESTAMP,
-    login_stamp         TIMESTAMP,
-    refresh_stamp       TIMESTAMP,
+    verify_code         VARCHAR(255),
 
     PRIMARY KEY (user_id),
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
-CREATE TABLE IF NOT EXISTS `user_detail` (
+
+CREATE TABLE `user_refresh_jti` (
+    user_id             INT NOT NULL,
+
+    updated_total       INT DEFAULT 0,
+    updated_stamp       TIMESTAMP,
+
+    refresh_jti         VARCHAR(255) NOT NULL,
+    created_stamp       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    refresh_phrase      VARCHAR(255) NOT NULL,
+
+    PRIMARY KEY (user_id, refresh_jti),
+    FOREIGN KEY (user_id) REFERENCES user(id)
+);
+
+
+CREATE TABLE `user_detail` (
     user_id             INT NOT NULL,
     
     firstname           VARCHAR(150) NOT NULL,
@@ -96,7 +79,8 @@ CREATE TABLE IF NOT EXISTS `user_detail` (
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
-CREATE TABLE IF NOT EXISTS `user_aim` (
+
+CREATE TABLE `user_aim` (
     user_id             INT NOT NULL,
 
     weight              DOUBLE,
@@ -107,7 +91,8 @@ CREATE TABLE IF NOT EXISTS `user_aim` (
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
-CREATE TABLE IF NOT EXISTS `user_food` (
+
+CREATE TABLE `user_food` (
     id                  INT NOT NULL AUTO_INCREMENT,
     user_id             INT NOT NULL,
 
@@ -123,7 +108,8 @@ CREATE TABLE IF NOT EXISTS `user_food` (
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
-CREATE TABLE IF NOT EXISTS `user_food_favorite` (
+
+CREATE TABLE `user_food_favorite` (
     id                  INT NOT NULL AUTO_INCREMENT,
     user_id             INT NOT NULL,
 
@@ -141,7 +127,8 @@ CREATE TABLE IF NOT EXISTS `user_food_favorite` (
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
-CREATE TABLE IF NOT EXISTS `user_log_calorie` (
+
+CREATE TABLE `user_log_calorie` (
     id                  INT NOT NULL AUTO_INCREMENT,
     user_id             INT NOT NULL,
 
@@ -153,7 +140,8 @@ CREATE TABLE IF NOT EXISTS `user_log_calorie` (
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
-CREATE TABLE IF NOT EXISTS `user_log_weight` (
+
+CREATE TABLE `user_log_weight` (
     id                  INT NOT NULL AUTO_INCREMENT,
     user_id             INT NOT NULL,
 
@@ -164,7 +152,8 @@ CREATE TABLE IF NOT EXISTS `user_log_weight` (
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
-CREATE TABLE IF NOT EXISTS `user_log_activity` (
+
+CREATE TABLE `user_log_activity` (
     id                  INT NOT NULL AUTO_INCREMENT,
     user_id             INT NOT NULL,
 
@@ -185,8 +174,7 @@ CREATE VIEW `v_user_state` AS
 
         us.id AS 'user_id',
         us.mail AS 'mail',
-        st.state AS 'state',
-        st.refresh_jti AS 'refresh_jti'
+        st.state AS 'state'
 
     FROM user AS us
     LEFT JOIN user_status AS st ON st.user_id = us.id;
@@ -209,47 +197,3 @@ CREATE VIEW `v_user_info` AS
     FROM user AS us
     LEFT JOIN user_detail AS de ON de.user_id = us.id
     LEFT JOIN user_aim AS ai ON ai.user_id = us.id;
-
-
-CREATE VIEW `v_article_edit` AS
-
-    SELECT
-
-        ar.url AS 'url',
-        ar.title AS 'title',
-        ar.keywords AS 'keywords',
-        ar.language AS 'language',
-        ar.content AS 'content',
-        ar.publication_date AS 'publication_date',
-
-        pr.color AS 'color',
-        pr.dark AS 'dark',
-        pr.description AS 'description',
-        pr.img_url AS 'img_url',
-        pr.img_lazy AS 'img_lazy',
-        pr.img_phrase AS 'img_phrase'
-
-    FROM article AS ar
-    LEFT JOIN article_preview AS pr ON pr.article_id = ar.id;
-    
-
-CREATE VIEW `v_article_preview` AS
-
-    SELECT
-
-        ar.id AS 'id',
-        ar.url AS 'url',
-        ar.title AS 'title',
-        ar.keywords AS 'keywords',
-        ar.language AS 'language',
-        ar.publication_date AS 'publication_date',
-
-        pr.color AS 'color',
-        pr.dark AS 'dark',
-        pr.description AS 'description',
-        pr.img_url AS 'img_url',
-        pr.img_lazy AS 'img_lazy',
-        pr.img_phrase AS 'img_phrase'
-
-    FROM article AS ar
-    LEFT JOIN article_preview AS pr ON pr.article_id = ar.id;

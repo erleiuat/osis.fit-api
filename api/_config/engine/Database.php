@@ -28,8 +28,7 @@ class Database {
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         } catch (PDOException $exception) {
-            echo "Connection error: " . $exception->getMessage();
-            die();
+            throw new ApiException(500, "db_connect_error", $e->getMessage());
         }
 
     }
@@ -38,7 +37,7 @@ class Database {
         try {
             return $this->conn->prepare($query);
         } catch (PDOException $e) {
-            throw new Exception($e->getMessage());
+            throw new ApiException(500, "db_prepare_error", $e->getMessage());
         }
     }
 
@@ -50,7 +49,7 @@ class Database {
             }
             return $this;
         } catch (PDOException $e) {
-            throw new Exception($e->getMessage());
+            throw new ApiException(500, "db_bind_error", $e->getMessage());
         }
     }
 
@@ -59,7 +58,7 @@ class Database {
             $stmt->execute();
             return $this;
         } catch (PDOException $e) {
-            throw new Exception($e->getMessage());
+            throw new ApiException(500, "db_execute_error", $e->getMessage());
         }
     }
 

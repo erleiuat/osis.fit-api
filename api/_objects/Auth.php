@@ -10,6 +10,7 @@ class Auth {
     private $t_aim = "user_aim";
     private $t_detail = "user_detail";
     private $t_status = "user_status";
+    private $t_refresh = "user_refresh_jti";
     private $v_state = "v_user_state";
 
     /* ----------- PUBLIC BASIC PARAMS ---------- */
@@ -26,8 +27,10 @@ class Auth {
     public $birth;
 
     public $state;
-    public $refresh_jti;
     public $verify_code;
+
+    public $refresh_jti;
+    public $refresh_phrase;
 
 
     /* ------------------ INIT ------------------ */
@@ -48,8 +51,7 @@ class Auth {
         $this->db->bind($stmt, 
             ['mail', 'password', 'level'], 
             [$this->mail, password_hash($this->password, Env::sec_encryption), $this->level]
-        );
-        $this->db->execute($stmt);
+        )->execute($stmt);
 
         $this->user_id = $this->db->conn->lastInsertId();
 
@@ -63,8 +65,7 @@ class Auth {
         $this->db->bind($stmt, 
             ['user_id', 'verify_code'], 
             [$this->user_id, password_hash($this->verify_code, Env::sec_encryption)]
-        );
-        $this->db->execute($stmt);
+        )->execute($stmt);
 
 
         // Insert into t_detail
@@ -76,8 +77,7 @@ class Auth {
         $this->db->bind($stmt, 
             ['user_id', 'firstname', 'lastname'], 
             [$this->user_id, $this->firstname, $this->lastname]
-        );
-        $this->db->execute($stmt);
+        )->execute($stmt);
 
         // Insert into t_aim
         $stmt = $this->db->conn->prepare("
@@ -86,10 +86,8 @@ class Auth {
             (:user_id);
         ");
         $this->db->bind($stmt, 
-            ['user_id'], 
-            [$this->user_id]
-        );
-        $this->db->execute($stmt);
+            ['user_id'], [$this->user_id]
+        )->execute($stmt);
 
     }
 
@@ -97,7 +95,7 @@ class Auth {
 
         $stmt = $this->db->conn->prepare("
             SELECT * FROM ".$this->v_state." 
-            WHERE mail = :mail
+            WHERE `mail` = :mail
         ");
         $this->db->bind($stmt, ['mail'], [$this->mail])->execute($stmt);
 
@@ -105,7 +103,6 @@ class Auth {
         if ($stmt->rowCount() === 1) {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             $this->user_id = $row['user_id'];
-            $this->refresh_jti = $row['refresh_jti'];
             $this->state = $row['state'];
         }
 
@@ -113,18 +110,61 @@ class Auth {
         
     }
 
-    public function updateStatus() {
+    public function validRefresh($phrase){
+     
+        $stmt = $this->db->conn->prepare("
+            SELECT * FROM ".$this->t_refresh." 
+            WHERE `user_id` = :user_id 
+            AND `refresh_jti` = :refresh_jti
+        ");
+        $this->db->bind($stmt, 
+            ['user_id', 'refresh_jti'], 
+            [$this->user_id, $this->refresh_jti]
+        )->execute($stmt);
+
+        $phrase_hash = ($stmt->fetch(PDO::FETCH_ASSOC))["refresh_phrase"];
+
+        if ($stmt->rowCount() === 1 && password_verify($phrase, $phrase_hash)) return true;
+        return false;
+
+    }
+
+    public function updateStatus($oldJti = false) {
+
+        if($oldJti){
+            $stmt = $this->db->conn->prepare("
+                UPDATE ".$this->t_refresh." SET 
+                `refresh_jti` = :refresh_jti,
+                `refresh_phrase` = :refresh_phrase,
+                `updated_stamp` = now(), 
+                `updated_total` = `updated_total` + 1 
+                WHERE `user_id` = :user_id 
+                AND `refresh_jti` = :oldJti
+            ");
+            $this->db->bind($stmt, 
+                ['refresh_jti', 'user_id', 'oldJti', 'refresh_phrase'], 
+                [$this->refresh_jti, $this->user_id, $oldJti, password_hash($this->refresh_phrase, Env::sec_encryption)]
+            )->execute($stmt);
+        } else {
+            $stmt = $this->db->conn->prepare("
+                INSERT INTO ".$this->t_refresh." 
+                (`user_id`, `refresh_jti`, `refresh_phrase`) VALUES
+                (:user_id, :refresh_jti, :refresh_phrase);
+            ");
+            $this->db->bind($stmt, 
+                ['user_id', 'refresh_jti', 'refresh_phrase'], 
+                [$this->user_id, $this->refresh_jti, password_hash($this->refresh_phrase, Env::sec_encryption)]
+            )->execute($stmt);
+        }
 
         $stmt = $this->db->conn->prepare("
             UPDATE ".$this->t_status." SET 
-            `refresh_jti` = :refresh_jti,
-            `login_stamp` = now() 
+            `auth_stamp` = now(),
+            `auth_total` = `auth_total` + 1  
             WHERE `user_id` = :user_id
         ");
-
         $this->db->bind($stmt, 
-            ['user_id', 'refresh_jti'], 
-            [$this->user_id, password_hash($this->refresh_jti, Env::sec_encryption)]
+            ['user_id'], [$this->user_id]
         )->execute($stmt);
 
     }
@@ -132,7 +172,7 @@ class Auth {
     public function passwordLogin($password) {
 
         $stmt = $this->db->conn->prepare("
-            SELECT Password FROM ".$this->t_main." 
+            SELECT password FROM ".$this->t_main." 
             WHERE id = :user_id
         ");
         $this->db->bind($stmt, 
@@ -141,7 +181,7 @@ class Auth {
         );
         $this->db->execute($stmt);
 
-        $password_hash = ($stmt->fetch(PDO::FETCH_ASSOC))["Password"];
+        $password_hash = ($stmt->fetch(PDO::FETCH_ASSOC))["password"];
 
         if ($stmt->rowCount() === 1 && password_verify($password, $password_hash)) {
             return true;

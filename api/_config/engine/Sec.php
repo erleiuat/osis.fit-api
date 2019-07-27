@@ -50,6 +50,7 @@ class Sec {
                 "jti" => $auth->refresh_jti,
                 "data" => [
                     "mail" => $auth->mail,
+                    "phrase" => $auth->refresh_phrase,
                     "stamp" => $now
                 ]
             ];
