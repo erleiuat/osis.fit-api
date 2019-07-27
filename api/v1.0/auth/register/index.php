@@ -27,7 +27,7 @@ try {
     
     if($_Auth->checkStatus()->state) throw new ApiException(403, "mail_in_use", ["entity"=>"mail"]);
 
-    $_Auth->verify_code = Core::randomString(10);     
+    $_Auth->verify_code = Core::randomString(10); 
     $_Auth->password = $data->password;
 
     $_Auth->register();
