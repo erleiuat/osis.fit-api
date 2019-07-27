@@ -3,11 +3,11 @@
 define('PROCESS', "Auth/Verify"); /* Name of this Process */
 define('LOCATION', "../../../"); /* Location of this endpoint */           
 
-include_once LOCATION.'_config/Engine.php'; /* Load API-Engine */
+include_once LOCATION.'src/Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
-include_once LOCATION.'_objects/Auth.php';
+include_once LOCATION.'src/_objects/Auth.php';
 $_Auth = new Auth($_DBC);
 
 

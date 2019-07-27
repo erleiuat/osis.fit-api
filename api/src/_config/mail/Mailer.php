@@ -3,7 +3,7 @@
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-class MailEngine {
+class Mailer {
 
     /* ------------- PRIVATE PARAMS ------------- */
     private $mail;

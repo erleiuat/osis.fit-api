@@ -1,7 +1,7 @@
 <?php
 
-$_MailEngine->subject = "Activate your Osis.fit Account!";
-$_MailEngine->body = [
+$_Mailer->subject = "Activate your Osis.fit Account!";
+$_Mailer->body = [
     "content.inner2" => '
         <br/>
         <table bgcolor="{{button.bgcolor}}" border="0" cellspacing="0" cellpadding="0">

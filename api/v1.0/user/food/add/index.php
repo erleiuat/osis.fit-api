@@ -3,12 +3,12 @@
 define('PROCESS', "User/Food/Add"); /* Name of this Process */
 define('LOCATION', "../../../../"); /* Location of this endpoint */        
 
-include_once LOCATION.'_config/Engine.php'; /* Load API-Engine */
+include_once LOCATION.'src/Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
-include_once LOCATION.'_config/Security.php'; /* Load Security-Methods */
-include_once LOCATION.'_objects/Food.php';
+include_once LOCATION.'src/Security.php'; /* Load Security-Methods */
+include_once LOCATION.'src/_objects/Food.php';
 $_Food = new Food($_DBC);
 
 

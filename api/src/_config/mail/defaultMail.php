@@ -5,11 +5,11 @@ class defaultMail {
     public function __construct() {
 
         ob_start();
-        require('template/mail.html');
+        require('default/mail.html');
         $mail_html = ob_get_clean();
 
         ob_start();
-        require('template/mail.css');
+        require('default/mail.css');
         $mail_css = ob_get_clean();
 
         $template = str_replace(

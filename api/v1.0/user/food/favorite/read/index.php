@@ -3,12 +3,12 @@
 define('PROCESS', "User/Food/Favorite/Read"); /* Name of this Process */
 define('LOCATION', "../../../../../"); /* Location of this endpoint */        
 
-include_once LOCATION.'_config/Engine.php'; /* Load API-Engine */
+include_once LOCATION.'src/Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
-include_once LOCATION.'_config/Security.php'; /* Load Security-Methods */
-include_once LOCATION.'_objects/FoodFavorite.php';
+include_once LOCATION.'src/Security.php'; /* Load Security-Methods */
+include_once LOCATION.'src/_objects/FoodFavorite.php';
 $_fFav = new FoodFavorite($_DBC);
 
 
