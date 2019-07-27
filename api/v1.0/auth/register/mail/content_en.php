@@ -11,7 +11,7 @@ $_MailEngine->body = [
                 </a>
             </td></tr>
         </table><br/><br/>
-        Or use the following code on <a href="https://osis.fit/auth/verify">osis.fit/auth/verify</a>: <br/><br/>
+        Or use the following code on <a href="https://app.osis.fit/auth/verify">app.osis.fit/auth/verify</a>: <br/><br/>
         <strong>'.$_Auth->verify_code.'</strong>
     ',
     "header.heading1" => "Welcome to Osis.fit!",
@@ -22,6 +22,6 @@ $_MailEngine->body = [
         If this was you, please follow to instructions below to finalize your registration.
         If not, you can just ignore this Mail. Click the link below to activate your Account or use the code 
     ",
-    "button.inner" => "ACTIVATE ACCOUNT",
-    "button.href" => "https://osis.fit/auth/verify?mail=".$_Auth->mail."&code=".$_Auth->verify_code,
+    "button.inner" => "ACTIVATE ACCOUNT &rarr;",
+    "button.href" => "https://app.osis.fit/auth/verify?mail=".$_Auth->mail."&code=".$_Auth->verify_code,
 ];

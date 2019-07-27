@@ -55,26 +55,18 @@ class defaultMail {
     ];
 
     public $defaults = [
-        "main.title" => "Default Mail Template",
         "main.bgcolor" => "#ffffff",
 
-        "header.heading1" => "Make it easier",
-        "header.heading2" => "Osis.fit Mail",
         "header.image" => "",
         "header.bgcolor" => "#444545",
         "header.heading1.color" => "#FFFFFF",
         "header.heading2.color" => "#2DC7FF",
 
-        "content.heading" => "Willkommen!",
-        "content.inner" => "Dies ist eine Vorlage",
-        "content.inner2" => "Dies ist mittig",
         "content.bgcolor" => "#FAFAFA",
         "content.heading.color" => "#202020",
         "content.inner.color" => "#494949",
         "content.inner2.color" => "#494949",
 
-        "button.href" => "#",
-        "button.inner" => "",
         "button.bgcolor" => "#2DC7FF",
         "button.inner.color" => "#FFFFFF",
 

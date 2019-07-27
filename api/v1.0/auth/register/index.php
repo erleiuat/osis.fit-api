@@ -30,7 +30,7 @@ try {
     $_Auth->verify_code = Core::randomString(10);     
     $_Auth->password = $data->password;
 
-    //$_Auth->register(); TODO
+    $_Auth->register();
     $_LOG->addInfo("User registered");
 
     include_once LOCATION.'_config/Mailing.php';
