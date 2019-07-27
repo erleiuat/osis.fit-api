@@ -10,7 +10,6 @@ class Auth {
     private $t_aim = "user_aim";
     private $t_detail = "user_detail";
     private $t_status = "user_status";
-
     private $v_state = "v_user_state";
 
     /* ----------- PUBLIC BASIC PARAMS ---------- */
@@ -29,7 +28,6 @@ class Auth {
     public $state;
     public $refresh_jti;
     public $verify_code;
-    public $verify_stamp;
 
 
     /* ------------------ INIT ------------------ */
@@ -95,28 +93,23 @@ class Auth {
 
     }
 
-    public function check_state() {
+    public function checkState() {
 
         $stmt = $this->db->conn->prepare("
             SELECT * FROM ".$this->v_state." 
             WHERE mail = :mail
         ");
+        $this->db->bind($stmt, ['mail'], [$this->mail])->execute($stmt);
 
-        $this->db->bind($stmt, 
-            ['mail'], [$this->mail]
-        );
-        $this->db->execute($stmt);
-
+        $this->state = false;
         if ($stmt->rowCount() === 1) {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             $this->user_id = $row['user_id'];
             $this->refresh_jti = $row['refresh_jti'];
             $this->state = $row['state'];
-            return true;
         }
 
-        $this->state = false;
-        return false;
+        return $this;
         
     }
 
@@ -136,8 +129,7 @@ class Auth {
 
     }
     
-
-    public function password_login($password) {
+    public function passwordLogin($password) {
 
         $stmt = $this->db->conn->prepare("
             SELECT Password FROM ".$this->t_main." 
@@ -159,7 +151,7 @@ class Auth {
 
     }
 
-    public function verify_mail($code) {
+    public function verifyMail($code) {
 
         $stmt = $this->db->conn->prepare("
             SELECT * FROM ".$this->t_status." 
@@ -187,7 +179,7 @@ class Auth {
 
     }
     
-    public function read_token() {
+    public function readToken() {
         
         $stmt = $this->db->prepare("
             SELECT * FROM ".$this->t_main." 
@@ -200,6 +192,8 @@ class Auth {
         } else {
             throw new Exception('mail_not_found', 500);
         }
+
+        return $this;
 
     }
 

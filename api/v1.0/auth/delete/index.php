@@ -14,41 +14,25 @@ $_Auth = new Auth($_DBC);
 // ------------------ SCRIPT -----------------
 try {
 
-    $auth = Sec::auth();
-    $_Auth->user_id = $_LOG->user_id = $auth->id;
-
     $data = Core::getBody(
         ['mail', 'mail', true],
         ['password', 'string', true]
     );
-    
-    $_Auth->mail = $auth->mail;
-    $_LOG->identity = $data->mail;
 
+    $auth = Sec::auth();
+    $_Auth->user_id = $_LOG->user_id = $auth->id;
+    $_Auth->mail = $_LOG->identity = $auth->mail;
     if ($auth->mail !== $data->mail) throw new Exception("mail_wrong", 403);
     
-    if($_Auth->check_state() && $_Auth->state === "verified"){
+    if($_Auth->checkState()->state === "verified"){
 
-        if ($_Auth->password_login($data->password)) {
-            $_Auth->disable();
-            Sec::removeAuth();
-        } else {
-            $_REP->setStatus(403, 'password_wrong');
-            $_LOG->setStatus('warn', 'password_wrong');
-        }
+        if (!$_Auth->passwordLogin($data->password)) throw new ApiException(403, "password_wrong");
+        $_Auth->disable();
+        Sec::removeAuth();
 
-    } else if ($_Auth->state === "locked"){
-        $_LOG->user_id = $_Auth->id;
-        $_REP->setStatus(403, 'account_locked');
-        $_LOG->setStatus('warn', 'account_locked');
-    } else if ($_Auth->state === "unverified") {
-        $_LOG->user_id = $_Auth->id;
-        $_REP->setStatus(403, 'account_not_verified');
-        $_LOG->setStatus('info', 'account_not_verified');
-    } else {
-        $_REP->setStatus(401, 'account_not_found', ["entity"=>"mail"]);
-        $_LOG->setStatus('info', 'account_not_found');
-    }
+    } else if ($_Auth->state === "locked") throw new ApiException(403, "account_locked");
+    else if ($_Auth->state === "unverified") throw new ApiException(403, "account_not_verified");
+    else throw new ApiException(401, "account_not_found");
 
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------

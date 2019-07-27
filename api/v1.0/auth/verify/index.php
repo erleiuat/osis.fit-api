@@ -20,30 +20,15 @@ try {
     );
     
     $_Auth->mail = $_LOG->identity = $data->mail;
-
-    if($_Auth->check_state() && $_Auth->state === "unverified"){
+    if($_Auth->checkState()->state === "unverified"){
+        
         $_LOG->user_id = $_Auth->user_id;
+        $_Auth->verifyMail($data->code);
+        if ($_Auth->checkState()->state !== "verified") throw new ApiException(500, "account_verification_failed");
 
-        $_Auth->verify_mail($data->code);
-
-        $_Auth->check_state();
-        if ($_Auth->state !== "verified") {
-            $_REP->setStatus(500, 'account_verification_failed');
-            $_LOG->setStatus('error', 'account_verification_failed');
-        }
-
-    } else if($_Auth->state === "verified"){
-        $_LOG->user_id = $_Auth->user_id;
-        $_REP->setStatus(403, 'account_already_verified');
-        $_LOG->setStatus('info', 'account_already_verified');
-    } else if($_Auth->state === "locked"){
-        $_LOG->user_id = $_Auth->user_id;
-        $_REP->setStatus(403, 'account_locked');
-        $_LOG->setStatus('warn', 'account_locked');
-    } else {
-        $_REP->setStatus(403, 'account_not_found');
-        $_LOG->setStatus('info', 'account_not_found');
-    }
+    } else if ($_Auth->state === "locked") throw new ApiException(403, "account_locked");
+    else if ($_Auth->state === "verified") throw new ApiException(403, "account_already_verified");
+    else throw new ApiException(401, "account_not_found");
 
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------

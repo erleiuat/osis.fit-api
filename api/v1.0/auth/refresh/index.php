@@ -20,37 +20,20 @@ try {
     );
 
     $token = Sec::decode($data->token, Env::rtkn_secret);
-
-    $_Auth->mail = $token->data->mail;
-    $_LOG->identity = $_Auth->mail;
     
-    if($_Auth->check_state() && $_Auth->state === "verified"){
-        $_LOG->user_id = $_Auth->user_id;
+    $_Auth->mail = $_LOG->identity = $token->data->mail;
+    if($_Auth->checkState()->state === "verified"){
+        
+        if (!$_Auth->passwordLogin($data->password)) throw new ApiException(403, "password_wrong");            
 
-        if(password_verify($token->jti, $_Auth->refresh_jti)){
+        $_Auth->refresh_jti = Core::randomString(20);
+        $_Auth->readToken()->updateStatus();
+        $authInfo = Sec::getAuth($_Auth);
+        $_REP->addData($authInfo, "auth");
 
-            $_Auth->refresh_jti = Core::randomString(20);
-            $_Auth->read_token();
-            $authInfo = Sec::getAuth($_Auth);
-            $_Auth->updateStatus();
-
-            $_REP->addData($authInfo, "auth");
-
-        } else throw new Exception("jti_invalid", 403);
-
-
-    } else if ($_Auth->state === "locked"){
-        $_LOG->user_id = $_Auth->id;
-        $_REP->setStatus(403, 'account_locked');
-        $_LOG->setStatus('warn', 'account_locked');
-    } else if ($_Auth->state === "unverified") {
-        $_LOG->user_id = $_Auth->id;
-        $_REP->setStatus(403, 'account_not_verified');
-        $_LOG->setStatus('info', 'account_not_verified');
-    } else {
-        $_REP->setStatus(401, 'account_not_found', ["entity"=>"mail"]);
-        $_LOG->setStatus('info', 'account_not_found');
-    }
+    } else if ($_Auth->state === "locked") throw new ApiException(403, "account_locked");
+    else if ($_Auth->state === "unverified") throw new ApiException(403, "account_not_verified");
+    else throw new ApiException(401, "account_not_found");
 
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------
