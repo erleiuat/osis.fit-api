@@ -15,11 +15,11 @@ $_user = new User($_DBC);
 // ------------------ SCRIPT -----------------
 try {
 
-    $authUser = Sec::auth();
-    $_LOG->user_id = $authUser->id;
+    $auth = Sec::auth();
+    $_LOG->user_id = $auth->id;
     $data = Core::getData(['firstname', 'lastname', 'birthdate', 'gender', 'height']);
 
-    $_user->id = $authUser->id;
+    $_user->id = $auth->id;
     $_user->firstname = Validate::string($data->firstname, 1, 150);
     $_user->lastname = Validate::string($data->lastname, 1, 150);
     $_user->birth = Validate::date($data->birthdate, true);
@@ -28,16 +28,12 @@ try {
 
     $_user->editProfile();
 
-} catch (\Exception $e) {
-    $_REP->setStatus((($e->getCode()) ? $e->getCode() : 500), $e->getMessage());
-    $_LOG->setStatus('fatal', "(".(($e->getCode()) ? $e->getCode() : 500).") Catched: | ".$e->getMessage()." | ");
-}
+} catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------
 
 
 // -------------- ASYNC RESPONSE -------------
-$_REP->send();
-Core::endAsync(); /* End Async-Request */
+Core::endAsync($_REP);
 
 // -------------- AFTER RESPONSE -------------
 $_LOG->write();

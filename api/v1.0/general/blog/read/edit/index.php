@@ -14,24 +14,20 @@ $_Article = new Article($_DBC);
 // ------------------ SCRIPT -----------------
 try {
 
-    $authUser = Sec::auth(false);
-    $_LOG->user_id = ($authUser ? $authUser->id : 'none');
+    $auth = Sec::auth(false);
+    $_LOG->user_id = ($auth ? $auth->id : 'none');
     $data = Core::getData();
 
     $_Article->url = (isset($data->url) ? Validate::string($data->url,1,60) : null);
 
-    $_REP->addContent("article", $_Article->readEdit());
+    $_REP->addData("article", $_Article->readEdit());
     
-} catch (\Exception $e) {
-    $_REP->setStatus((($e->getCode()) ? $e->getCode() : 500), $e->getMessage());
-    $_LOG->setStatus('fatal', "(".(($e->getCode()) ? $e->getCode() : 500).") Catched: | ".$e->getMessage()." | ");
-}
+} catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------
 
 
 // -------------- ASYNC RESPONSE -------------
-$_REP->send();
-Core::endAsync(); /* End Async-Request */
+Core::endAsync($_REP);
 
 // -------------- AFTER RESPONSE -------------
 $_LOG->write();

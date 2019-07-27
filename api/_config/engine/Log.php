@@ -64,12 +64,12 @@ class Log {
             (`user_id`, `level`, `process`, `information`, `identity`, `trace`, `stamp`) VALUES 
             (:user_id, :level, :process, :information, :identity, :trace, :stamp);
         ");
-        $this->db->stmtBind($stmt, 
+        $this->db->bind($stmt, 
             ['user_id', 'level', 'process', 'information', 'identity', 'trace', 'stamp'], 
             [$this->user_id, $this->level, $this->process, $this->information, $this->identity, $this->trace, $this->stamp]
         );
 
-        $this->db->stmtExecute($stmt);
+        $this->db->execute($stmt);
 
     }
     

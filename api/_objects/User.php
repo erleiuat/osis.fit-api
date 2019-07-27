@@ -41,8 +41,8 @@ class User {
             SELECT * FROM ".$this->v_info." 
             WHERE id = :id
         ");
-        $this->db->stmtBind($stmt, ['id'], [$this->id]);
-        $this->db->stmtExecute($stmt);
+        $this->db->bind($stmt, ['id'], [$this->id]);
+        $this->db->execute($stmt);
 
         if ($stmt->rowCount() !== 1) throw new Exception('entry_not_found', 404);
 
@@ -61,12 +61,12 @@ class User {
             WHERE `user_id` = :id;
         ");
 
-        $this->db->stmtBind($stmt, 
+        $this->db->bind($stmt, 
             ['aim_weight', 'aim_date', 'id'],
             [$this->aim_weight, $this->aim_date, $this->id]
         );
 
-        $this->db->stmtExecute($stmt);
+        $this->db->execute($stmt);
 
     }
 
@@ -82,12 +82,12 @@ class User {
             WHERE `user_id` = :id;
         ");
 
-        $this->db->stmtBind($stmt, 
+        $this->db->bind($stmt, 
             ['firstname', 'lastname', 'birth', 'gender', 'height', 'id'],
             [$this->firstname, $this->lastname, $this->birth, $this->gender, $this->height, $this->id]
         );
 
-        $this->db->stmtExecute($stmt);
+        $this->db->execute($stmt);
 
     }
 

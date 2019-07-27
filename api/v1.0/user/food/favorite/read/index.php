@@ -15,23 +15,19 @@ $_fFav = new FoodFavorite($_DBC);
 // ------------------ SCRIPT -----------------
 try {
 
-    $authUser = Sec::auth();
-    $_LOG->user_id = $authUser->id;    
+    $auth = Sec::auth();
+    $_LOG->user_id = $auth->id;    
 
-    $_fFav->user_id = $authUser->id;
+    $_fFav->user_id = $auth->id;
 
-    $_REP->addContent("foodFavorite", $_fFav->read());
+    $_REP->addData("foodFavorite", $_fFav->read());
 
-} catch (\Exception $e) {
-    $_REP->setStatus((($e->getCode()) ? $e->getCode() : 500), $e->getMessage());
-    $_LOG->setStatus('fatal', "(".(($e->getCode()) ? $e->getCode() : 500).") Catched: | ".$e->getMessage()." | ");
-}
+} catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------
 
 
 // -------------- ASYNC RESPONSE -------------
-$_REP->send();
-Core::endAsync(); /* End Async-Request */
+Core::endAsync($_REP);
 
 // -------------- AFTER RESPONSE -------------
 $_LOG->write();

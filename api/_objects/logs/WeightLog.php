@@ -31,8 +31,8 @@ class WeightLog {
             ORDER BY `stamp` DESC
         ");
 
-        $this->db->stmtBind($stmt, ['user_id'], [$this->user_id]);
-        $this->db->stmtExecute($stmt);
+        $this->db->bind($stmt, ['user_id'], [$this->user_id]);
+        $this->db->execute($stmt);
 
         $entries = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -51,12 +51,12 @@ class WeightLog {
             (:user_id, :weight, :stamp);
         ");
 
-        $this->db->stmtBind($stmt, 
+        $this->db->bind($stmt, 
             ['user_id', 'weight', 'stamp'],
             [$this->user_id, $this->weight, $this->stamp]
         );
 
-        $this->db->stmtExecute($stmt);
+        $this->db->execute($stmt);
         $this->id = $this->db->conn->lastInsertId();
 
         return $this->formObject();
@@ -71,8 +71,8 @@ class WeightLog {
             `user_id` = :user_id
         ");
 
-        $this->db->stmtBind($stmt, ['id', 'user_id'], [$this->id, $this->user_id]);
-        $this->db->stmtExecute($stmt);
+        $this->db->bind($stmt, ['id', 'user_id'], [$this->id, $this->user_id]);
+        $this->db->execute($stmt);
 
         if($stmt->rowCount() !== 1) throw new Exception("delete_failed"); 
 

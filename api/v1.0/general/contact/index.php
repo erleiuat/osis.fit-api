@@ -27,8 +27,8 @@ try {
     $lastname = (isset($data->lastname) ? (Validate::string($data->lastname, 0)) : '');
     $lang = (isset($data->language) ? (Validate::string($data->language, 0, 5)) : 'en');
 
-    $authUser = Sec::auth(false);
-    $_LOG->user_id = ($authUser ? $authUser->id : 'none');
+    $auth = Sec::auth(false);
+    $_LOG->user_id = ($auth ? $auth->id : 'none');
 
     include_once 'ContactMail.php';
     $_ContactT = new ContactMail();
@@ -67,16 +67,12 @@ try {
 
     $_LOG->addInfo('Info-Mail has been sent.');
     
-} catch (\Exception $e) {
-    $_REP->setStatus((($e->getCode()) ? $e->getCode() : 500), $e->getMessage());
-    $_LOG->setStatus('fatal', "(".(($e->getCode()) ? $e->getCode() : 500).") Catched: | ".$e->getMessage()." | ");
-}
+} catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------
 
 
 // -------------- ASYNC RESPONSE -------------
-$_REP->send();
-Core::endAsync(); /* End Async-Request */
+Core::endAsync($_REP);
 
 // -------------- AFTER RESPONSE -------------
 $_LOG->write();

@@ -15,11 +15,11 @@ $_Food = new Food($_DBC);
 // ------------------ SCRIPT -----------------
 try {
 
-    $authUser = Sec::auth();
-    $_LOG->user_id = $authUser->id;
+    $auth = Sec::auth();
+    $_LOG->user_id = $auth->id;
     $data = Core::getData(['title', 'amount', 'caloriesPer100']);
 
-    $_Food->user_id = $authUser->id;
+    $_Food->user_id = $auth->id;
     $_Food->title = Validate::string($data->title, 1, 30);
     $_Food->amount = Validate::number($data->amount, 1);
     $_Food->calories_per_100 = Validate::number($data->caloriesPer100, 1);
@@ -30,16 +30,12 @@ try {
     
     $_Food->edit();
 
-} catch (\Exception $e) {
-    $_REP->setStatus((($e->getCode()) ? $e->getCode() : 500), $e->getMessage());
-    $_LOG->setStatus('fatal', "(".(($e->getCode()) ? $e->getCode() : 500).") Catched: | ".$e->getMessage()." | ");
-}
+} catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------
 
 
 // -------------- ASYNC RESPONSE -------------
-$_REP->send();
-Core::endAsync(); /* End Async-Request */
+Core::endAsync($_REP);
 
 // -------------- AFTER RESPONSE -------------
 $_LOG->write();

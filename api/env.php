@@ -5,7 +5,7 @@ class Env {
     /* General */
     const api_version = "1.0.0";   
     const api_name = "osis.fit";   
-    const api_env = "localhost";
+    const api_env = "test"; // test, prod
     const api_error_reports = E_ALL; 
     const api_timezone = "Europe/Zurich";
 

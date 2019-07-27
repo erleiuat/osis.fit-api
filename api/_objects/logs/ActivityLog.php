@@ -34,11 +34,11 @@ class ActivityLog {
             ORDER BY `stamp` DESC
         ");
 
-        $this->db->stmtBind($stmt, 
+        $this->db->bind($stmt, 
             ['user_id','from', 'to'], 
             [$this->user_id, $from, $to]
         );
-        $this->db->stmtExecute($stmt);
+        $this->db->execute($stmt);
 
         $entries = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -58,12 +58,12 @@ class ActivityLog {
             (:user_id, :title, :duration, :calories);
         ");
 
-        $this->db->stmtBind($stmt, 
+        $this->db->bind($stmt, 
             ['user_id', 'title', 'duration', 'calories'],
             [$this->user_id, $this->title, $this->duration, $this->calories]
         );
 
-        $this->db->stmtExecute($stmt);
+        $this->db->execute($stmt);
         $this->id = $this->db->conn->lastInsertId();
 
         return $this->formObject();
@@ -79,8 +79,8 @@ class ActivityLog {
             AND `user_id` = :user_id
         ");
 
-        $this->db->stmtBind($stmt, ['id', 'user_id'], [$this->id, $this->user_id]);
-        $this->db->stmtExecute($stmt);
+        $this->db->bind($stmt, ['id', 'user_id'], [$this->id, $this->user_id]);
+        $this->db->execute($stmt);
 
         if($stmt->rowCount() !== 1) throw new Exception("delete_failed"); 
 

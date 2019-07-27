@@ -15,11 +15,11 @@ $_wLog = new WeightLog($_DBC);
 // ------------------ SCRIPT -----------------
 try {
 
-    $authUser = Sec::auth();
-    $_LOG->user_id = $authUser->id;    
+    $auth = Sec::auth();
+    $_LOG->user_id = $auth->id;    
     $data = Core::getData(['date', 'time', 'weight']);
 
-    $_wLog->user_id = $authUser->id;
+    $_wLog->user_id = $auth->id;
     $_wLog->weight = Validate::number($data->weight, 1);
 
     $date = Validate::date($data->date, true);
@@ -31,16 +31,12 @@ try {
         "id"=>$_wLog->id
     );
 
-} catch (\Exception $e) {
-    $_REP->setStatus((($e->getCode()) ? $e->getCode() : 500), $e->getMessage());
-    $_LOG->setStatus('fatal', "(".(($e->getCode()) ? $e->getCode() : 500).") Catched: | ".$e->getMessage()." | ");
-}
+} catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------
 
 
 // -------------- ASYNC RESPONSE -------------
-$_REP->send();
-Core::endAsync(); /* End Async-Request */
+Core::endAsync($_REP);
 
 // -------------- AFTER RESPONSE -------------
 $_LOG->write();

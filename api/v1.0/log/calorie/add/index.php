@@ -15,11 +15,11 @@ $_cLog = new CalorieLog($_DBC);
 // ------------------ SCRIPT -----------------
 try {
 
-    $authUser = Sec::auth();
-    $_LOG->user_id = $authUser->id;
+    $auth = Sec::auth();
+    $_LOG->user_id = $auth->id;
     $data = Core::getData(['date', 'time', 'calories']);
 
-    $_cLog->user_id = $authUser->id;
+    $_cLog->user_id = $auth->id;
 
     $_cLog->title = Validate::string($data->title, 0, 60);
     $_cLog->calories = Validate::number($data->calories);
@@ -28,19 +28,15 @@ try {
     $time = Validate::time($data->time, true);
     $_cLog->stamp = date('Y-m-d H:i:s', strtotime($date." ".$time));
 
-    $_REP->addContent("object", $_cLog->add());
-    $_REP->addContent("id", $_cLog->id);
+    $_REP->addData("object", $_cLog->add());
+    $_REP->addData("id", $_cLog->id);
 
-} catch (\Exception $e) {
-    $_REP->setStatus((($e->getCode()) ? $e->getCode() : 500), $e->getMessage());
-    $_LOG->setStatus('fatal', "(".(($e->getCode()) ? $e->getCode() : 500).") Catched: | ".$e->getMessage()." | ");
-}
+} catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------
 
 
 // -------------- ASYNC RESPONSE -------------
-$_REP->send();
-Core::endAsync(); /* End Async-Request */
+Core::endAsync($_REP);
 
 // -------------- AFTER RESPONSE -------------
 $_LOG->write();

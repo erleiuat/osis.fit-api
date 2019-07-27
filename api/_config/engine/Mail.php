@@ -46,14 +46,17 @@ class Mail {
     public function addReceiver($adress, $firstname, $lastname = false){
         if($lastname) $firstname .= " ".$lastname; 
         array_push($this->receivers, [$adress, $firstname]);
+        return $this;
     }
 
     public function setLanguage($language){
         $this->language = $language;
+        return $this;
     }
 
     public function setTemplate($templateClass){
         $this->template = $templateClass;
+        return $this;
     }
 
     public function setContent($slot, $contents){
@@ -63,9 +66,10 @@ class Mail {
         } else if($where === "b"){
             $this->bodyContent = $contents;
         }
+        return $this;
     }
 
-    public function send() {
+    public function prepare() {
 
         $this->mail->setFrom($this->from_adress, $this->from_name);
         $this->mail->setFrom($this->from_adress, $this->from_name);
@@ -98,8 +102,16 @@ class Mail {
         $this->mail->Subject = str_replace($rSubjectSearch, $rSubjectReplace, $this->mail->Subject);
         $this->mail->Body = str_replace($rBodySearch, $rBodyReplace, $this->mail->Body);
 
-        $this->mail->send();
+        return $this;
+    }
 
+    public function getHTML() {
+        return $this->mail->Body;
+    }
+
+    public function send() {
+        $this->mail->send();
+        return $this;
     }
 
 }

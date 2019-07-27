@@ -15,11 +15,11 @@ $_fFav = new FoodFavorite($_DBC);
 // ------------------ SCRIPT -----------------
 try {
 
-    $authUser = Sec::auth();
-    $_LOG->user_id = $authUser->id;    
+    $auth = Sec::auth();
+    $_LOG->user_id = $auth->id;    
     $data = Core::getData(['id']);
 
-    $_fFav->user_id = $authUser->id;
+    $_fFav->user_id = $auth->id;
 
     $_fFav->id = Validate::number($data->id, 1);
 
@@ -34,18 +34,14 @@ try {
     $_fFav->img_lazy = (isset($data->imgLazy) ? Validate::string($data->imgLazy) : null);
     $_fFav->img_phrase = (isset($data->imgPhrase) ? Validate::string($data->imgPhrase) : null);
 
-    $_REP->addContent("added", $_fFav->toggle());
+    $_REP->addData("added", $_fFav->toggle());
 
-} catch (\Exception $e) {
-    $_REP->setStatus((($e->getCode()) ? $e->getCode() : 500), $e->getMessage());
-    $_LOG->setStatus('fatal', "(".(($e->getCode()) ? $e->getCode() : 500).") Catched: | ".$e->getMessage()." | ");
-}
+} catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------
 
 
 // -------------- ASYNC RESPONSE -------------
-$_REP->send();
-Core::endAsync(); /* End Async-Request */
+Core::endAsync($_REP);
 
 // -------------- AFTER RESPONSE -------------
 $_LOG->write();

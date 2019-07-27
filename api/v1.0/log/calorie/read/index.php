@@ -15,27 +15,23 @@ $_cLog = new CalorieLog($_DBC);
 // ------------------ SCRIPT -----------------
 try {
 
-    $authUser = Sec::auth();
-    $_LOG->user_id = $authUser->id;
+    $auth = Sec::auth();
+    $_LOG->user_id = $auth->id;
     $data = Core::getData(['from']);
 
-    $_cLog->user_id = $authUser->id;
+    $_cLog->user_id = $auth->id;
 
     $from = Validate::date($data->from);
     $to = (isset($data->to) ? Validate::date($data->to) : date('Y-m-d', strtotime($from.' +1 day')));
     
-    $_REP->addContent("calories", $_cLog->read($from, $to));
+    $_REP->addData("calories", $_cLog->read($from, $to));
 
-} catch (\Exception $e) {
-    $_REP->setStatus((($e->getCode()) ? $e->getCode() : 500), $e->getMessage());
-    $_LOG->setStatus('fatal', "(".(($e->getCode()) ? $e->getCode() : 500).") Catched: | ".$e->getMessage()." | ");
-}
+} catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------
 
 
 // -------------- ASYNC RESPONSE -------------
-$_REP->send();
-Core::endAsync(); /* End Async-Request */
+Core::endAsync($_REP);
 
 // -------------- AFTER RESPONSE -------------
 $_LOG->write();

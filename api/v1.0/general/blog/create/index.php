@@ -14,13 +14,13 @@ $_Article = new Article($_DBC);
 // ------------------ SCRIPT -----------------
 try {
 
-    $authUser = Sec::auth();
-    $_LOG->user_id = $authUser->id;
+    $auth = Sec::auth();
+    $_LOG->user_id = $auth->id;
     $data = Core::getData(['url', 'title']);
 
-    Sec::permit($authUser->level, ['moderator', 'admin']);
+    Sec::permit($auth->level, ['moderator', 'admin']);
 
-    $_Article->user_id = $authUser->id;   
+    $_Article->user_id = $auth->id;   
     $_Article->url = Validate::string($data->url, 1);    
     $_Article->title = Validate::string($data->title, 1);
 
@@ -43,16 +43,12 @@ try {
 
     $_Article->create();
     
-} catch (\Exception $e) {
-    $_REP->setStatus((($e->getCode()) ? $e->getCode() : 500), $e->getMessage());
-    $_LOG->setStatus('fatal', "(".(($e->getCode()) ? $e->getCode() : 500).") Catched: | ".$e->getMessage()." | ");
-}
+} catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------
 
 
 // -------------- ASYNC RESPONSE -------------
-$_REP->send();
-Core::endAsync(); /* End Async-Request */
+Core::endAsync($_REP);
 
 // -------------- AFTER RESPONSE -------------
 $_LOG->write();

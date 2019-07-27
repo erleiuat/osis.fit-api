@@ -18,51 +18,39 @@ class Reply {
     public $code;
     public $status;
 
-    public $message;
+    public $info;
     public $detail;
-
-    public $content;
+    public $data;
 
     /* ------------------ INIT ------------------ */
     public function __construct() {
-        $this->content = false;
+        $this->data = [];
         $this->setStatus(204);
     }
 
     /* ----------------- METHODS ---------------- */
 
-    public function setStatus($code, $message = null, $detail = null){
-
+    public function setStatus($code, $info = null, $detail = null){
         $this->code = $code;
         $this->status = $this->status_options[$code];
-
-        $this->message = $message;
+        $this->info = $info;
         $this->detail = $detail;
-
     }
 
-    public function addContent($name = false, $values){
-        if(!$name) $this->content["content"] = $values;
-        else $this->content[$name] = $values;
+    public function addData($data, $name = false){
+        if(!$name) array_push($this->data, $data);
+        else $this->data[$name] = $data;
     }
 
     public function send(){
 
-        if($this->code === 204 && $this->content){
-            $this->setStatus(200);
-        }
-
+        if($this->code === 204 && $this->data) $this->setStatus(200);
+        $response = ["status" => $this->status];
+        if($this->info) $response["info"] = $this->info;
+        if($this->detail) $response["detail"] = $this->detail;
+        if($this->data) $response["data"] = $this->data;
+    
         http_response_code($this->code);
-
-        $response = [
-            "_status" => $this->status,
-            "_info" => $this->message
-        ];
-
-        if($this->content) {
-            $response += $this->content;
-        }
-
         echo json_encode($response, JSON_NUMERIC_CHECK);
 
     }

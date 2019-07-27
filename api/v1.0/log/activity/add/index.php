@@ -15,11 +15,11 @@ $_aLog = new ActivityLog($_DBC);
 // ------------------ SCRIPT -----------------
 try {
 
-    $authUser = Sec::auth();
-    $_LOG->user_id = $authUser->id;    
+    $auth = Sec::auth();
+    $_LOG->user_id = $auth->id;    
     $data = Core::getData(['date', 'time']);
 
-    $_aLog->user_id = $authUser->id;
+    $_aLog->user_id = $auth->id;
 
 
     $_aLog->title = (isset($data->title) ? Validate::string($data->title) : null);
@@ -30,19 +30,15 @@ try {
     $time = Validate::time($data->time, true);
     $_aLog->stamp = date('Y-m-d H:i:s', strtotime($date." ".$time));
 
-    $_REP->addContent("object", $_aLog->add());
-    $_REP->addContent("id", $_aLog->id);
+    $_REP->addData("object", $_aLog->add());
+    $_REP->addData("id", $_aLog->id);
 
-} catch (\Exception $e) {
-    $_REP->setStatus((($e->getCode()) ? $e->getCode() : 500), $e->getMessage());
-    $_LOG->setStatus('fatal', "(".(($e->getCode()) ? $e->getCode() : 500).") Catched: | ".$e->getMessage()." | ");
-}
+} catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------
 
 
 // -------------- ASYNC RESPONSE -------------
-$_REP->send();
-Core::endAsync(); /* End Async-Request */
+Core::endAsync($_REP);
 
 // -------------- AFTER RESPONSE -------------
 $_LOG->write();

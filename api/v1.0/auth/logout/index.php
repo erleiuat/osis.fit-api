@@ -13,21 +13,16 @@ include_once LOCATION.'_config/Security.php'; /* Load Security-Methods */
 // ------------------ SCRIPT -----------------
 try {
 
-    $authUser = Sec::authRequest();
-    $_LOG->user_id = $_Auth->id;
-
+    $auth = Sec::auth();
+    $_LOG->user_id = $auth->id;
     Sec::removeAuth();
 
-} catch (\Exception $e) {
-    $_REP->setStatus((($e->getCode()) ? $e->getCode() : 500), $e->getMessage());
-    $_LOG->setStatus('fatal', "(".(($e->getCode()) ? $e->getCode() : 500).") Catched: | ".$e->getMessage()." | ");
-}
+} catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------
 
 
 // -------------- ASYNC RESPONSE -------------
-$_REP->send();
-Core::endAsync(); /* End Async-Request */
+Core::endAsync($_REP);
 
 // -------------- AFTER RESPONSE -------------
 $_LOG->write();

@@ -63,11 +63,11 @@ class Article {
             `publication_date` <= :publication_date
         ");
 
-        $this->db->stmtBind($stmt, 
+        $this->db->bind($stmt, 
             ['publication_date'],[$this->publication_date]
         );
 
-        $this->db->stmtExecute($stmt);
+        $this->db->execute($stmt);
 
         $entries = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -85,11 +85,11 @@ class Article {
             `publication_date` <= :publication_date AND 
             `url` = :url
         ");
-        $this->db->stmtBind($stmt, 
+        $this->db->bind($stmt, 
             ['publication_date', 'url'],
             [$this->publication_date, $this->url]
         );
-        $this->db->stmtExecute($stmt);
+        $this->db->execute($stmt);
 
         if($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             return $this->formArticleObject($row);
@@ -110,8 +110,8 @@ class Article {
             SELECT url, title, publication_date FROM ".$this->v_edit."
         ");
 
-        if($this->url) $this->db->stmtBind($stmt, ['url'], [$this->url]);
-        $this->db->stmtExecute($stmt);
+        if($this->url) $this->db->bind($stmt, ['url'], [$this->url]);
+        $this->db->execute($stmt);
 
         if ($this->url && $stmt->rowCount() < 1) throw new Exception('entry_not_found', 404);
 
@@ -142,7 +142,7 @@ class Article {
             );
         ");
 
-        $this->db->stmtBind($stmt, [
+        $this->db->bind($stmt, [
             'user_id', 'url', 'title', 'keywords', 
             'content', 'language', 'publication_date'
         ],[
@@ -150,7 +150,7 @@ class Article {
             $this->content, $this->language, $this->publication_date
         ]);
 
-        $this->db->stmtExecute($stmt);
+        $this->db->execute($stmt);
 
         $this->id = $this->db->conn->lastInsertId();
 
@@ -164,7 +164,7 @@ class Article {
             );
         ");
 
-        $this->db->stmtBind($stmt, [
+        $this->db->bind($stmt, [
             'article_id', 'color', 'dark', 'description', 
             'img_url', 'img_lazy', 'img_phrase'
         ],[
@@ -172,7 +172,7 @@ class Article {
             $this->img_url, $this->img_lazy, $this->img_phrase
         ]);
 
-        $this->db->stmtExecute($stmt);
+        $this->db->execute($stmt);
 
     }
 
@@ -189,11 +189,11 @@ class Article {
             SELECT * FROM ".$this->t_main." WHERE
             `url` = :url
         ");
-        $this->db->stmtBind($stmt, 
+        $this->db->bind($stmt, 
             ['url'],
             [$this->url]
         );
-        $this->db->stmtExecute($stmt);
+        $this->db->execute($stmt);
         $this->id = ($stmt->fetch(PDO::FETCH_ASSOC))['id'];
 
         $stmt = $this->db->conn->prepare("
@@ -206,7 +206,7 @@ class Article {
             WHERE `id` = :id ;
         ");
 
-        $this->db->stmtBind($stmt, [
+        $this->db->bind($stmt, [
             'id', 'title', 'keywords', 
             'content', 'language', 'publication_date'
         ],[
@@ -214,7 +214,7 @@ class Article {
             $this->content, $this->language, $this->publication_date
         ]);
 
-        $this->db->stmtExecute($stmt);
+        $this->db->execute($stmt);
 
         $stmt = $this->db->conn->prepare("
             UPDATE ".$this->t_preview." SET 
@@ -227,7 +227,7 @@ class Article {
             WHERE `article_id` = :article_id ;
         ");
 
-        $this->db->stmtBind($stmt, [
+        $this->db->bind($stmt, [
             'article_id', 'color', 'dark', 'description', 
             'img_url', 'img_lazy', 'img_phrase'
         ],[
@@ -235,7 +235,7 @@ class Article {
             $this->img_url, $this->img_lazy, $this->img_phrase
         ]);
 
-        $this->db->stmtExecute($stmt);
+        $this->db->execute($stmt);
 
     }
 

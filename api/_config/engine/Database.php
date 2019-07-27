@@ -34,21 +34,30 @@ class Database {
 
     }
 
-    public function stmtExecute($stmt){
+    public function prepare($query){
         try {
-            $stmt->execute();
-            return true;
+            return $this->conn->prepare($query);
         } catch (PDOException $e) {
             throw new Exception($e->getMessage());
         }
     }
-    
-    public function stmtBind($stmt, $params, $values){
+
+    public function bind($stmt, $params, $values){
         try {
             $numParams = count($params);
             for ($i = 0; $i < $numParams; $i++) {
                 $stmt->bindParam(':'.$params[$i], $values[$i]);
             }
+            return $this;
+        } catch (PDOException $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    public function execute($stmt){
+        try {
+            $stmt->execute();
+            return $this;
         } catch (PDOException $e) {
             throw new Exception($e->getMessage());
         }

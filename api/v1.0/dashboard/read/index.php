@@ -22,32 +22,28 @@ $_cLog = new CalorieLog($_DBC);
 // ------------------ SCRIPT -----------------
 try {
 
-    $authUser = Sec::auth();
-    $_LOG->user_id = $authUser->id;
+    $auth = Sec::auth();
+    $_LOG->user_id = $auth->id;
 
-    $_user->id = $authUser->id;
-    $_wLog->user_id = $authUser->id;
-    $_cLog->user_id = $authUser->id;
-    $_aLog->user_id = $authUser->id;
+    $_user->id = $auth->id;
+    $_wLog->user_id = $auth->id;
+    $_cLog->user_id = $auth->id;
+    $_aLog->user_id = $auth->id;
 
     $from = date('Y-m-d', time());
     $to = date('Y-m-d', strtotime($from.' +1 day'));
     
-    $_REP->addContent("user", $_user->read());
-    $_REP->addContent("weights", $_wLog->read());
-    $_REP->addContent("calories", $_cLog->read($from, $to));
-    $_REP->addContent("activity", $_aLog->read($from, $to));
+    $_REP->addData("user", $_user->read());
+    $_REP->addData("weights", $_wLog->read());
+    $_REP->addData("calories", $_cLog->read($from, $to));
+    $_REP->addData("activity", $_aLog->read($from, $to));
 
-} catch (\Exception $e) {
-    $_REP->setStatus((($e->getCode()) ? $e->getCode() : 500), $e->getMessage());
-    $_LOG->setStatus('fatal', "(".(($e->getCode()) ? $e->getCode() : 500).") Catched: | ".$e->getMessage()." | ");
-}
+} catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------
 
 
 // -------------- ASYNC RESPONSE -------------
-$_REP->send();
-Core::endAsync(); /* End Async-Request */
+Core::endAsync($_REP);
 
 // -------------- AFTER RESPONSE -------------
 $_LOG->write();

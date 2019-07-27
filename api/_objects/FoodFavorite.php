@@ -37,8 +37,8 @@ class FoodFavorite {
             WHERE `user_id` = :user_id
         ");
 
-        $this->db->stmtBind($stmt, ['user_id'], [$this->user_id]);
-        $this->db->stmtExecute($stmt);
+        $this->db->bind($stmt, ['user_id'], [$this->user_id]);
+        $this->db->execute($stmt);
 
         $entries = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -57,11 +57,11 @@ class FoodFavorite {
             `id` = :id
         ");
 
-        $this->db->stmtBind($stmt, 
+        $this->db->bind($stmt, 
             ['user_id', 'id'], 
             [$this->user_id, $this->id]
         );
-        $this->db->stmtExecute($stmt);
+        $this->db->execute($stmt);
 
         if($stmt->rowCount() === 1){
 
@@ -71,11 +71,11 @@ class FoodFavorite {
                 `id` = :id
             ");
 
-            $this->db->stmtBind($stmt, 
+            $this->db->bind($stmt, 
                 ['user_id', 'id'], 
                 [$this->user_id, $this->id]
             );
-            $this->db->stmtExecute($stmt);
+            $this->db->execute($stmt);
 
             if($stmt->rowCount() !== 1) throw new Exception("delete_failed"); 
 
@@ -89,12 +89,12 @@ class FoodFavorite {
                 (:id, :user_id, :title, :amount, :calories_per_100, :information, :source, :img_url, :img_lazy, :img_phrase);
             ");
 
-            $this->db->stmtBind($stmt, 
+            $this->db->bind($stmt, 
                 ['id', 'user_id', 'title', 'amount', 'calories_per_100', 'information', 'source', 'img_url', 'img_lazy', 'img_phrase'], 
                 [$this->id, $this->user_id, $this->title, $this->amount, $this->calories_per_100, $this->information, $this->source, $this->img_url, $this->img_lazy, $this->img_phrase]
             );
 
-            $this->db->stmtExecute($stmt);
+            $this->db->execute($stmt);
             $this->id = $this->db->conn->lastInsertId();
 
             return true;

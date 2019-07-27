@@ -14,22 +14,18 @@ $_Article = new Article($_DBC);
 // ------------------ SCRIPT -----------------
 try {
 
-    $authUser = Sec::auth(false);
-    $_LOG->user_id = ($authUser ? $authUser->id : 'none');
+    $auth = Sec::auth(false);
+    $_LOG->user_id = ($auth ? $auth->id : 'none');
 
     $_Article->publication_date = date('Y-m-d', time());
-    $_REP->addContent("preview", $_Article->readPreview());
+    $_REP->addData("preview", $_Article->readPreview());
     
-} catch (\Exception $e) {
-    $_REP->setStatus((($e->getCode()) ? $e->getCode() : 500), $e->getMessage());
-    $_LOG->setStatus('fatal', "(".(($e->getCode()) ? $e->getCode() : 500).") Catched: | ".$e->getMessage()." | ");
-}
+} catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------
 
 
 // -------------- ASYNC RESPONSE -------------
-$_REP->send();
-Core::endAsync(); /* End Async-Request */
+Core::endAsync($_REP);
 
 // -------------- AFTER RESPONSE -------------
 $_LOG->write();

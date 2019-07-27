@@ -46,11 +46,11 @@ class Auth {
             (`mail`, `password`, `level`) VALUES
             (:mail, :password, :level);
         ");
-        $this->db->stmtBind($stmt, 
+        $this->db->bind($stmt, 
             ['mail', 'password', 'level'], 
             [$this->mail, $this->password, $this->level]
         );
-        $this->db->stmtExecute($stmt);
+        $this->db->execute($stmt);
 
         $this->id = $this->db->conn->lastInsertId();
 
@@ -61,11 +61,11 @@ class Auth {
             (`user_id`, `code`) VALUES 
             (:id, :code);
         ");
-        $this->db->stmtBind($stmt, 
+        $this->db->bind($stmt, 
             ['id', 'code'], 
             [$this->id, $this->code]
         );
-        $this->db->stmtExecute($stmt);
+        $this->db->execute($stmt);
 
 
         // Insert into t_detail
@@ -74,11 +74,11 @@ class Auth {
             (`user_id`, `firstname`, `lastname`) VALUES 
             (:id, :firstname, :lastname);
         ");
-        $this->db->stmtBind($stmt, 
+        $this->db->bind($stmt, 
             ['id', 'firstname', 'lastname'], 
             [$this->id, $this->firstname, $this->lastname]
         );
-        $this->db->stmtExecute($stmt);
+        $this->db->execute($stmt);
 
         // Insert into t_aim
         $stmt = $this->db->conn->prepare("
@@ -86,11 +86,11 @@ class Auth {
             (`user_id`) VALUES 
             (:id);
         ");
-        $this->db->stmtBind($stmt, 
+        $this->db->bind($stmt, 
             ['id'], 
             [$this->id]
         );
-        $this->db->stmtExecute($stmt);
+        $this->db->execute($stmt);
 
         
     }
@@ -103,10 +103,10 @@ class Auth {
             WHERE mail = :mail
         ");
 
-        $this->db->stmtBind($stmt, 
+        $this->db->bind($stmt, 
             ['mail'], [$this->mail]
         );
-        $this->db->stmtExecute($stmt);
+        $this->db->execute($stmt);
 
         if ($stmt->rowCount() === 1) {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -130,11 +130,11 @@ class Auth {
             SELECT Password FROM ".$this->t_main." 
             WHERE id = :id
         ");
-        $this->db->stmtBind($stmt, 
+        $this->db->bind($stmt, 
             ['id'], 
             [$this->id]
         );
-        $this->db->stmtExecute($stmt);
+        $this->db->execute($stmt);
 
         $password_hash = ($stmt->fetch(PDO::FETCH_ASSOC))["Password"];
 
@@ -153,12 +153,12 @@ class Auth {
             SELECT * FROM ".$this->t_verification." 
             WHERE user_id = :id
         ");
-        $this->db->stmtBind($stmt, 
+        $this->db->bind($stmt, 
             ['id'], 
             [$this->id]
         );
 
-        $this->db->stmtExecute($stmt);
+        $this->db->execute($stmt);
         $code_hash = ($stmt->fetch(PDO::FETCH_ASSOC))["code"];
 
         if ($stmt->rowCount() === 1 && password_verify($code, $code_hash)) {
@@ -169,11 +169,7 @@ class Auth {
                 `stamp` = now() 
                 WHERE `user_id` = :id
             ");
-            $this->db->stmtBind($stmt,
-                ['id'],
-                [$this->id]
-            );
-            $this->db->stmtExecute($stmt);
+            $this->db->bind($stmt, ['id'], [$this->id])->execute($stmt);
 
         } else throw new Exception('verification_error', 403);
 
@@ -182,12 +178,11 @@ class Auth {
 
     public function read_token() {
         
-        $stmt = $this->db->conn->prepare("
+        $stmt = $this->db->prepare("
             SELECT * FROM ".$this->t_main." 
             WHERE id = :id
         ");
-        $this->db->stmtBind($stmt, ['id'], [$this->id]);
-        $this->db->stmtExecute($stmt);
+        $this->db->bind($stmt, ['id'], [$this->id])->execute($stmt);
 
         if ($stmt->rowCount() === 1) {
             $this->level = ($stmt->fetch(PDO::FETCH_ASSOC))['level'];
