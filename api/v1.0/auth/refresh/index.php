@@ -1,7 +1,7 @@
 <?php
 
-define('PROCESS', "Auth"); /* Name of this Process */
-define('LOCATION', "../../"); /* Location of this endpoint */        
+define('PROCESS', "Auth/Refresh"); /* Name of this Process */
+define('LOCATION', "../../../"); /* Location of this endpoint */        
 
 include_once LOCATION.'_config/Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */
@@ -16,17 +16,18 @@ $_Auth = new Auth($_DBC);
 try {
 
     $data = Core::getBody(
-        ['mail', 'mail', true, ['min' => 1, 'max' => 90]],
-        ['password', 'string', true]
+        ['token', 'string', true, ['min' => 1]]
     );
 
-    $_Auth->mail = $data->mail;
+    $token = Sec::decode($data->token, Env::rtkn_secret);
+
+    $_Auth->mail = $token->data->mail;
     $_LOG->identity = $_Auth->mail;
     
     if($_Auth->check_state() && $_Auth->state === "verified"){
         $_LOG->user_id = $_Auth->user_id;
 
-        if ($_Auth->password_login($data->password)) {
+        if(password_verify($token->jti, $_Auth->refresh_jti)){
 
             $_Auth->refresh_jti = Core::randomString(20);
             $_Auth->read_token();
@@ -35,10 +36,8 @@ try {
 
             $_REP->addData($authInfo, "auth");
 
-        } else {
-            $_REP->setStatus(403, 'password_wrong');
-            $_LOG->setStatus('warn', 'password_wrong');
-        }
+        } else throw new Exception("jti_invalid", 403);
+
 
     } else if ($_Auth->state === "locked"){
         $_LOG->user_id = $_Auth->id;

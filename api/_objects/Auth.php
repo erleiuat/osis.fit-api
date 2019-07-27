@@ -9,12 +9,12 @@ class Auth {
     private $t_main = "user";
     private $t_aim = "user_aim";
     private $t_detail = "user_detail";
-    private $t_verification = "user_verification";
+    private $t_status = "user_status";
 
     private $v_state = "v_user_state";
 
     /* ----------- PUBLIC BASIC PARAMS ---------- */
-    public $id;
+    public $user_id;
 
     public $mail;
     public $password;
@@ -27,8 +27,9 @@ class Auth {
     public $birth;
 
     public $state;
-    public $code;
-    public $stamp;
+    public $refresh_jti;
+    public $verify_code;
+    public $verify_stamp;
 
 
     /* ------------------ INIT ------------------ */
@@ -48,22 +49,22 @@ class Auth {
         ");
         $this->db->bind($stmt, 
             ['mail', 'password', 'level'], 
-            [$this->mail, $this->password, $this->level]
+            [$this->mail, password_hash($this->password, Env::sec_encryption), $this->level]
         );
         $this->db->execute($stmt);
 
-        $this->id = $this->db->conn->lastInsertId();
+        $this->user_id = $this->db->conn->lastInsertId();
 
 
         // Insert into t_verification
         $stmt = $this->db->conn->prepare("
-            INSERT INTO ".$this->t_verification." 
-            (`user_id`, `code`) VALUES 
-            (:id, :code);
+            INSERT INTO ".$this->t_status." 
+            (`user_id`, `verify_code`) VALUES 
+            (:user_id, :verify_code);
         ");
         $this->db->bind($stmt, 
-            ['id', 'code'], 
-            [$this->id, $this->code]
+            ['user_id', 'verify_code'], 
+            [$this->user_id, password_hash($this->verify_code, Env::sec_encryption)]
         );
         $this->db->execute($stmt);
 
@@ -72,11 +73,11 @@ class Auth {
         $stmt = $this->db->conn->prepare("
             INSERT INTO ".$this->t_detail." 
             (`user_id`, `firstname`, `lastname`) VALUES 
-            (:id, :firstname, :lastname);
+            (:user_id, :firstname, :lastname);
         ");
         $this->db->bind($stmt, 
-            ['id', 'firstname', 'lastname'], 
-            [$this->id, $this->firstname, $this->lastname]
+            ['user_id', 'firstname', 'lastname'], 
+            [$this->user_id, $this->firstname, $this->lastname]
         );
         $this->db->execute($stmt);
 
@@ -84,17 +85,15 @@ class Auth {
         $stmt = $this->db->conn->prepare("
             INSERT INTO ".$this->t_aim." 
             (`user_id`) VALUES 
-            (:id);
+            (:user_id);
         ");
         $this->db->bind($stmt, 
-            ['id'], 
-            [$this->id]
+            ['user_id'], 
+            [$this->user_id]
         );
         $this->db->execute($stmt);
 
-        
     }
-
 
     public function check_state() {
 
@@ -110,17 +109,31 @@ class Auth {
 
         if ($stmt->rowCount() === 1) {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            $this->id = $row['id'];
+            $this->user_id = $row['user_id'];
+            $this->refresh_jti = $row['refresh_jti'];
             $this->state = $row['state'];
-            $this->stamp = $row['stamp'];
-
             return true;
-
         }
 
         $this->state = false;
         return false;
         
+    }
+
+    public function updateStatus() {
+
+        $stmt = $this->db->conn->prepare("
+            UPDATE ".$this->t_status." SET 
+            `refresh_jti` = :refresh_jti,
+            `login_stamp` = now() 
+            WHERE `user_id` = :user_id
+        ");
+
+        $this->db->bind($stmt, 
+            ['user_id', 'refresh_jti'], 
+            [$this->user_id, password_hash($this->refresh_jti, Env::sec_encryption)]
+        )->execute($stmt);
+
     }
     
 
@@ -128,11 +141,11 @@ class Auth {
 
         $stmt = $this->db->conn->prepare("
             SELECT Password FROM ".$this->t_main." 
-            WHERE id = :id
+            WHERE id = :user_id
         ");
         $this->db->bind($stmt, 
-            ['id'], 
-            [$this->id]
+            ['user_id'], 
+            [$this->user_id]
         );
         $this->db->execute($stmt);
 
@@ -146,49 +159,67 @@ class Auth {
 
     }
 
-
     public function verify_mail($code) {
 
         $stmt = $this->db->conn->prepare("
-            SELECT * FROM ".$this->t_verification." 
-            WHERE user_id = :id
+            SELECT * FROM ".$this->t_status." 
+            WHERE user_id = :user_id
         ");
         $this->db->bind($stmt, 
-            ['id'], 
-            [$this->id]
+            ['user_id'], 
+            [$this->user_id]
         );
 
         $this->db->execute($stmt);
-        $code_hash = ($stmt->fetch(PDO::FETCH_ASSOC))["code"];
+        $code_hash = ($stmt->fetch(PDO::FETCH_ASSOC))["verify_code"];
 
         if ($stmt->rowCount() === 1 && password_verify($code, $code_hash)) {
         
             $stmt = $this->db->conn->prepare("
-                UPDATE ".$this->t_verification." SET 
+                UPDATE ".$this->t_status." SET 
                 `state` = 'verified', 
-                `stamp` = now() 
-                WHERE `user_id` = :id
+                `verify_stamp` = now() 
+                WHERE `user_id` = :user_id
             ");
-            $this->db->bind($stmt, ['id'], [$this->id])->execute($stmt);
+            $this->db->bind($stmt, ['user_id'], [$this->user_id])->execute($stmt);
 
         } else throw new Exception('verification_error', 403);
 
     }
     
-
     public function read_token() {
         
         $stmt = $this->db->prepare("
             SELECT * FROM ".$this->t_main." 
-            WHERE id = :id
+            WHERE id = :user_id
         ");
-        $this->db->bind($stmt, ['id'], [$this->id])->execute($stmt);
+        $this->db->bind($stmt, ['user_id'], [$this->user_id])->execute($stmt);
 
         if ($stmt->rowCount() === 1) {
             $this->level = ($stmt->fetch(PDO::FETCH_ASSOC))['level'];
         } else {
             throw new Exception('mail_not_found', 500);
         }
+
+    }
+
+    public function disable() {
+
+        $stmt = $this->db->conn->prepare("
+            UPDATE ".$this->t_status." SET 
+            `state` = 'deleted',
+            `deleted` = 'true'
+            WHERE `user_id` = :user_id
+        ");
+        $this->db->bind($stmt, ['user_id'], [$this->user_id])->execute($stmt);
+
+        $stmt = $this->db->conn->prepare("
+            UPDATE ".$this->t_main." SET 
+            `mail` = concat('DELETED:', mail, '|ID:', id),
+            `password` = concat('DELETED:', password, '|ID:', id)
+            WHERE `id` = :user_id 
+        ");
+        $this->db->bind($stmt, ['user_id'], [$this->user_id])->execute($stmt);
 
     }
     

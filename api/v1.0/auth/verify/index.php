@@ -18,28 +18,26 @@ try {
         ['mail', 'mail', true, ['min' => 1, 'max' => 90]],
         ['code', 'string', true, ['min' => 10, 'max' => 10]]
     );
-
-    $_Auth->mail = $data->mail;
-    $_LOG->identity = $_Auth->mail;
+    
+    $_Auth->mail = $_LOG->identity = $data->mail;
 
     if($_Auth->check_state() && $_Auth->state === "unverified"){
-        $_LOG->user_id = $_Auth->id;
+        $_LOG->user_id = $_Auth->user_id;
 
         $_Auth->verify_mail($data->code);
-        $_Auth->check_state();
 
-        if ($_Auth->state === "verified") $_LOG->addInfo('account_verified');
-        else {
+        $_Auth->check_state();
+        if ($_Auth->state !== "verified") {
             $_REP->setStatus(500, 'account_verification_failed');
             $_LOG->setStatus('error', 'account_verification_failed');
         }
 
     } else if($_Auth->state === "verified"){
-        $_LOG->user_id = $_Auth->id;
+        $_LOG->user_id = $_Auth->user_id;
         $_REP->setStatus(403, 'account_already_verified');
         $_LOG->setStatus('info', 'account_already_verified');
     } else if($_Auth->state === "locked"){
-        $_LOG->user_id = $_Auth->id;
+        $_LOG->user_id = $_Auth->user_id;
         $_REP->setStatus(403, 'account_locked');
         $_LOG->setStatus('warn', 'account_locked');
     } else {

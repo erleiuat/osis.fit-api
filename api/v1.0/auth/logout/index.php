@@ -12,11 +12,7 @@ include_once LOCATION.'_config/Security.php'; /* Load Security-Methods */
 
 // ------------------ SCRIPT -----------------
 try {
-
-    $auth = Sec::auth();
-    $_LOG->user_id = $auth->id;
     Sec::removeAuth();
-
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------
 

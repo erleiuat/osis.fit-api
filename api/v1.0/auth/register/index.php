@@ -33,14 +33,8 @@ try {
         $_LOG->setStatus('info', 'mail_in_use');
     } else {
         
-        $code = '';
-        $chars = '123456789';
-        for ($i = 0; $i < 10; $i++) $code .= $chars[rand(0, strlen($chars) - 1)];
-        $_Auth->code = password_hash($code, PASSWORD_BCRYPT);        
-        $_LOG->addInfo("Code created");
-
-        $_Auth->password = password_hash($data->password, PASSWORD_BCRYPT);
-        $_LOG->addInfo("Password created");
+        $_Auth->verify_code = Core::randomString(10);     
+        $_Auth->password = $data->password;
 
         $_Auth->register();
         $_LOG->addInfo("User registered");
@@ -54,7 +48,7 @@ try {
             "name" => $_Auth->firstname, 
             "mail" => $_Auth->mail, 
             "url" => "osis.fit/auth/verify", 
-            "code" => $code
+            "code" => $_Auth->verify_code
         ])
         ->prepare();
             
@@ -62,7 +56,7 @@ try {
             $_Mail->send();
             $_LOG->addInfo('Verification-Mail sent');
         } else {
-            $_REP->addData($code, "code");
+            $_REP->addData($_Auth->verify_code, "code");
             $_REP->addData($_Mail->getHTML(), "html");
         }
 

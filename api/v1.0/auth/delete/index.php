@@ -1,7 +1,7 @@
 <?php
 
-define('PROCESS', "Auth"); /* Name of this Process */
-define('LOCATION', "../../"); /* Location of this endpoint */        
+define('PROCESS', "Auth/Delete"); /* Name of this Process */
+define('LOCATION', "../../../"); /* Location of this endpoint */           
 
 include_once LOCATION.'_config/Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */
@@ -11,30 +11,27 @@ include_once LOCATION.'_config/Security.php'; /* Load Security-Methods */
 include_once LOCATION.'_objects/Auth.php';
 $_Auth = new Auth($_DBC);
 
-
 // ------------------ SCRIPT -----------------
 try {
 
+    $auth = Sec::auth();
+    $_Auth->user_id = $_LOG->user_id = $auth->id;
+
     $data = Core::getBody(
-        ['mail', 'mail', true, ['min' => 1, 'max' => 90]],
+        ['mail', 'mail', true],
         ['password', 'string', true]
     );
+    
+    $_Auth->mail = $auth->mail;
+    $_LOG->identity = $data->mail;
 
-    $_Auth->mail = $data->mail;
-    $_LOG->identity = $_Auth->mail;
+    if ($auth->mail !== $data->mail) throw new Exception("mail_wrong", 403);
     
     if($_Auth->check_state() && $_Auth->state === "verified"){
-        $_LOG->user_id = $_Auth->user_id;
 
         if ($_Auth->password_login($data->password)) {
-
-            $_Auth->refresh_jti = Core::randomString(20);
-            $_Auth->read_token();
-            $authInfo = Sec::getAuth($_Auth);
-            $_Auth->updateStatus();
-
-            $_REP->addData($authInfo, "auth");
-
+            $_Auth->disable();
+            Sec::removeAuth();
         } else {
             $_REP->setStatus(403, 'password_wrong');
             $_LOG->setStatus('warn', 'password_wrong');

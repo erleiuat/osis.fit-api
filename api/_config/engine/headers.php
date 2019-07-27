@@ -1,6 +1,6 @@
 <?php
 
-error_reporting(Env::api_error_reports);
+error_reporting(Env::sec_error_reports);
 date_default_timezone_set(Env::api_timezone);
 
 header("Content-Type: ".(defined("CTYPE") ? CTYPE : "application/json; charset=UTF-8"));

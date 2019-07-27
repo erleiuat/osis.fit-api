@@ -67,12 +67,17 @@ CREATE TABLE IF NOT EXISTS `article_preview` (
 
 -- ------------------------------------------------------------------------------------
 
-CREATE TABLE IF NOT EXISTS `user_verification` (
+CREATE TABLE IF NOT EXISTS `user_status` (
     user_id             INT NOT NULL,
 
-    state               ENUM('unverified', 'verified', 'locked') NOT NULL DEFAULT 'unverified',
-    code                VARCHAR(255),
-    stamp               TIMESTAMP,
+    state               ENUM('unverified', 'verified', 'locked', 'deleted') NOT NULL DEFAULT 'unverified',
+    deleted             ENUM('true', 'false') NOT NULL DEFAULT 'false',
+    refresh_jti         VARCHAR(255),
+    verify_code         VARCHAR(255),
+
+    verify_stamp        TIMESTAMP,
+    login_stamp         TIMESTAMP,
+    refresh_stamp       TIMESTAMP,
 
     PRIMARY KEY (user_id),
     FOREIGN KEY (user_id) REFERENCES user(id)
@@ -178,13 +183,13 @@ CREATE VIEW `v_user_state` AS
 
     SELECT
 
-        us.id AS 'id',
+        us.id AS 'user_id',
         us.mail AS 'mail',
-        ve.state AS 'state',
-        ve.stamp AS 'stamp'
+        st.state AS 'state',
+        st.refresh_jti AS 'refresh_jti'
 
     FROM user AS us
-    LEFT JOIN user_verification AS ve ON ve.user_id = us.id;
+    LEFT JOIN user_status AS st ON st.user_id = us.id;
 
 
 CREATE VIEW `v_user_info` AS

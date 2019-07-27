@@ -22,6 +22,16 @@ class Core {
         return ob_get_clean();
     }
 
+    public static function randomString($length = 10){
+        $characters = '123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, $charactersLength - 1)];
+        }
+        return $randomString;
+    }
+
     public static function processException($rep, $log, $e){
         if(get_class($e) === 'ApiException'){
             $rep->setStatus((($e->getCode()) ? $e->getCode() : 500), $e->getMessage(), $e->getDetail());
