@@ -24,7 +24,7 @@ try {
     $_Auth->mail = $_LOG->identity = $auth->mail;
     if ($auth->mail !== $data->mail) throw new Exception("mail_wrong", 403);
     
-    if($_Auth->checkState()->state === "verified"){
+    if($_Auth->checkStatus()->state === "verified"){
 
         if (!$_Auth->passwordLogin($data->password)) throw new ApiException(403, "password_wrong");
         $_Auth->disable();

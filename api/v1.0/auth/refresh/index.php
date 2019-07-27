@@ -19,15 +19,17 @@ try {
     
     $_Auth->refresh_jti = $token->jti;
     $_Auth->mail = $_LOG->identity = $token->data->mail;
-    if($_Auth->checkState()->state === "verified"){
+    if($_Auth->checkStatus()->state === "verified"){
 
-        if (!$_Auth->validRefresh($token->data->phrase)) throw new ApiException(403, "phrase_wrong");
+        if (!$_Auth->verifyRefresh($token->data->phrase)) throw new ApiException(403, "token_invalid");
         
         $_Auth->refresh_jti = Core::randomString(20);
         $_Auth->refresh_phrase = Core::randomString(20);
-        $_Auth->readToken()->updateStatus($token->jti);
-        $authInfo = Sec::getAuth($_Auth);
-        $_REP->addData($authInfo, "auth");
+        $_Auth->readToken()->setRefreshAuth($token->jti);
+
+        $authData = Sec::getAuth($_Auth);
+        $_REP->addData($authData->access, "access");
+        $_REP->addData($authData->refresh, "refresh");
 
     } else if ($_Auth->state === "locked") throw new ApiException(403, "account_locked");
     else if ($_Auth->state === "unverified") throw new ApiException(403, "account_not_verified");

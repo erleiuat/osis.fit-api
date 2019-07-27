@@ -18,23 +18,23 @@ class Reply {
     public $code;
     public $status;
 
+    public $condition;
     public $info;
-    public $detail;
     public $data;
 
     /* ------------------ INIT ------------------ */
     public function __construct() {
         $this->data = [];
-        $this->setStatus(204);
+        $this->setStatus(204, "success");
     }
 
     /* ----------------- METHODS ---------------- */
 
-    public function setStatus($code, $info = null, $detail = null){
+    public function setStatus($code, $condition = false, $info = false){
         $this->code = $code;
         $this->status = $this->status_options[$code];
-        $this->info = $info;
-        $this->detail = $detail;
+        if ($condition) $this->condition = $condition;
+        if ($info) $this->info = $info;
     }
 
     public function addData($data, $name = false){
@@ -45,12 +45,17 @@ class Reply {
     public function send(){
 
         if($this->code === 204 && $this->data) $this->setStatus(200);
-        $response = ["status" => $this->status];
+
+        $response = ["status" => [
+            "code" => $this->code, 
+            "message" => $this->status
+        ]];
+
+        if($this->condition) $response["condition"] = $this->condition;
         if($this->info) $response["info"] = $this->info;
-        if($this->detail) $response["detail"] = $this->detail;
         if($this->data) $response["data"] = $this->data;
     
-        http_response_code($this->code);
+        http_response_code($this->code === 204 ? 200 : $this->code);
         echo json_encode($response, JSON_NUMERIC_CHECK);
 
     }

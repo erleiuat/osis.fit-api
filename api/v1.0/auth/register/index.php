@@ -7,9 +7,7 @@ include_once LOCATION.'_config/Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
-include_once LOCATION.'_config/Mail.php'; 
 include_once LOCATION.'_objects/Auth.php';
-$_Mail = new Mail();
 $_Auth = new Auth($_DBC);
 
 // ------------------ SCRIPT -----------------
@@ -27,32 +25,28 @@ try {
     $_Auth->firstname = $data->firstname;
     $_Auth->lastname = $data->lastname;
     
-    if($_Auth->checkState()->state) throw new ApiException(403, "mail_in_use", ["entity"=>"mail"]);
+    if($_Auth->checkStatus()->state) throw new ApiException(403, "mail_in_use", ["entity"=>"mail"]);
 
     $_Auth->verify_code = Core::randomString(10);     
     $_Auth->password = $data->password;
 
-    $_Auth->register();
+    //$_Auth->register(); TODO
     $_LOG->addInfo("User registered");
 
-    include_once 'MailTemplate.php';
-    $_mTemplate = new MailTemplate();
-    $_Mail->setLanguage($data->language ? $data->language : "en")
-    ->addReceiver($_Auth->mail, $_Auth->firstname, $_Auth->lastname)
-    ->setTemplate($_mTemplate)
-    ->setContent("body", [
-        "name" => $_Auth->firstname, 
-        "mail" => $_Auth->mail, 
-        "url" => "osis.fit/auth/verify", 
-        "code" => $_Auth->verify_code
-    ])->prepare();
+    include_once LOCATION.'_config/Mailing.php';
+    $_MailEngine = new MailEngine(new defaultMail());
+    $_MailEngine->addReceiver($_Auth->mail, $_Auth->firstname, $_Auth->lastname);
+
+    if ($data->language === "de") include_once 'mail/content_de.php';
+    else include_once 'mail/content_en.php';
+    $_MailEngine->prepare();
         
     if (Env::api_env === "prod") {
-        $_Mail->send();
+        $_MailEngine->send();
         $_LOG->addInfo('Verification-Mail sent');
     } else {
         $_REP->addData($_Auth->verify_code, "code");
-        $_REP->addData($_Mail->getHTML(), "html");
+        $_REP->addData($_MailEngine->getHTML(), "html");
     }
 
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }

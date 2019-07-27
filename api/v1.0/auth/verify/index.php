@@ -20,11 +20,11 @@ try {
     );
     
     $_Auth->mail = $_LOG->identity = $data->mail;
-    if($_Auth->checkState()->state === "unverified"){
+    if($_Auth->checkStatus()->state === "unverified"){
         
         $_LOG->user_id = $_Auth->user_id;
         $_Auth->verifyMail($data->code);
-        if ($_Auth->checkState()->state !== "verified") throw new ApiException(500, "account_verification_failed");
+        if ($_Auth->checkStatus()->state !== "verified") throw new ApiException(500, "account_verification_failed");
 
     } else if ($_Auth->state === "locked") throw new ApiException(403, "account_locked");
     else if ($_Auth->state === "verified") throw new ApiException(403, "account_already_verified");

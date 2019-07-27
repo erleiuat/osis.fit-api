@@ -91,7 +91,7 @@ class Auth {
 
     }
 
-    public function checkState() {
+    public function checkStatus() {
 
         $stmt = $this->db->conn->prepare("
             SELECT * FROM ".$this->v_state." 
@@ -110,7 +110,7 @@ class Auth {
         
     }
 
-    public function validRefresh($phrase){
+    public function verifyRefresh($phrase){
      
         $stmt = $this->db->conn->prepare("
             SELECT * FROM ".$this->t_refresh." 
@@ -129,7 +129,7 @@ class Auth {
 
     }
 
-    public function updateStatus($oldJti = false) {
+    public function setRefreshAuth($oldJti = false) {
 
         if($oldJti){
             $stmt = $this->db->conn->prepare("
@@ -167,6 +167,18 @@ class Auth {
             ['user_id'], [$this->user_id]
         )->execute($stmt);
 
+    }
+
+    public function removeRefresh(){
+        $stmt = $this->db->conn->prepare("
+            DELETE FROM ".$this->t_refresh." WHERE 
+            `user_id` = :user_id AND 
+            `refresh_jti` = :refresh_jti 
+        ");
+        $this->db->bind($stmt, 
+            ['user_id', 'refresh_jti'], 
+            [$this->user_id, $this->refresh_jti]
+        )->execute($stmt);
     }
     
     public function passwordLogin($password) {

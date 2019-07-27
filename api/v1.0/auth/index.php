@@ -21,14 +21,16 @@ try {
     );
 
     $_Auth->mail = $_LOG->identity = $data->mail;    
-    if($_Auth->checkState()->state === "verified"){
+    if($_Auth->checkStatus()->state === "verified"){
 
         if (!$_Auth->passwordLogin($data->password)) throw new ApiException(403, "password_wrong");            
 
         $_Auth->refresh_jti = Core::randomString(20);
-        $_Auth->readToken()->updateStatus();
-        $authInfo = Sec::getAuth($_Auth);
-        $_REP->addData($authInfo, "auth");
+        $_Auth->readToken()->setRefreshAuth();
+        
+        $authData = Sec::getAuth($_Auth);
+        $_REP->addData($authData->access, "access");
+        $_REP->addData($authData->refresh, "refresh");
 
     } else if ($_Auth->state === "locked") throw new ApiException(403, "account_locked");
     else if ($_Auth->state === "unverified") throw new ApiException(403, "account_not_verified");

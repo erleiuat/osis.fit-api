@@ -3,7 +3,7 @@
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-class Mail {
+class MailEngine {
 
     /* ------------- PRIVATE PARAMS ------------- */
     private $mail;
@@ -16,21 +16,19 @@ class Mail {
         "body" => "b"
     ];
 
-    private $subjectContent = [];
-    private $bodyContent = [];
-
     /* ----------- PUBLIC BASIC PARAMS ---------- */
     
     public $from_name;
     public $from_adress;
     public $receivers = [];
-
-    public $language = "en";
-    public $template;
+    
+    public $template = false;
+    public $subject = "";
+    public $body = [];
 
 
     /* ------------------ INIT ------------------ */
-    public function __construct() {
+    public function __construct($template = false) {
         
         $this->mail = new PHPMailer(true);
         $this->mail->isHTML(true);
@@ -38,6 +36,7 @@ class Mail {
 
         $this->from_name = Env::mail_from_name;
         $this->from_adress = Env::mail_from_adress;
+        if($template) $this->template = $template;
 
     }
 
@@ -49,60 +48,36 @@ class Mail {
         return $this;
     }
 
-    public function setLanguage($language){
-        $this->language = $language;
-        return $this;
-    }
-
     public function setTemplate($templateClass){
         $this->template = $templateClass;
-        return $this;
-    }
-
-    public function setContent($slot, $contents){
-        $where = $this->slot_options[$slot];
-        if($where === "s"){
-            $this->subjectContent = $contents;
-        } else if($where === "b"){
-            $this->bodyContent = $contents;
-        }
         return $this;
     }
 
     public function prepare() {
 
         $this->mail->setFrom($this->from_adress, $this->from_name);
-        $this->mail->setFrom($this->from_adress, $this->from_name);
-
+        
         for ($i=0; $i < count($this->receivers); $i++) {
             $this->mail->addAddress($this->receivers[$i][0], $this->receivers[$i][1]);
         }
-
         for ($i=0; $i < count($this->template->images); $i++) {
             $this->mail->AddEmbeddedImage($this->template->images[$i][1], $this->template->images[$i][0]);
         }
 
-        $this->mail->Subject = $this->template->subject[$this->language];
-        $this->mail->Body = Core::includeToVar($this->template->body[$this->language]);
+        $this->mail->Subject = $this->subject;
+        $this->mail->Body = $this->template->body;
 
-        $rSubjectSearch = [];
-        $rSubjectReplace = [];
-        foreach ($this->template->slots["subject"] as $key => $value) {
-            array_push($rSubjectSearch, $value);
-            array_push($rSubjectReplace, $this->subjectContent[$key]);
-        }
-
-        $rBodySearch = [];
-        $rBodyReplace = [];
-        foreach ($this->template->slots["body"] as $key => $value) {
-            array_push($rBodySearch, $value);
-            array_push($rBodyReplace, $this->bodyContent[$key]);
+        $bSearch = []; $bReplace = [];
+        foreach ($this->template->slots as $key => $value) {
+            array_push($bSearch, $value);
+            if(isset($this->body[$key])) array_push($bReplace, $this->body[$key]);
+            else if(isset($this->template->defaults[$key])) array_push($bReplace, $this->template->defaults[$key]);
+            else array_push($bReplace, "");
         }
         
-        $this->mail->Subject = str_replace($rSubjectSearch, $rSubjectReplace, $this->mail->Subject);
-        $this->mail->Body = str_replace($rBodySearch, $rBodyReplace, $this->mail->Body);
-
+        $this->mail->Body = str_replace($bSearch, $bReplace, $this->mail->Body);
         return $this;
+
     }
 
     public function getHTML() {
