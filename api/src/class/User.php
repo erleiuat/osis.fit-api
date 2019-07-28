@@ -7,14 +7,14 @@ class User {
 
     /* -------- TABLES (T) AND VIEWS (V) -------- */
     private $t_main = "user";
-    private $t_aim = "user_aim";
     private $t_detail = "user_detail";
+    private $t_aim = "user_aim";
     private $v_info = "v_user_info";
 
     /* ----------- PUBLIC BASIC PARAMS ---------- */
     public $id;
     public $mail;
-    public $type;
+    public $level;
 
     public $firstname;
     public $lastname;
@@ -29,11 +29,48 @@ class User {
     /* --------- PUBLIC EXTENDED PARAMS --------- */
 
     /* ------------------ INIT ------------------ */
-    public function __construct($db) { 
+    public function __construct($db, $userid = false) { 
         $this->db = $db;
+        if($userid){
+            $this->id = $userid;
+            $this->read();
+        }
     }
 
     /* ----------------- METHODS ---------------- */
+
+    public function create() {
+
+        $stmt = $this->db->prepare("
+            INSERT INTO ".$this->t_main." 
+            (`mail`, `level`) VALUES
+            (:mail, :level);
+        ");
+        $this->db->bind($stmt, 
+            ['mail', 'level'], 
+            [$this->mail, $this->level]
+        )->execute($stmt);
+        $this->id = $this->db->conn->lastInsertId();
+
+        $stmt = $this->db->prepare("
+            INSERT INTO ".$this->t_detail." 
+            (`user_id`, `firstname`, `lastname`) VALUES 
+            (:user_id, :firstname, :lastname);
+        ");
+        $this->db->bind($stmt, 
+            ['user_id', 'firstname', 'lastname'], 
+            [$this->id, $this->firstname, $this->lastname]
+        )->execute($stmt);
+
+        $stmt = $this->db->prepare("
+            INSERT INTO ".$this->t_aim." 
+            (`user_id`) VALUES (:user_id);
+        ");
+        $this->db->bind($stmt, 
+            ['user_id'], [$this->id]
+        )->execute($stmt);
+
+    }
 
     public function read() {
         
@@ -41,16 +78,27 @@ class User {
             SELECT * FROM ".$this->v_info." 
             WHERE id = :id
         ");
-        $this->db->bind($stmt, ['id'], [$this->id]);
-        $this->db->execute($stmt);
+        $this->db->bind($stmt, ['id'], [$this->id])->execute($stmt);
 
         if ($stmt->rowCount() !== 1) throw new Exception('entry_not_found', 404);
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $this->formObject($row);
+        $this->mail = ($this->mail ? $this->mail : $row['mail']);
+        $this->level = $row['level'];
+
+        $this->firstname = $row['firstname'];
+        $this->lastname = $row['lastname'];
+        $this->birth = $row['birth'];
+        $this->height = $row['height'];
+        $this->gender = $row['gender'];
+
+        $this->aim_weight = $row['aim_weight'];
+        $this->aim_bmi = $row['aim_bmi'];
+        $this->aim_date = $row['aim_date'];
+
+        return $this;
 
     }
-
 
     public function editAims() {
 

@@ -8,8 +8,7 @@ Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
 include_once LOCATION.'src/class/Auth.php';
-$_Auth = new Auth($_DBC);
-
+$Auth = new Auth($_DBC);
 
 // ------------------ SCRIPT -----------------
 try {
@@ -19,15 +18,14 @@ try {
         'code' => ['string', true, ['min' => 10, 'max' => 10]]
     ]);
     
-    $_Auth->mail = $_LOG->identity = $data->mail;
-    if($_Auth->checkStatus()->state === "unverified"){
+    $Auth->user->mail = $_LOG->identity = $data->mail;
+    if($Auth->check()->status === "unverified"){
         
-        $_LOG->user_id = $_Auth->user_id;
-        $_Auth->verifyMail($data->code);
-        if ($_Auth->checkStatus()->state !== "verified") throw new ApiException(500, "account_verification_failed");
+        $Auth->verifyMail($data->code);
+        if ($Auth->check()->status !== "verified") throw new ApiException(500, "account_verification_failed");
 
-    } else if ($_Auth->state === "locked") throw new ApiException(403, "account_locked");
-    else if ($_Auth->state === "verified") throw new ApiException(403, "account_already_verified");
+    } else if ($Auth->status === "locked") throw new ApiException(403, "account_locked");
+    else if ($Auth->status === "verified") throw new ApiException(403, "account_already_verified");
     else throw new ApiException(401, "account_not_found");
 
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }

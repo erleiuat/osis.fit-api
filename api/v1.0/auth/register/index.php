@@ -7,8 +7,9 @@ include_once LOCATION.'src/Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
+include_once LOCATION.'src/class/User.php';
 include_once LOCATION.'src/class/Auth.php';
-$_Auth = new Auth($_DBC);
+$Auth = new Auth($_DBC, new User($_DBC));
 
 // ------------------ SCRIPT -----------------
 try {
@@ -21,33 +22,36 @@ try {
         'language' => ['string', false, ['max' => 5]]
     ]);
     
-    $_Auth->mail = $_LOG->identity = $data->mail;
-    $_Auth->firstname = $data->firstname;
-    $_Auth->lastname = $data->lastname;
+    $Auth->user->mail = $_LOG->identity = $data->mail;
+    $Auth->user->firstname = $data->firstname;
+    $Auth->user->lastname = $data->lastname;
+    $Auth->user->level = "user";
     
-    if($_Auth->checkStatus()->state) throw new ApiException(403, "mail_in_use", ["entity"=>"mail"]);
+    if($Auth->check()->status) throw new ApiException(403, "mail_in_use", ["entity"=>"mail"]);
 
-    $_Auth->verify_code = Core::randomString(10); 
-    $_Auth->password = $data->password;
+    $Auth->user->create();
+    $_LOG->addInfo("User created");
 
-    $_Auth->register();
+    $Auth->verify_code = Core::randomString(10); 
+    $Auth->password = $data->password;
+    $Auth->register();
     $_LOG->addInfo("User registered");
 
     include_once LOCATION.'src/Mail.php';
-    $_Mailer = new Mailer(new defaultMail());
-    $_Mailer->addReceiver($_Auth->mail, $_Auth->firstname, $_Auth->lastname);
+    $Mailer = new Mailer(new defaultMail());
+    $Mailer->addReceiver($Auth->user->mail, $Auth->user->firstname, $Auth->user->lastname);
 
     if ($data->language === "de") include_once 'mail/content_de.php';
     else include_once 'mail/content_en.php';
-    $_Mailer->prepare();
+    $Mailer->prepare();
         
     if (Env::api_env === "prod") {
-        $_Mailer->send();
+        $Mailer->send();
         $_LOG->addInfo('Verification-Mail sent');
     } else {
-        //echo $_Mailer->getHTML(); die();
-        $_REP->addData($_Auth->verify_code, "code");
-        $_REP->addData($_Mailer->getHTML(), "html");
+        //echo $Mailer->getHTML(); die();
+        $_REP->addData($Auth->verify_code, "code");
+        $_REP->addData($Mailer->getHTML(), "html");
     }
 
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }

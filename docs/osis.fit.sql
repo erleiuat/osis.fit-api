@@ -9,12 +9,44 @@ CREATE TABLE `user` (
     id                  INT NOT NULL AUTO_INCREMENT,
     mail                VARCHAR(89) NOT NULL,
     level               ENUM('user', 'moderator', 'admin') NOT NULL DEFAULT 'user',
-    password            VARCHAR(255) NOT NULL,
 
-    UNIQUE INDEX uniqueMail (mail),
+    UNIQUE INDEX unique_mail (mail),
     PRIMARY KEY (id)
 );
 
+CREATE TABLE `auth` (
+    id                  INT NOT NULL AUTO_INCREMENT,
+    user_id             INT NOT NULL,
+
+    status              ENUM('unverified', 'verified', 'locked', 'deleted') NOT NULL DEFAULT 'unverified',
+    password            VARCHAR(255) NOT NULL,
+    auth_stamp          TIMESTAMP,
+    auth_total          INT DEFAULT 0,
+
+    password_stamp      TIMESTAMP,
+    verify_stamp        TIMESTAMP,
+    password_code_stamp VARCHAR(255),
+
+    password_code       VARCHAR(255),
+    verify_code         VARCHAR(255),
+
+    PRIMARY KEY (id),
+    FOREIGN KEY (user_id) REFERENCES user(id)
+);
+
+CREATE TABLE `auth_refresh` (
+    auth_id             INT NOT NULL,
+
+    updated_total       INT DEFAULT 0,
+    updated_stamp       TIMESTAMP,
+
+    refresh_jti         VARCHAR(255) NOT NULL,
+    created_stamp       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    refresh_phrase      VARCHAR(255) NOT NULL,
+
+    PRIMARY KEY (auth_id, refresh_jti),
+    FOREIGN KEY (auth_id) REFERENCES auth(id)
+);
 
 CREATE TABLE `log` (
     id                  INT NOT NULL AUTO_INCREMENT,
@@ -31,44 +63,7 @@ CREATE TABLE `log` (
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
-
 -- ------------------------------------------------------------------------------------
-
-
-CREATE TABLE `user_status` (
-    user_id             INT NOT NULL,
-
-    state               ENUM('unverified', 'verified', 'locked', 'deleted') NOT NULL DEFAULT 'unverified',
-    deleted             ENUM('true', 'false') NOT NULL DEFAULT 'false',
-    auth_total          INT DEFAULT 0,
-    auth_stamp          TIMESTAMP,
-
-    pw_stamp            TIMESTAMP,
-    verify_stamp        TIMESTAMP,
-    pw_code_stamp       VARCHAR(255),
-
-    pw_code             VARCHAR(255),
-    verify_code         VARCHAR(255),
-
-    PRIMARY KEY (user_id),
-    FOREIGN KEY (user_id) REFERENCES user(id)
-);
-
-
-CREATE TABLE `user_refresh_jti` (
-    user_id             INT NOT NULL,
-
-    updated_total       INT DEFAULT 0,
-    updated_stamp       TIMESTAMP,
-
-    refresh_jti         VARCHAR(255) NOT NULL,
-    created_stamp       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    refresh_phrase      VARCHAR(255) NOT NULL,
-
-    PRIMARY KEY (user_id, refresh_jti),
-    FOREIGN KEY (user_id) REFERENCES user(id)
-);
-
 
 CREATE TABLE `user_detail` (
     user_id             INT NOT NULL,
@@ -172,33 +167,19 @@ CREATE TABLE `user_log_activity` (
 
 -- ------------------------------------------------------------------------------------
 
-CREATE VIEW `v_user_state` AS
+CREATE VIEW `v_auth` AS
 
     SELECT
 
+        au.id AS 'id',
+        au.status AS 'status',
+        au.password_stamp AS 'password_stamp',
         us.id AS 'user_id',
-        us.mail AS 'mail',
-        st.state AS 'state',
-        de.firstname AS 'firstname',
-        de.lastname AS 'lastname'
+        us.mail AS 'user_mail',
+        us.level AS 'user_level'
 
     FROM user AS us
-    LEFT JOIN user_status AS st ON st.user_id = us.id 
-    LEFT JOIN user_detail AS de ON de.user_id = us.id;
-
-CREATE VIEW `v_user_token` AS
-
-    SELECT
-
-        us.id AS 'user_id',
-        us.mail AS 'mail',
-        us.level AS 'level',
-        st.state AS 'state',
-        st.pw_stamp AS 'pw_stamp',
-        st.deleted AS 'deleted'
-
-    FROM user AS us
-    LEFT JOIN user_status AS st ON st.user_id = us.id;
+    LEFT JOIN auth AS au ON au.user_id = us.id;
 
 
 CREATE VIEW `v_user_info` AS
@@ -206,6 +187,8 @@ CREATE VIEW `v_user_info` AS
     SELECT
 
         us.id AS 'id',
+        us.mail AS 'mail',
+        us.level AS 'level',
         de.firstname AS 'firstname',
         de.lastname AS 'lastname',
         de.birth AS 'birth',

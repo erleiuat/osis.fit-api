@@ -27,12 +27,12 @@ class Sec {
         
     }
 
-    public static function getAuth($auth) {
+    public static function getAuth($Auth) {
 
         try {
 
             $now = time();
-            $phrase = Env::sec_phrase.$auth->mail;
+            $phrase = Env::sec_phrase.$Auth->user->mail;
             $phrase_hash = password_hash($phrase, PASSWORD_BCRYPT);
             $half = (int) ( (strlen($phrase) / 2) );
 
@@ -54,9 +54,9 @@ class Sec {
                 "data" => [
                     "phrase" => substr($phrase_hash, $half),
                     "user" => [
-                        "id" => (int) (isset($auth->id) ? $auth->id : $auth->user_id),
-                        "mail" => $auth->mail,
-                        "level" => $auth->level
+                        "id" => (int) $Auth->user->id,
+                        "mail" => $Auth->user->mail,
+                        "level" => $Auth->user->level
                     ]
                 ]
             ];
@@ -66,12 +66,11 @@ class Sec {
                 "iat" => $now,
                 "exp" => $now + Env::rtkn_lifetime,
                 "nbf" => $now,
-                "jti" => $auth->refresh_jti,
+                "jti" => $Auth->refresh_jti,
                 "data" => [
-                    "mail" => $auth->mail,
-                    "phrase" => $auth->refresh_phrase,
-                    "pw_stamp" => $auth->pw_stamp,
-                    "stamp" => $now
+                    "mail" => $Auth->user->mail,
+                    "phrase" => $Auth->refresh_phrase,
+                    "password_stamp" => $Auth->password_stamp
                 ]
             ];
 

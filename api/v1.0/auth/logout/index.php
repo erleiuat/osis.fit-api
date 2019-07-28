@@ -9,7 +9,7 @@ Core::startAsync(); /* Start Async-Request */
 // --------------- DEPENDENCIES --------------
 include_once LOCATION.'src/Security.php'; /* Load Security-Methods */
 include_once LOCATION.'src/class/Auth.php';
-$_Auth = new Auth($_DBC);
+$Auth = new Auth($_DBC);
 
 
 // ------------------ SCRIPT -----------------
@@ -19,13 +19,15 @@ try {
         'token' => ['string', true, ['min' => 1]]
     ])->token, Env::rtkn_secret);
     
-    $_Auth->refresh_jti = $token->jti;
-    $_Auth->mail = $_LOG->identity = $token->data->mail;
-    if($_Auth->checkStatus()->state === "verified"){
-        $_Auth->removeRefresh();
+    $Auth->refresh_jti = $token->jti;
+    $Auth->user->mail = $_LOG->identity = $token->data->mail;
+    if($Auth->check()->status === "verified"){
+
+        $Auth->removeRefresh();
         Sec::removeAuth();
-    } else if ($_Auth->state === "locked") throw new ApiException(403, "account_locked");
-    else if ($_Auth->state === "unverified") throw new ApiException(403, "account_not_verified");
+        
+    } else if ($Auth->status === "locked") throw new ApiException(403, "account_locked");
+    else if ($Auth->status === "unverified") throw new ApiException(403, "account_not_verified");
     else throw new ApiException(401, "account_not_found");
 
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }

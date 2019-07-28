@@ -1,8 +1,8 @@
 <?php
 
-$_Mailer->subject = "Dein neues Osis.fit Passwort";
+$Mailer->subject = "Dein neues Osis.fit Passwort";
 
-$_Mailer->body = [
+$Mailer->body = [
     "content.inner2" => '
         <br/>
         <table bgcolor="{{button.bgcolor}}" border="0" cellspacing="0" cellpadding="0">
@@ -13,13 +13,13 @@ $_Mailer->body = [
             </td></tr>
         </table><br/><br/>
         Oder nutze diesen Link: <br/>
-        <a href="https://app.osis.fit/auth/pwreset?mail='.$_Auth->mail.'&code='.$_Auth->pw_code.'">
-            app.osis.fit/auth/pwreset?mail='.$_Auth->mail.'&code='.$_Auth->pw_code.'
+        <a href="https://app.osis.fit/auth/pwreset?mail='.$User->mail.'&code='.$Auth->password_code.'">
+            app.osis.fit/auth/pwreset?mail='.$User->mail.'&code='.$Auth->password_code.'
         </a>
     ',
     "header.heading" => "Passwort vergessen? ",
     "header.subheading" => "Hier kannst du es zurücksetzen",
-    "content.heading" => "Hallo ".$_Auth->firstname."!",
+    "content.heading" => "Hallo ".$User->firstname."!",
     "content.inner" => "
         Wir haben gerade eine Anfrage zum Zurücksetzen deines Passworts bekommen. <br/>
         Ist dir dein Passwort wieder eingefallen? Dann kannst du diese Nachricht ignorieren 
@@ -27,7 +27,7 @@ $_Mailer->body = [
         <a href='https://app.osis.fit/help/contact'>lass es uns wissen</a>. <br/><br/>
     ",
     "button.inner" => "Passwort ändern &rarr;",
-    "button.href" => "https://app.osis.fit/auth/pwreset?mail=".$_Auth->mail."&code=".$_Auth->pw_code
+    "button.href" => "https://app.osis.fit/auth/pwreset?mail=".$User->mail."&code=".$Auth->password_code
 ];
 
-$_Mailer->body["footer.inner"] = Env::mail_page_name." - ".Env::mail_slogan_de." <br/> <i>".Env::mail_creator_de."</i>";
+$Mailer->body["footer.inner"] = Env::mail_page_name." - ".Env::mail_slogan_de." <br/> <i>".Env::mail_creator_de."</i>";

@@ -1,8 +1,8 @@
 <?php
 
-$_Mailer->subject = "Your new Osis.fit password";
+$Mailer->subject = "Your new Osis.fit password";
 
-$_Mailer->body = [
+$Mailer->body = [
     "content.inner2" => '
         <br/>
         <table bgcolor="{{button.bgcolor}}" border="0" cellspacing="0" cellpadding="0">
@@ -13,13 +13,13 @@ $_Mailer->body = [
             </td></tr>
         </table><br/><br/>
         Or use this link: <br/>
-        <a href="https://app.osis.fit/auth/pwreset?mail='.$_Auth->mail.'&code='.$_Auth->pw_code.'">
-            app.osis.fit/auth/pwreset?mail='.$_Auth->mail.'&code='.$_Auth->pw_code.'
+        <a href="https://app.osis.fit/auth/pwreset?mail='.$Auth->mail.'&code='.$Auth->pw_code.'">
+            app.osis.fit/auth/pwreset?mail='.$Auth->mail.'&code='.$Auth->pw_code.'
         </a>
     ',
     "header.heading" => "Forgot something?",
     "header.subheading" => "Reset your password here",
-    "content.heading" => "Hello ".$_Auth->firstname."!",
+    "content.heading" => "Hello ".$Auth->firstname."!",
     "content.inner" => "
         We just received a request to reset your password.
         Have you remembered your password in the meantime? Then you can ignore this message 
@@ -27,5 +27,5 @@ $_Mailer->body = [
         <a href='https://app.osis.fit/help/contact'>let us know</a>. <br/><br/>
     ",
     "button.inner" => "Change password &rarr;",
-    "button.href" => "https://app.osis.fit/auth/pwreset?mail=".$_Auth->mail."&code=".$_Auth->pw_code
+    "button.href" => "https://app.osis.fit/auth/pwreset?mail=".$Auth->mail."&code=".$Auth->pw_code
 ];

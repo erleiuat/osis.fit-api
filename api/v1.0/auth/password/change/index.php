@@ -9,26 +9,26 @@ Core::startAsync(); /* Start Async-Request */
 // --------------- DEPENDENCIES --------------
 include_once LOCATION.'src/Security.php'; /* Load Security-Methods */
 include_once LOCATION.'src/class/Auth.php';
-$_Auth = new Auth($_DBC);
+$Auth = new Auth($_DBC);
 
 
 // ------------------ SCRIPT -----------------
 try {
 
-    $auth = Sec::auth();
+    $sec = Sec::auth();
     $data = Core::getBody([
         'current' => ['string', true],
         'new' => ['password', true]
     ]);
     
-    $_Auth->user_id = $_LOG->user_id = $auth->id;
-    if($_Auth->checkStatus()->state === "verified"){
+    $Auth->user->id = $_LOG->user_id = $sec->id;
+    if($Auth->check()->status === "verified"){
         
-        if (!$_Auth->passwordLogin($data->current)) throw new ApiException(403, "password_wrong");
-        $_Auth->passwordChange($data->new);
+        if (!$Auth->passwordLogin($data->current)) throw new ApiException(403, "password_wrong");
+        $Auth->passwordChange($data->new);
 
-    } else if ($_Auth->state === "locked") throw new ApiException(403, "account_locked");
-    else if ($_Auth->state === "unverified") throw new ApiException(403, "account_not_verified");
+    } else if ($Auth->status === "locked") throw new ApiException(403, "account_locked");
+    else if ($Auth->status === "unverified") throw new ApiException(403, "account_not_verified");
     else throw new ApiException(401, "account_not_found");
 
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
