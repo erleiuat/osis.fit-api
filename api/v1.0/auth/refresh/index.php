@@ -15,17 +15,19 @@ $_Auth = new Auth($_DBC);
 // ------------------ SCRIPT -----------------
 try {
 
-    $token = Sec::decode(Core::getBody(['token', 'string', true, ['min' => 1]])->token, Env::rtkn_secret);
+    $token = Sec::decode(Core::getBody([
+        'token' => ['string', true, ['min' => 1]]
+    ])->token, Env::rtkn_secret);
     
     $_Auth->refresh_jti = $token->jti;
     $_Auth->mail = $_LOG->identity = $token->data->mail;
     if($_Auth->checkStatus()->state === "verified"){
 
-        if (!$_Auth->verifyRefresh($token->data->phrase)) throw new ApiException(403, "token_invalid");
+        if (!$_Auth->readToken()->verifyRefresh($token->data->phrase, $token->data->pw_stamp)) throw new ApiException(403, "token_invalid");
         
         $_Auth->refresh_jti = Core::randomString(20);
         $_Auth->refresh_phrase = Core::randomString(20);
-        $_Auth->readToken()->setRefreshAuth($token->jti);
+        $_Auth->setRefreshAuth($token->jti);
 
         $authData = Sec::getAuth($_Auth);
         $_REP->addData($authData->access, "access");

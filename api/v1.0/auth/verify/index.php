@@ -14,10 +14,10 @@ $_Auth = new Auth($_DBC);
 // ------------------ SCRIPT -----------------
 try {
 
-    $data = Core::getBody(
-        ['mail', 'mail', true, ['min' => 1, 'max' => 90]],
-        ['code', 'string', true, ['min' => 10, 'max' => 10]]
-    );
+    $data = Core::getBody([
+        'mail' => ['mail', true, ['min' => 1, 'max' => 90]],
+        'code' => ['string', true, ['min' => 10, 'max' => 10]]
+    ]);
     
     $_Auth->mail = $_LOG->identity = $data->mail;
     if($_Auth->checkStatus()->state === "unverified"){

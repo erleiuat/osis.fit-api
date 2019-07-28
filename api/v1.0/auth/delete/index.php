@@ -14,10 +14,10 @@ $_Auth = new Auth($_DBC);
 // ------------------ SCRIPT -----------------
 try {
 
-    $data = Core::getBody(
-        ['mail', 'mail', true],
-        ['password', 'string', true]
-    );
+    $data = Core::getBody([
+        'mail' => ['mail', true],
+        'password' => ['string', true]
+    ]);
 
     $auth = Sec::auth();
     $_Auth->user_id = $_LOG->user_id = $auth->id;

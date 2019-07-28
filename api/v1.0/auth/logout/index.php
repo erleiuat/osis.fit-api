@@ -15,16 +15,15 @@ $_Auth = new Auth($_DBC);
 // ------------------ SCRIPT -----------------
 try {
 
-    $token = Sec::decode(Core::getBody(['token', 'string', true, ['min' => 1]])->token, Env::rtkn_secret);
+    $token = Sec::decode(Core::getBody([
+        'token' => ['string', true, ['min' => 1]]
+    ])->token, Env::rtkn_secret);
     
     $_Auth->refresh_jti = $token->jti;
     $_Auth->mail = $_LOG->identity = $token->data->mail;
     if($_Auth->checkStatus()->state === "verified"){
-
-        if (!$_Auth->verifyRefresh($token->data->phrase)) throw new ApiException(403, "phrase_wrong");
         $_Auth->removeRefresh();
         Sec::removeAuth();
-
     } else if ($_Auth->state === "locked") throw new ApiException(403, "account_locked");
     else if ($_Auth->state === "unverified") throw new ApiException(403, "account_not_verified");
     else throw new ApiException(401, "account_not_found");

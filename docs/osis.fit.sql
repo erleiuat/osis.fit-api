@@ -18,14 +18,14 @@ CREATE TABLE `user` (
 
 CREATE TABLE `log` (
     id                  INT NOT NULL AUTO_INCREMENT,
-    user_id             INT,
-
     level               ENUM('trace','debug','info', 'warn', 'error', 'fatal') NOT NULL DEFAULT 'trace',
+
+    user_id             INT,
+    identity            VARCHAR(255),
     process             VARCHAR(50) NOT NULL,
     information         TEXT,
-    identity            VARCHAR(255),
-    trace               TEXT,
     stamp               TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    trace               TEXT,
 
     PRIMARY KEY (id),
     FOREIGN KEY (user_id) REFERENCES user(id)
@@ -43,7 +43,9 @@ CREATE TABLE `user_status` (
     auth_total          INT DEFAULT 0,
     auth_stamp          TIMESTAMP,
 
+    pw_stamp            TIMESTAMP,
     verify_stamp        TIMESTAMP,
+    pw_reset_code       VARCHAR(255),
     verify_code         VARCHAR(255),
 
     PRIMARY KEY (user_id),
@@ -175,6 +177,20 @@ CREATE VIEW `v_user_state` AS
         us.id AS 'user_id',
         us.mail AS 'mail',
         st.state AS 'state'
+
+    FROM user AS us
+    LEFT JOIN user_status AS st ON st.user_id = us.id;
+
+CREATE VIEW `v_user_token` AS
+
+    SELECT
+
+        us.id AS 'user_id',
+        us.mail AS 'mail',
+        us.level AS 'level',
+        st.state AS 'state',
+        st.pw_stamp AS 'pw_stamp',
+        st.deleted AS 'deleted'
 
     FROM user AS us
     LEFT JOIN user_status AS st ON st.user_id = us.id;

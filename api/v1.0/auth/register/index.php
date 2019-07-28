@@ -13,13 +13,13 @@ $_Auth = new Auth($_DBC);
 // ------------------ SCRIPT -----------------
 try {
 
-    $data = Core::getBody(
-        ['firstname', 'string', true, ['min' => 1, 'max' => 150]],
-        ['lastname', 'string', true, ['min' => 1, 'max' => 150]],
-        ['mail', 'mail', true, ['min' => 1, 'max' => 90]],
-        ['password', 'password', true, ['min' => 8, 'max' => 255]],
-        ['language', 'string', false, ['max' => 5]]
-    );
+    $data = Core::getBody([
+        'firstname' => ['string', true, ['min' => 1, 'max' => 150]],
+        'lastname' => ['string', true, ['min' => 1, 'max' => 150]],
+        'mail' => ['mail', true, ['min' => 1, 'max' => 90]],
+        'password' => ['password', true, ['min' => 8, 'max' => 255]],
+        'language' => ['string', false, ['max' => 5]]
+    ]);
     
     $_Auth->mail = $_LOG->identity = $data->mail;
     $_Auth->firstname = $data->firstname;

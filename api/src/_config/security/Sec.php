@@ -70,6 +70,7 @@ class Sec {
                 "data" => [
                     "mail" => $auth->mail,
                     "phrase" => $auth->refresh_phrase,
+                    "pw_stamp" => $auth->pw_stamp,
                     "stamp" => $now
                 ]
             ];

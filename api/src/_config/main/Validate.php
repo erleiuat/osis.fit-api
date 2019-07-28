@@ -2,12 +2,13 @@
 
 class Validate {
 
-    public static function string($val, $min = false, $max = false, $encode_entities = true) {
-
+    public static function string($val, $options) {
+        $c = array_merge(["min"=>false, "max"=>false, "encode_entities"=>false], $options);
         $val = trim($val);
-        if ($min && strlen($val) < $min) throw new Exception("lenght_min:".$min, 422);
-        if ($max && strlen($val) > $max) throw new Exception("lenght_max:".$max, 422);
-        if ($encode_entities) return filter_var($val, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
+
+        if ($c['min'] && strlen($val) < $c['min']) throw new Exception("lenght_min:".$c['min'], 422);
+        if ($c['max'] && strlen($val) > $c['max']) throw new Exception("lenght_max:".$c['max'], 422);
+        if ($c['encode_entities']) return filter_var($val, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES);
         return $val;
         
     }
@@ -30,31 +31,35 @@ class Validate {
         
     }
     
-    public static function bool($val){
-        $val = trim($val);
-        return (boolval($val) ? true : false);
+    public static function bool($val, $options = []){
+        $c = array_merge(["null"=>true], $options);
+
+        if($val === "false" || $val === false || $val === 0) return false;
+        else if($val === "true" || $val === true || $val === 1) return true;
+        else if($c["null"] === false) throw new Exception("not_null", 422);
+        else return null;
     }
 
-    public static function mail($val, $min = false, $max = 90) {
-    
-        $val = trim($val);
-        $val = htmlspecialchars($val);
+    public static function mail($val, $options = []) {
+        $c = array_merge(["min"=>false,"max"=>90], $options);
+        
+        $val = htmlspecialchars(trim($val));
         $val = filter_var($val, FILTER_SANITIZE_EMAIL);
 
-        if ($min && strlen($val) < $min) throw new Exception("lenght_min:".$min, 422);
-        if ($max && strlen($val) > $max) throw new Exception("lenght_max:".$max, 422);
+        if ($c['min'] && strlen($val) < $c['min']) throw new Exception("lenght_min:".$c['min'], 422);
+        if ($c['max'] && strlen($val) > $c['max']) throw new Exception("lenght_max:".$c['max'], 422);
         if (!filter_var($val, FILTER_VALIDATE_EMAIL)) throw new Exception("wrong_format:(xyz@abc.domain)", 422);
 
         return $val;
             
     }
 
-    public static function password($val, $min = 8, $max = 255) {
+    public static function password($val, $options = []) {
+        $c = array_merge(["min"=>8,"max"=>255], $options);
     
         $val = trim($val);
-
-        if ($min && strlen($val) < $min) throw new Exception("lenght_min:".$min, 422);
-        if ($max && strlen($val) > $max) throw new Exception("lenght_max:".$max, 422);
+        if ($c['min'] && strlen($val) < $c['min']) throw new Exception("lenght_min:".$c['min'], 422);
+        if ($c['max'] && strlen($val) > $c['max']) throw new Exception("lenght_max:".$c['max'], 422);
         
         if (!preg_match("#[0-9]+#",$val)) throw new Exception("number_required", 422);
         if (!preg_match("#[A-Z]+#",$val)) throw new Exception("capital_required", 422);

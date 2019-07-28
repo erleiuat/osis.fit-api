@@ -43,63 +43,50 @@ class Core {
     }
 
 
-    public static function getBody(...$structure){
+    public static function getBody($pattern){
         $data = json_decode(file_get_contents("php://input"));
-        return Core::processGet($structure, $data, 'raw');
+        if(json_last_error() !== 0) throw new ApiException(400, "invalid_json");
+        return Core::processGet($pattern, $data, 'raw');
     }
 
-    public static function getFile(...$structure){
+    public static function getFile($pattern){
         $data = (object) $_FILES;
-        return Core::processGet($structure, $data, 'form-data');
+        return Core::processGet($pattern, $data, 'form-data');
     }
 
-    public static function getPost(...$structure){
+    public static function getPost($pattern){
         $data = (object) $_POST;
-        return Core::processGet($structure, $data, 'x-www-form-urlencoded');
+        return Core::processGet($pattern, $data, 'x-www-form-urlencoded');
     }
 
-    public static function processGet($dataStructure, $receivedData, $type = null){
-        
-        $data = new stdClass();
-        foreach ($dataStructure as $structure) {
-            
-            $key = $structure[0];
-            $data->$key = NULL;
+    public static function processGet($pattern, $received, $type = null, $level = []){
 
-            if ($structure[2] && !isset($receivedData->$key)) throw new ApiException(400, "missing_entity", [
-                "type"=> $type,
-                "entity" => $key,
-                "syntax" => Core::formatStructure($dataStructure)
-            ]);
-            
-            try {
-                if (isset($structure[3]) && isset($receivedData->$key)) {
-                    $data->$key = Core::validateVar($receivedData->$key, $structure[1], $structure[3]);
-                } else if (isset($receivedData->$key)){
-                    $data->$key = Core::validateVar($receivedData->$key, $structure[1], false);
-                }
-            } catch(Exception $e){
-                throw new ApiException($e->getCode(), "entity_invalid", [
-                    "type"=> $type,
-                    "entity"=>$key,
-                    "error"=>$e->getMessage(),
-                    "syntax" => Core::formatStructure([$structure])
-                ]);
-            }
-
-            if ($structure[2] && $structure[1] !== "bool" && $structure[1] !== "array" && strlen($data->$key) < 1) {
-                throw new ApiException(422, "entity_processing_failed", ["entity"=>$key]);
-            }
-            
+        $lstr = "";
+        $pl = $pattern; 
+        foreach ($level as $down) {
+            $lstr .= (strlen($lstr)>0 ? ".":"") . $down;
+            $pl = $pl[$down];
         }
 
-        $numReceived = (count((array)$receivedData));
-        $numRequired = (count($dataStructure));
-        if($numReceived > $numRequired) throw new ApiException(400, "too_many_entities", [
-            "received" => $numReceived,
-            "required" => $numRequired,
-            "syntax" => Core::formatStructure($dataStructure)
-        ]);
+        $numReq = (count($pl));
+        $numRec = (count((array)$received));
+        if($numRec > $numReq) throw new ApiException(400, "too_many_entities", ["entity" => $lstr, "received" => $numRec, "required" => $numReq, "syntax" => Core::formatPattern($pattern)]);
+        else if (strlen($lstr)>0) $lstr .= ".";
+
+        $data = new stdClass();
+        foreach ($pl as $key => $unit) {
+
+            if (!array_key_exists($key, $received)) throw new ApiException(400, "missing_entity", ["entity" => $lstr.$key, "syntax" => Core::formatPattern($pattern), "requestType"=> $type]);
+            else if(gettype(array_values($unit)[0]) === "array") $data->$key = Core::processGet($pattern, $received->$key, $type, array_merge($level, [$key]));
+            else if(strlen(trim($received->$key)) <= 0 && $unit[0] !== "bool" && $unit[1]) throw new ApiException(400, "empty_value", ["entity" => $lstr.$key, "syntax" => Core::formatPattern($pattern), "requestType"=> $type]);
+            else if(strlen(trim($received->$key)) <= 0 && $unit[0] !== "bool" && !$unit[1]) $data->$key = NULL;
+            else if(strlen(trim($received->$key)) > 0 || $unit[0] === "bool") try {
+                $data->$key = Core::validateVar($received->$key, $unit[0], (isset($unit[2]) ? $unit[2] : []));
+            } catch(Exception $e) { 
+                throw new ApiException($e->getCode(), "value_invalid", ["entity" => $lstr.$key, "error"=>$e->getMessage(), "syntax" => Core::formatPattern($pattern), "requestType"=> $type]);
+            }
+            else throw new ApiException(500, "entity_processing_error", ["entity" => $lstr.$key]);
+        }
         
         return $data;
 
@@ -107,35 +94,34 @@ class Core {
 
     public static function validateVar($value, $type, $reqs){
 
-        $min = (isset($reqs["min"]) ? $reqs["min"] : NULL);
-        $max = (isset($reqs["max"]) ? $reqs["max"] : NULL);
-        $encode = (($type === "string" && isset($reqs["encode"])) ? true : NULL);
-
         switch ($type) {
             case "string":
-                return Validate::string($value, $min, $max, $encode);
+                return Validate::string($value, $reqs);
             case "number":
-                return Validate::number($value, $min, $max);
+                return Validate::number($value, $reqs);
             case "bool":
-                return Validate::bool($value);
+                return Validate::bool($value, $reqs);
             case "mail":
-                return Validate::mail($value, $min, $max);
+                return Validate::mail($value, $reqs);
             case "password":
-                return Validate::password($value, $min, $max);
+                return Validate::password($value, $reqs);
             case "date":
-                return Validate::date($value);
+                return Validate::date($value, $reqs);
             case "time":
-                return Validate::time($value);
+                return Validate::time($value, $reqs);
             default:
                 return $value;
         }
 
     }
 
-    public static function formatStructure($structure){
+    public static function formatPattern($pattern){
         $all = [];
-        foreach ($structure as $item) {
-            array_push($all, (["name"=>$item[0], "type"=>$item[1], "required"=>$item[2]]) );
+        foreach ($pattern as $key => $unit) {
+            if(gettype(array_values($unit)[0]) === "array"){
+                $val = ["name"=>$key, "syntax"=> Core::formatPattern($unit)];
+            } else $val = ["name"=>$key, "type"=>$unit[0], "required"=>$unit[1]];
+            array_push($all, $val);
         }
         return $all;
     }
