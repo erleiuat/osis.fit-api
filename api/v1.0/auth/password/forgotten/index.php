@@ -7,7 +7,7 @@ include_once LOCATION.'src/Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
-include_once LOCATION.'src/_objects/Auth.php';
+include_once LOCATION.'src/class/Auth.php';
 $_Auth = new Auth($_DBC);
 
 

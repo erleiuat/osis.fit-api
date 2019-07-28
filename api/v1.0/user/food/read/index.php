@@ -8,7 +8,7 @@ Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
 include_once LOCATION.'src/Security.php'; /* Load Security-Methods */
-include_once LOCATION.'src/_objects/Food.php';
+include_once LOCATION.'src/class/Food.php';
 $_Food = new Food($_DBC);
 
 

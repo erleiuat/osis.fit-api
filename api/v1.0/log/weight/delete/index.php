@@ -8,7 +8,7 @@ Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
 include_once LOCATION.'src/Security.php'; /* Load Security-Methods */
-include_once LOCATION.'src/_objects/logs/WeightLog.php';
+include_once LOCATION.'src/class/log/WeightLog.php';
 $_wLog = new WeightLog($_DBC);
 
 

@@ -18,7 +18,7 @@ $_Mailer->body = [
         </a>
     ',
     "header.heading" => "Forgot something?",
-    "header.subheading" => "Reset it here",
+    "header.subheading" => "Reset your password here",
     "content.heading" => "Hello ".$_Auth->firstname."!",
     "content.inner" => "
         We just received a request to reset your password.

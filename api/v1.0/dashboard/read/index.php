@@ -9,13 +9,13 @@ Core::startAsync(); /* Start Async-Request */
 // --------------- DEPENDENCIES --------------
 include_once LOCATION.'src/Security.php'; /* Load Security-Methods */
 
-include_once LOCATION.'src/_objects/User.php';
+include_once LOCATION.'src/class/User.php';
 $_user = new User($_DBC);
-include_once LOCATION.'src/_objects/logs/WeightLog.php';
+include_once LOCATION.'src/class/log/WeightLog.php';
 $_wLog = new WeightLog($_DBC);
-include_once LOCATION.'src/_objects/logs/ActivityLog.php';
+include_once LOCATION.'src/class/log/ActivityLog.php';
 $_aLog = new ActivityLog($_DBC);
-include_once LOCATION.'src/_objects/logs/CalorieLog.php';
+include_once LOCATION.'src/class/log/CalorieLog.php';
 $_cLog = new CalorieLog($_DBC);
 
 

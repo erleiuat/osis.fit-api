@@ -8,7 +8,7 @@ Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
 include_once LOCATION.'src/Security.php'; /* Load Security-Methods */
-include_once LOCATION.'src/_objects/logs/ActivityLog.php';
+include_once LOCATION.'src/class/log/ActivityLog.php';
 $_aLog = new ActivityLog($_DBC);
 
 

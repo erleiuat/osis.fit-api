@@ -8,7 +8,7 @@ Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
 include_once LOCATION.'src/Security.php'; /* Load Security-Methods */
-include_once LOCATION.'src/_objects/User.php';
+include_once LOCATION.'src/class/User.php';
 $_user = new User($_DBC);
 
 

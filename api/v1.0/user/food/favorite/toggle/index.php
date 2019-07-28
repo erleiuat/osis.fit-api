@@ -8,7 +8,7 @@ Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
 include_once LOCATION.'src/Security.php'; /* Load Security-Methods */
-include_once LOCATION.'src/_objects/FoodFavorite.php';
+include_once LOCATION.'src/class/FoodFavorite.php';
 $_fFav = new FoodFavorite($_DBC);
 
 

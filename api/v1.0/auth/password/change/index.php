@@ -8,7 +8,7 @@ Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
 include_once LOCATION.'src/Security.php'; /* Load Security-Methods */
-include_once LOCATION.'src/_objects/Auth.php';
+include_once LOCATION.'src/class/Auth.php';
 $_Auth = new Auth($_DBC);
 
 

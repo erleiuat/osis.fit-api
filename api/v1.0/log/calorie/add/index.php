@@ -8,7 +8,7 @@ Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
 include_once LOCATION.'src/Security.php'; /* Load Security-Methods */
-include_once LOCATION.'src/_objects/logs/CalorieLog.php';
+include_once LOCATION.'src/class/log/CalorieLog.php';
 $_cLog = new CalorieLog($_DBC);
 
 
