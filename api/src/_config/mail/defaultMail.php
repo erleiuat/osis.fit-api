@@ -19,6 +19,8 @@ class defaultMail {
         );
 
         $this->body = $template;
+        $this->defaults["footer.inner"] = Env::mail_page_name." - ".Env::mail_slogan." <br/> <i>".Env::mail_creator."</i>";
+        $this->defaults["header.image"] = Env::mail_logo_url;
 
     }
 
@@ -29,19 +31,19 @@ class defaultMail {
         "main.title" => "{{main.title}}",
         "main.bgcolor" => "{{main.bgcolor}}",
 
-        "header.heading1" => "{{header.heading1}}",
-        "header.heading2" => "{{header.heading2}}",
         "header.image" => "{{header.image}}",
         "header.bgcolor" => "{{header.bgcolor}}",
-        "header.heading1.color" => "{{header.heading1.color}}",
-        "header.heading2.color" => "{{header.heading2.color}}",
+        "header.heading" => "{{header.heading}}",
+        "header.heading.color" => "{{header.heading.color}}",
+        "header.subheading" => "{{header.subheading}}",
+        "header.subheading.color" => "{{header.subheading.color}}",
 
-        "content.heading" => "{{content.heading}}",
-        "content.inner" => "{{content.inner}}",
-        "content.inner2" => "{{content.inner2}}",
         "content.bgcolor" => "{{content.bgcolor}}",
+        "content.heading" => "{{content.heading}}",
         "content.heading.color" => "{{content.heading.color}}",
+        "content.inner" => "{{content.inner}}",
         "content.inner.color" => "{{content.inner.color}}",
+        "content.inner2" => "{{content.inner2}}",
         "content.inner2.color" => "{{content.inner2.color}}",
 
         "button.inner" => "{{button.inner}}",
@@ -57,10 +59,9 @@ class defaultMail {
     public $defaults = [
         "main.bgcolor" => "#ffffff",
 
-        "header.image" => "",
         "header.bgcolor" => "#444545",
-        "header.heading1.color" => "#FFFFFF",
-        "header.heading2.color" => "#2DC7FF",
+        "header.heading.color" => "#2DC7FF",
+        "header.subheading.color" => "#FFFFFF",
 
         "content.bgcolor" => "#FAFAFA",
         "content.heading.color" => "#202020",
@@ -70,9 +71,9 @@ class defaultMail {
         "button.bgcolor" => "#2DC7FF",
         "button.inner.color" => "#FFFFFF",
 
-        "footer.inner" => "Osis.fit | Make it easier <br/> Basel, Switzerland",
         "footer.bgcolor" => "#F5F5F5",
         "footer.inner.color" => "#494949"
+
     ];
 
     public $images = [];

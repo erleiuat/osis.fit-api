@@ -45,6 +45,7 @@ try {
         $_Mailer->send();
         $_LOG->addInfo('Verification-Mail sent');
     } else {
+        //echo $_Mailer->getHTML(); die();
         $_REP->addData($_Auth->verify_code, "code");
         $_REP->addData($_Mailer->getHTML(), "html");
     }

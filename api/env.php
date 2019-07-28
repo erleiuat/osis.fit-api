@@ -8,21 +8,31 @@ class Env {
     const api_name = "osis.fit";   
     const api_timezone = "Europe/Zurich";
     
+
     /* Mail */
     const mail_from_name = "Osis.fit";
     const mail_from_adress = "noreply@osis.fit";
+    const mail_logo_url = "";
+    const mail_page_name = "Osis.fit";
+    const mail_slogan = "Get fit faster!";
+    const mail_creator = "Developed with passion in Basel";
+    const mail_slogan_de = "Schneller fit werden!";
+    const mail_creator_de = "Mit Leidenschaft in Basel entwickelt";
     
+
     /* Security */
     const sec_cors = "http://localhost:8080";
     const sec_phrase = "89:js0@89111";
     const sec_error_reports = E_ALL;
     const sec_encryption = PASSWORD_BCRYPT;
 
+
     /* Database */
     const db_host = "localhost";                        
     const db_database = "osis.fit";                        
     const db_user = "root";                            
     const db_password = "";   
+
 
     /* Cookie */
     const coo_lifetime = (3*60*60); // 1 Hour
@@ -31,6 +41,7 @@ class Env {
     const coo_domain = "";
     const coo_path = "/";
 
+
     /* Access Token */
     const tkn_lifetime = (1*60*60); // 1 Hour
     const tkn_issuer = "osis.fit Application";
@@ -38,6 +49,7 @@ class Env {
     const tkn_secret_sec = "1@78jmKHpx[89jkHBJ781";
     const tkn_secret_app = "as89Jmncpo:@[]Mm7Hbeo";
 
+    
     /* Refresh Token */
     const rtkn_lifetime = (7*24*60*60); // 7 Days
     const rtkn_issuer = "osis.fit Application";

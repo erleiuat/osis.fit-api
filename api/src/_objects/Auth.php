@@ -22,19 +22,19 @@ class Auth {
     public $password;
     public $level = "user";
 
-    public $firstname;
-    public $lastname;
-    public $gender;
-    public $height;
-    public $birth;
-
     public $state;
     public $pw_stamp;
+    public $pw_code;
     public $verify_code;
 
     public $refresh_jti;
     public $refresh_phrase;
 
+    public $firstname; //TODO: Move to other Class
+    public $lastname;
+    public $gender;
+    public $height;
+    public $birth;
 
     /* ------------------ INIT ------------------ */
     public function __construct($db) { 
@@ -45,7 +45,8 @@ class Auth {
 
     public function register() {
 
-        // Insert into t_main
+        // Insert into t_main 
+        // TODO: Move to other Class
         $stmt = $this->db->prepare("
             INSERT INTO ".$this->t_main." 
             (`mail`, `password`, `level`) VALUES
@@ -59,7 +60,7 @@ class Auth {
         $this->user_id = $this->db->conn->lastInsertId();
 
 
-        // Insert into t_verification
+        // Insert into t_status
         $stmt = $this->db->prepare("
             INSERT INTO ".$this->t_status." 
             (`user_id`, `verify_code`, `pw_stamp`) VALUES 
@@ -115,6 +116,8 @@ class Auth {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             $this->user_id = $row['user_id'];
             $this->state = $row['state'];
+            $this->firstname = $row['firstname'];
+            $this->lastname = $row['lastname'];
         }
 
         return $this;
@@ -122,7 +125,6 @@ class Auth {
     }
 
     public function verifyRefresh($phrase, $pw_stamp){
-     
         if($pw_stamp !== $this->pw_stamp) return false;
 
         $stmt = $this->db->prepare("
@@ -216,6 +218,43 @@ class Auth {
 
     }
 
+    public function passwordForgotten($code = false) {
+
+        $stamp = date("Y-m-d H:i:s");
+        $pw_code = password_hash($this->pw_code, Env::sec_encryption);
+
+        if($code){
+            $stmt = $this->db->prepare("
+                SELECT * FROM ".$this->t_status." 
+                WHERE user_id = :user_id
+            ");
+            $this->db->bind($stmt, ['user_id'], [$this->user_id])->execute($stmt);
+            
+            if ($stmt->rowCount() === 1 && password_verify($code, ($stmt->fetch(PDO::FETCH_ASSOC))["pw_code"])) {
+                $pw_code = null;
+                $stamp = null;
+            } else {
+                $this->mail = null;
+                $this->user_id = null;
+                throw new Exception('code_validation_error', 403);
+            }
+        }
+
+        $stmt = $this->db->prepare("
+            UPDATE ".$this->t_status." SET 
+            `pw_code` = :pw_code, 
+            `pw_code_stamp` = :stamp 
+            WHERE `user_id` = :user_id
+        ");
+        $this->db->bind($stmt, 
+            ['user_id', 'stamp', 'pw_code'], 
+            [$this->user_id, $stamp, $pw_code]
+        )->execute($stmt);
+
+        return $this;
+
+    }
+
     public function passwordChange($pw) {
 
         $stmt = $this->db->prepare("
@@ -235,7 +274,6 @@ class Auth {
         ");
         $this->db->bind($stmt, ['user_id'], [$this->user_id])->execute($stmt);
 
-
     }
 
     public function verifyMail($code) {
@@ -244,15 +282,9 @@ class Auth {
             SELECT * FROM ".$this->t_status." 
             WHERE user_id = :user_id
         ");
-        $this->db->bind($stmt, 
-            ['user_id'], 
-            [$this->user_id]
-        );
+        $this->db->bind($stmt, ['user_id'], [$this->user_id])->execute($stmt);
 
-        $this->db->execute($stmt);
-        $code_hash = ($stmt->fetch(PDO::FETCH_ASSOC))["verify_code"];
-
-        if ($stmt->rowCount() === 1 && password_verify($code, $code_hash)) {
+        if ($stmt->rowCount() === 1 && password_verify($code, ($stmt->fetch(PDO::FETCH_ASSOC))["verify_code"])) {
         
             $stmt = $this->db->prepare("
                 UPDATE ".$this->t_status." SET 

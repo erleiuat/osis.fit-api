@@ -1,6 +1,7 @@
 <?php
 
-$_Mailer->subject = "Activate your Osis.fit Account!";
+$_Mailer->subject = "Confirm your account at Osis.fit!";
+
 $_Mailer->body = [
     "content.inner2" => '
         <br/>
@@ -11,17 +12,19 @@ $_Mailer->body = [
                 </a>
             </td></tr>
         </table><br/><br/>
-        Or use the following code on <a href="https://app.osis.fit/auth/verify">app.osis.fit/auth/verify</a>: <br/><br/>
+        Or use this code on 
+        <a href="https://app.osis.fit/auth/verify?mail='.$_Auth->mail.'">app.osis.fit/auth/verify</a>: 
+        <br/><br/>
         <strong>'.$_Auth->verify_code.'</strong>
     ',
-    "header.heading1" => "Welcome to Osis.fit!",
-    "header.heading2" => "Activate your Account",
+    "header.heading" => "Welcome to Osis.fit!",
+    "header.subheading" => "Verify your email address",
     "content.heading" => "Hello ". $_Auth->firstname."!",
     "content.inner" => "
-        We just received a registration with your E-Mail Address.
-        If this was you, please follow to instructions below to finalize your registration.
-        If not, you can just ignore this Mail. Click the link below to activate your Account or use the code 
+        We have just received a registration via your email address.
+        If this was you, please follow the instructions below to activate your account.
+        Otherwise, you can simply ignore this email.
     ",
-    "button.inner" => "ACTIVATE ACCOUNT &rarr;",
-    "button.href" => "https://app.osis.fit/auth/verify?mail=".$_Auth->mail."&code=".$_Auth->verify_code,
+    "button.inner" => "Confirm Account &rarr;",
+    "button.href" => "https://app.osis.fit/auth/verify?mail=".$_Auth->mail."&code=".$_Auth->verify_code
 ];

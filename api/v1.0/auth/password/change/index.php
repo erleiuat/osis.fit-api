@@ -17,20 +17,19 @@ try {
 
     $auth = Sec::auth();
     $data = Core::getBody([
-        'old' => ['string', true],
+        'current' => ['string', true],
         'new' => ['password', true]
     ]);
     
     $_Auth->user_id = $_LOG->user_id = $auth->id;
     if($_Auth->checkStatus()->state === "verified"){
         
-        if (!$_Auth->passwordLogin($data->old)) throw new ApiException(403, "password_wrong");
+        if (!$_Auth->passwordLogin($data->current)) throw new ApiException(403, "password_wrong");
         $_Auth->passwordChange($data->new);
 
     } else if ($_Auth->state === "locked") throw new ApiException(403, "account_locked");
     else if ($_Auth->state === "unverified") throw new ApiException(403, "account_not_verified");
     else throw new ApiException(401, "account_not_found");
-
 
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 

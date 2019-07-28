@@ -42,8 +42,8 @@ class Mailer {
 
     /* ----------------- METHODS ---------------- */
 
-    public function addReceiver($adress, $firstname, $lastname = false){
-        if($lastname) $firstname .= " ".$lastname; 
+    public function addReceiver($adress, $firstname = false, $lastname = false){
+        if($lastname) $firstname .= " ".$lastname;
         array_push($this->receivers, [$adress, $firstname]);
         return $this;
     }

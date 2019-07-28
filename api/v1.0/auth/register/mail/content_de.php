@@ -1,6 +1,7 @@
 <?php
 
-$_Mailer->subject = "Aktiviere dein Konto bei Osis.fit!";
+$_Mailer->subject = "Bestätige dein Konto bei Osis.fit!";
+
 $_Mailer->body = [
     "content.inner2" => '
         <br/>
@@ -11,17 +12,21 @@ $_Mailer->body = [
                 </a>
             </td></tr>
         </table><br/><br/>
-        Oder nutze diesen Code auf <a href="https://app.osis.fit/auth/verify">app.osis.fit/auth/verify</a>: <br/><br/>
+        Oder nutze diesen Code auf 
+        <a href="https://app.osis.fit/auth/verify?mail='.$_Auth->mail.'">app.osis.fit/auth/verify</a>: 
+        <br/><br/>
         <strong>'.$_Auth->verify_code.'</strong>
     ',
-    "header.heading1" => "Willkommen bei Osis.fit!",
-    "header.heading2" => "Konto Aktivierung",
+    "header.heading" => "Willkommen bei Osis.fit!",
+    "header.subheading" => "Verifiziere deine E-Mail-Adresse",
     "content.heading" => "Hallo ". $_Auth->firstname."!",
     "content.inner" => "
-        Wir haben gerade eine Registrierung über deine E-Mail Adresse erhalten.
+        Wir haben gerade eine Registrierung über deine E-Mail-Adresse erhalten.
         Falls du das warst, folge bitte den Anweisungen weiter unten, um dein Konto zu aktivieren.
         Andernfalls kannst du dieses E-Mail einfach ignorieren.
     ",
-    "button.inner" => "KONTO AKTIVIEREN &rarr;",
+    "button.inner" => "Konto bestätigen &rarr;",
     "button.href" => "https://app.osis.fit/auth/verify?mail=".$_Auth->mail."&code=".$_Auth->verify_code
 ];
+
+$_Mailer->body["footer.inner"] = Env::mail_page_name." - ".Env::mail_slogan_de." <br/> <i>".Env::mail_creator_de."</i>";

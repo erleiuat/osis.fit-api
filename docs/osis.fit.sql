@@ -45,7 +45,9 @@ CREATE TABLE `user_status` (
 
     pw_stamp            TIMESTAMP,
     verify_stamp        TIMESTAMP,
-    pw_reset_code       VARCHAR(255),
+    pw_code_stamp       VARCHAR(255),
+
+    pw_code             VARCHAR(255),
     verify_code         VARCHAR(255),
 
     PRIMARY KEY (user_id),
@@ -176,10 +178,13 @@ CREATE VIEW `v_user_state` AS
 
         us.id AS 'user_id',
         us.mail AS 'mail',
-        st.state AS 'state'
+        st.state AS 'state',
+        de.firstname AS 'firstname',
+        de.lastname AS 'lastname'
 
     FROM user AS us
-    LEFT JOIN user_status AS st ON st.user_id = us.id;
+    LEFT JOIN user_status AS st ON st.user_id = us.id 
+    LEFT JOIN user_detail AS de ON de.user_id = us.id;
 
 CREATE VIEW `v_user_token` AS
 
