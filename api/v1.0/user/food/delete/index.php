@@ -3,12 +3,12 @@
 define('PROCESS', "Template/User/Delete"); /* Name of this Process */
 define('LOCATION', "../../../../"); /* Location of this endpoint */        
 
-include_once LOCATION.'src/Engine.php'; /* Load API-Engine */
+include_once LOCATION . 'src/Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
-include_once LOCATION.'src/Security.php'; /* Load Security-Methods */
-include_once LOCATION.'src/class/Food.php';
+include_once LOCATION . 'src/Security.php'; /* Load Security-Methods */
+include_once LOCATION . 'src/class/Food.php';
 $_Food = new Food($_DBC);
 
 

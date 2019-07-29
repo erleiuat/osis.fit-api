@@ -3,19 +3,19 @@
 define('PROCESS', "Dashboard/Read"); /* Name of this Process */
 define('LOCATION', "../../../"); /* Location of this endpoint */        
 
-include_once LOCATION.'src/Engine.php'; /* Load API-Engine */
+include_once LOCATION . 'src/Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
-include_once LOCATION.'src/Security.php'; /* Load Security-Methods */
+include_once LOCATION . 'src/Security.php'; /* Load Security-Methods */
 
-include_once LOCATION.'src/class/User.php';
+include_once LOCATION . 'src/class/User.php';
 $_user = new User($_DBC);
-include_once LOCATION.'src/class/log/WeightLog.php';
+include_once LOCATION . 'src/class/log/WeightLog.php';
 $_wLog = new WeightLog($_DBC);
-include_once LOCATION.'src/class/log/ActivityLog.php';
+include_once LOCATION . 'src/class/log/ActivityLog.php';
 $_aLog = new ActivityLog($_DBC);
-include_once LOCATION.'src/class/log/CalorieLog.php';
+include_once LOCATION . 'src/class/log/CalorieLog.php';
 $_cLog = new CalorieLog($_DBC);
 
 
@@ -31,7 +31,7 @@ try {
     $_aLog->user_id = $auth->id;
 
     $from = date('Y-m-d', time());
-    $to = date('Y-m-d', strtotime($from.' +1 day'));
+    $to = date('Y-m-d', strtotime($from . ' +1 day'));
     
     $_REP->addData("user", $_user->read());
     $_REP->addData("weights", $_wLog->read());

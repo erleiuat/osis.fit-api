@@ -59,12 +59,12 @@ class Article {
     public function readPreview() {
 
         $stmt = $this->db->conn->prepare("
-            SELECT * FROM ".$this->v_preview." WHERE 
+            SELECT * FROM ".$this->v_preview . " WHERE 
             `publication_date` <= :publication_date
         ");
 
         $this->db->bind($stmt, 
-            ['publication_date'],[$this->publication_date]
+            ['publication_date'], [$this->publication_date]
         );
 
         $this->db->execute($stmt);
@@ -81,7 +81,7 @@ class Article {
     public function readArticle() {
 
         $stmt = $this->db->conn->prepare("
-            SELECT * FROM ".$this->t_main." WHERE 
+            SELECT * FROM ".$this->t_main . " WHERE 
             `publication_date` <= :publication_date AND 
             `url` = :url
         ");
@@ -91,7 +91,7 @@ class Article {
         );
         $this->db->execute($stmt);
 
-        if($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             return $this->formArticleObject($row);
         }
 
@@ -102,18 +102,25 @@ class Article {
 
     public function readEdit() {
 
-        if($this->url) $stmt = $this->db->conn->prepare("
+        if($this->url) {
+            $stmt = $this->db->conn->prepare("
             SELECT * FROM ".$this->v_edit." 
             WHERE `url` = :url
         ");
-        else $stmt = $this->db->conn->prepare("
+        } else {
+            $stmt = $this->db->conn->prepare("
             SELECT url, title, publication_date FROM ".$this->v_edit."
         ");
+        }
 
-        if($this->url) $this->db->bind($stmt, ['url'], [$this->url]);
+        if($this->url) {
+            $this->db->bind($stmt, ['url'], [$this->url]);
+        }
         $this->db->execute($stmt);
 
-        if ($this->url && $stmt->rowCount() < 1) throw new Exception('entry_not_found', 404);
+        if ($this->url && $stmt->rowCount() < 1) {
+            throw new Exception('entry_not_found', 404);
+        }
 
         if($this->url){
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -133,7 +140,7 @@ class Article {
     public function create() {
 
         $stmt = $this->db->conn->prepare("
-            INSERT INTO ".$this->t_main." (
+            INSERT INTO ".$this->t_main . " (
                 `user_id`, `url`, `title`, `keywords`, 
                 `content`, `language`, `publication_date`
             ) VALUES (
@@ -145,7 +152,7 @@ class Article {
         $this->db->bind($stmt, [
             'user_id', 'url', 'title', 'keywords', 
             'content', 'language', 'publication_date'
-        ],[
+        ], [
             $this->user_id, $this->url, $this->title, $this->keywords, 
             $this->content, $this->language, $this->publication_date
         ]);
@@ -155,7 +162,7 @@ class Article {
         $this->id = $this->db->conn->lastInsertId();
 
         $stmt = $this->db->conn->prepare("
-            INSERT INTO ".$this->t_preview." (
+            INSERT INTO ".$this->t_preview . " (
                 `article_id`, `color`, `dark`, `description`, 
                 `img_url`, `img_lazy`, `img_phrase`
             ) VALUES (
@@ -167,7 +174,7 @@ class Article {
         $this->db->bind($stmt, [
             'article_id', 'color', 'dark', 'description', 
             'img_url', 'img_lazy', 'img_phrase'
-        ],[
+        ], [
             $this->id, $this->color, $this->dark, $this->description, 
             $this->img_url, $this->img_lazy, $this->img_phrase
         ]);
@@ -186,7 +193,7 @@ class Article {
 
 
         $stmt = $this->db->conn->prepare("
-            SELECT * FROM ".$this->t_main." WHERE
+            SELECT * FROM ".$this->t_main . " WHERE
             `url` = :url
         ");
         $this->db->bind($stmt, 
@@ -197,7 +204,7 @@ class Article {
         $this->id = ($stmt->fetch(PDO::FETCH_ASSOC))['id'];
 
         $stmt = $this->db->conn->prepare("
-            UPDATE ".$this->t_main." SET 
+            UPDATE ".$this->t_main . " SET 
             `title` = :title,
             `keywords` = :keywords,
             `content` = :content,
@@ -209,7 +216,7 @@ class Article {
         $this->db->bind($stmt, [
             'id', 'title', 'keywords', 
             'content', 'language', 'publication_date'
-        ],[
+        ], [
             $this->id, $this->title, $this->keywords, 
             $this->content, $this->language, $this->publication_date
         ]);
@@ -217,7 +224,7 @@ class Article {
         $this->db->execute($stmt);
 
         $stmt = $this->db->conn->prepare("
-            UPDATE ".$this->t_preview." SET 
+            UPDATE ".$this->t_preview . " SET 
             `color` = :color,
             `dark` = :dark,
             `description` = :description,
@@ -230,7 +237,7 @@ class Article {
         $this->db->bind($stmt, [
             'article_id', 'color', 'dark', 'description', 
             'img_url', 'img_lazy', 'img_phrase'
-        ],[
+        ], [
             $this->id, $this->color, $this->dark, $this->description, 
             $this->img_url, $this->img_lazy, $this->img_phrase
         ]);
@@ -242,7 +249,9 @@ class Article {
 
     public function formArticleObject($obj = false) {
 
-        if(!$obj) $obj = (array) $this;
+        if(!$obj) {
+            $obj = (array) $this;
+        }
 
         $object = [
             "url" => $obj['url'],
@@ -253,7 +262,7 @@ class Article {
             "publicationDate" => $obj['publication_date']
         ];
 
-        if(isset($obj['keywords'])){
+        if (isset($obj['keywords'])) {
             $arr = explode(", ", $obj['keywords']);
             $object['keywords'] = $arr;
         }
@@ -265,7 +274,9 @@ class Article {
     public function formPreviewObject($obj = false) {
 
         
-        if(!$obj) $obj = (array) $this;
+        if(!$obj) {
+            $obj = (array) $this;
+        }
 
         $object = [
             "url" => $obj['url'],
@@ -283,7 +294,7 @@ class Article {
             ]
         ];
 
-        if(isset($obj['keywords'])){
+        if (isset($obj['keywords'])) {
             $arr = explode(", ", $obj['keywords']);
             $object['keywords'] = $arr;
         }
@@ -294,14 +305,18 @@ class Article {
 
     public function formEditObject($obj = false) {
 
-        if(!$obj) $obj = (array) $this;
+        if(!$obj) {
+            $obj = (array) $this;
+        }
 
-        if(!isset($obj["content"])) $object = [
+        if(!isset($obj["content"])) {
+            $object = [
             "url" => $obj['url'],
             "title" => $obj['title'],
             "publicationDate" => $obj['publication_date']
         ];
-        else $object = [
+        } else {
+            $object = [
             "url" => $obj['url'],
             "title" => $obj['title'],
             "keywords" => (bool) $obj['keywords'],
@@ -317,8 +332,9 @@ class Article {
                 "dark" => (bool) $obj['dark']
             ]
         ];
+        }
 
-        if(isset($obj['keywords'])){
+        if (isset($obj['keywords'])) {
             $arr = explode(", ", $obj['keywords']);
             $object['keywords'] = $arr;
         }

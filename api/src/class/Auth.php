@@ -29,12 +29,15 @@ class Auth {
     public function __construct($db, $user = false) { 
         
         $this->db = $db;
-        if($user) $this->user = $user;
-        else $this->user = (object) [
+        if($user) {
+            $this->user = $user;
+        } else {
+            $this->user = (object) [
             "id" => null,
             "mail" => null,
             "level" => null,
         ];
+        }
 
     }
 
@@ -42,16 +45,22 @@ class Auth {
     public function check() {
 
         $this->status = false;
-        if ($this->user->id) $use = ['user_id', $this->user->id];
-        else if($this->user->mail) $use = ['user_mail', $this->user->mail];
-        else return $this;
+        if ($this->user->id) {
+            $use = ['user_id', $this->user->id];
+        } else if($this->user->mail) {
+            $use = ['user_mail', $this->user->mail];
+        } else {
+            return $this;
+        }
 
         $stmt = $this->db->prepare("
             SELECT * FROM ".$this->v_auth." 
             WHERE `".$use[0]."` = :".$use[0]."
         ");
         $this->db->bind($stmt, [$use[0]], [$use[1]])->execute($stmt);
-        if ($stmt->rowCount() !== 1) return $this;
+        if ($stmt->rowCount() !== 1) {
+            return $this;
+        }
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         $this->user->id = ($this->user->id ? $this->user->id : $row['user_id']);
@@ -66,7 +75,7 @@ class Auth {
     public function register() {
 
         $stmt = $this->db->prepare("
-            INSERT INTO ".$this->t_main." 
+            INSERT INTO ".$this->t_main . " 
             (`user_id`, `password`, `verify_code`, `password_stamp`) VALUES 
             (:user_id, :password, :verify_code, now());
         ");
@@ -81,7 +90,7 @@ class Auth {
     public function verifyMail($code) {
 
         $stmt = $this->db->prepare("
-            SELECT * FROM ".$this->t_main." 
+            SELECT * FROM ".$this->t_main . " 
             WHERE user_id = :user_id
         ");
         $this->db->bind($stmt, ['user_id'], [$this->user->id])->execute($stmt);
@@ -89,7 +98,7 @@ class Auth {
         if ($stmt->rowCount() === 1 && password_verify($code, ($stmt->fetch(PDO::FETCH_ASSOC))["verify_code"])) {
         
             $stmt = $this->db->prepare("
-                UPDATE ".$this->t_main." SET 
+                UPDATE ".$this->t_main . " SET 
                 `status` = 'verified', 
                 `verify_stamp` = now(), 
                 `verify_code` = null 
@@ -97,14 +106,16 @@ class Auth {
             ");
             $this->db->bind($stmt, ['user_id'], [$this->user->id])->execute($stmt);
 
-        } else throw new Exception('verification_error', 403);
+        } else {
+            throw new Exception('verification_error', 403);
+        }
 
     }
 
     public function verifyRefresh($phrase) {
 
         $stmt = $this->db->prepare("
-            SELECT * FROM ".$this->t_refresh." 
+            SELECT * FROM ".$this->t_refresh . " 
             WHERE `auth_id` = :auth_id 
             AND `refresh_jti` = :refresh_jti
         ");
@@ -114,16 +125,18 @@ class Auth {
         )->execute($stmt);
 
         $phrase_hash = ($stmt->fetch(PDO::FETCH_ASSOC))["refresh_phrase"];
-        if ($stmt->rowCount() === 1 && password_verify($phrase, $phrase_hash)) return true;
+        if ($stmt->rowCount() === 1 && password_verify($phrase, $phrase_hash)) {
+            return true;
+        }
         return false;
 
     }
 
     public function setRefreshAuth($oldJti = false) {
 
-        if($oldJti){
+        if ($oldJti) {
             $stmt = $this->db->prepare("
-                UPDATE ".$this->t_refresh." SET 
+                UPDATE ".$this->t_refresh . " SET 
                 `refresh_jti` = :refresh_jti,
                 `refresh_phrase` = :refresh_phrase,
                 `updated_stamp` = now(), 
@@ -137,7 +150,7 @@ class Auth {
             )->execute($stmt);
         } else {
             $stmt = $this->db->prepare("
-                INSERT INTO ".$this->t_refresh." 
+                INSERT INTO ".$this->t_refresh . " 
                 (`auth_id`, `refresh_jti`, `refresh_phrase`) VALUES
                 (:auth_id, :refresh_jti, :refresh_phrase);
             ");
@@ -148,7 +161,7 @@ class Auth {
         }
 
         $stmt = $this->db->prepare("
-            UPDATE ".$this->t_main." SET 
+            UPDATE ".$this->t_main . " SET 
             `auth_stamp` = now(),
             `auth_total` = `auth_total` + 1  
             WHERE `id` = :id
@@ -159,9 +172,9 @@ class Auth {
 
     }
 
-    public function removeRefresh(){
+    public function removeRefresh() {
         $stmt = $this->db->prepare("
-            DELETE FROM ".$this->t_refresh." WHERE 
+            DELETE FROM ".$this->t_refresh . " WHERE 
             `auth_id` = :auth_id AND 
             `refresh_jti` = :refresh_jti 
         ");
@@ -174,7 +187,7 @@ class Auth {
     public function passwordLogin($pw) {
 
         $stmt = $this->db->prepare("
-            SELECT password FROM ".$this->t_main." 
+            SELECT password FROM ".$this->t_main . " 
             WHERE user_id = :user_id
         ");
         $this->db->bind($stmt, 
@@ -198,9 +211,9 @@ class Auth {
         $password_stamp = date("Y-m-d H:i:s");
         $password_code = password_hash($this->password_code, Env::sec_encryption);
 
-        if($code){
+        if ($code) {
             $stmt = $this->db->prepare("
-                SELECT * FROM ".$this->t_main." 
+                SELECT * FROM ".$this->t_main . " 
                 WHERE user_id = :user_id
             ");
             $this->db->bind($stmt, ['user_id'], [$this->user->id])->execute($stmt);
@@ -216,7 +229,7 @@ class Auth {
         }
 
         $stmt = $this->db->prepare("
-            UPDATE ".$this->t_main." SET 
+            UPDATE ".$this->t_main . " SET 
             `password_code` = :password_code, 
             `password_stamp` = :password_stamp 
             WHERE `user_id` = :user_id
@@ -233,7 +246,7 @@ class Auth {
     public function passwordChange($pw) {
 
         $stmt = $this->db->prepare("
-            UPDATE ".$this->t_main." SET 
+            UPDATE ".$this->t_main . " SET 
             `password` = :password,
             `password_stamp` = now()  
             WHERE `id` = :user_id
@@ -248,7 +261,7 @@ class Auth {
     public function disable() {
 
         $stmt = $this->db->prepare("
-            UPDATE ".$this->t_main." SET 
+            UPDATE ".$this->t_main . " SET 
             `status` = 'deleted',
             `password` = concat('DELETED:', password, '|ID:', id) 
             WHERE `user_id` = :user_id
@@ -256,7 +269,7 @@ class Auth {
         $this->db->bind($stmt, ['user_id'], [$this->user->id])->execute($stmt);
 
         $stmt = $this->db->prepare("
-            UPDATE ".$this->t_user." SET 
+            UPDATE ".$this->t_user . " SET 
             `mail` = concat('DELETED:', mail, '|ID:', id)
             WHERE `id` = :user_id 
         ");

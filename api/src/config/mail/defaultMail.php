@@ -14,12 +14,12 @@ class defaultMail {
 
         $template = str_replace(
             '<style type="text/css" name="MAIL_CSS"></style>', 
-            '<style type="text/css" name="MAIL_CSS">'.$mail_css.'</style>', 
+            '<style type="text/css" name="MAIL_CSS">' . $mail_css . '</style>', 
             $mail_html
         );
 
         $this->body = $template;
-        $this->defaults["footer.inner"] = Env::mail_page_name." - ".Env::mail_slogan." <br/> <i>".Env::mail_creator."</i>";
+        $this->defaults["footer.inner"] = Env::mail_page_name . " - " . Env::mail_slogan . " <br/> <i>" . Env::mail_creator . "</i>";
         $this->defaults["header.image"] = Env::mail_logo_url;
 
     }

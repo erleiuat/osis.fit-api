@@ -3,12 +3,12 @@
 define('PROCESS', "Auth/Register"); /* Name of this Process */
 define('LOCATION', "../../../"); /* Location of this endpoint */           
 
-include_once LOCATION.'src/Engine.php'; /* Load API-Engine */
+include_once LOCATION . 'src/Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
-include_once LOCATION.'src/class/User.php';
-include_once LOCATION.'src/class/Auth.php';
+include_once LOCATION . 'src/class/User.php';
+include_once LOCATION . 'src/class/Auth.php';
 $Auth = new Auth($_DBC, new User($_DBC));
 
 // ------------------ SCRIPT -----------------
@@ -27,7 +27,9 @@ try {
     $Auth->user->lastname = $data->lastname;
     $Auth->user->level = "user";
     
-    if($Auth->check()->status) throw new ApiException(403, "mail_in_use", ["entity"=>"mail"]);
+    if($Auth->check()->status) {
+        throw new ApiException(403, "mail_in_use", ["entity"=>"mail"]);
+    }
 
     $Auth->user->create();
     $_LOG->addInfo("User created");
@@ -37,12 +39,15 @@ try {
     $Auth->register();
     $_LOG->addInfo("User registered");
 
-    include_once LOCATION.'src/Mail.php';
+    include_once LOCATION . 'src/Mail.php';
     $Mailer = new Mailer(new defaultMail());
     $Mailer->addReceiver($Auth->user->mail, $Auth->user->firstname, $Auth->user->lastname);
 
-    if ($data->language === "de") include_once 'mail/content_de.php';
-    else include_once 'mail/content_en.php';
+    if ($data->language === "de") {
+        include_once 'mail/content_de.php';
+    } else {
+        include_once 'mail/content_en.php';
+    }
     $Mailer->prepare();
         
     if (Env::api_env === "prod") {

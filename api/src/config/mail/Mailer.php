@@ -36,14 +36,18 @@ class Mailer {
 
         $this->from_name = Env::mail_from_name;
         $this->from_adress = Env::mail_from_adress;
-        if($template) $this->template = $template;
+        if($template) {
+            $this->template = $template;
+        }
 
     }
 
     /* ----------------- METHODS ---------------- */
 
     public function addReceiver($adress, $firstname = false, $lastname = false){
-        if($lastname) $firstname .= " ".$lastname;
+        if($lastname) {
+            $firstname .= " ".$lastname;
+        }
         array_push($this->receivers, [$adress, $firstname]);
         return $this;
     }
@@ -57,10 +61,10 @@ class Mailer {
 
         $this->mail->setFrom($this->from_adress, $this->from_name);
         
-        for ($i=0; $i < count($this->receivers); $i++) {
+        for ($i = 0; $i < count($this->receivers); $i++) {
             $this->mail->addAddress($this->receivers[$i][0], $this->receivers[$i][1]);
         }
-        for ($i=0; $i < count($this->template->images); $i++) {
+        for ($i = 0; $i < count($this->template->images); $i++) {
             $this->mail->AddEmbeddedImage($this->template->images[$i][1], $this->template->images[$i][0]);
         }
 
@@ -70,9 +74,13 @@ class Mailer {
         $bSearch = []; $bReplace = [];
         foreach ($this->template->slots as $key => $value) {
             array_push($bSearch, $value);
-            if(isset($this->body[$key])) array_push($bReplace, $this->body[$key]);
-            else if(isset($this->template->defaults[$key])) array_push($bReplace, $this->template->defaults[$key]);
-            else array_push($bReplace, "");
+            if(isset($this->body[$key])) {
+                array_push($bReplace, $this->body[$key]);
+            } else if(isset($this->template->defaults[$key])) {
+                array_push($bReplace, $this->template->defaults[$key]);
+            } else {
+                array_push($bReplace, "");
+            }
         }
         
         $this->mail->Body = str_replace($bSearch, $bReplace, $this->mail->Body);

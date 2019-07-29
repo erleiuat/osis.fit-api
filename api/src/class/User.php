@@ -31,7 +31,7 @@ class User {
     /* ------------------ INIT ------------------ */
     public function __construct($db, $userid = false) { 
         $this->db = $db;
-        if($userid){
+        if ($userid) {
             $this->id = $userid;
             $this->read();
         }
@@ -42,7 +42,7 @@ class User {
     public function create() {
 
         $stmt = $this->db->prepare("
-            INSERT INTO ".$this->t_main." 
+            INSERT INTO ".$this->t_main . " 
             (`mail`, `level`) VALUES
             (:mail, :level);
         ");
@@ -53,7 +53,7 @@ class User {
         $this->id = $this->db->conn->lastInsertId();
 
         $stmt = $this->db->prepare("
-            INSERT INTO ".$this->t_detail." 
+            INSERT INTO ".$this->t_detail . " 
             (`user_id`, `firstname`, `lastname`) VALUES 
             (:user_id, :firstname, :lastname);
         ");
@@ -63,7 +63,7 @@ class User {
         )->execute($stmt);
 
         $stmt = $this->db->prepare("
-            INSERT INTO ".$this->t_aim." 
+            INSERT INTO ".$this->t_aim . " 
             (`user_id`) VALUES (:user_id);
         ");
         $this->db->bind($stmt, 
@@ -75,12 +75,14 @@ class User {
     public function read() {
         
         $stmt = $this->db->conn->prepare("
-            SELECT * FROM ".$this->v_info." 
+            SELECT * FROM ".$this->v_info . " 
             WHERE id = :id
         ");
         $this->db->bind($stmt, ['id'], [$this->id])->execute($stmt);
 
-        if ($stmt->rowCount() !== 1) throw new Exception('entry_not_found', 404);
+        if ($stmt->rowCount() !== 1) {
+            throw new Exception('entry_not_found', 404);
+        }
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         $this->mail = ($this->mail ? $this->mail : $row['mail']);
@@ -103,7 +105,7 @@ class User {
     public function editAims() {
 
         $stmt = $this->db->conn->prepare("
-            UPDATE ".$this->t_aim." SET 
+            UPDATE ".$this->t_aim . " SET 
             `weight` = :aim_weight, 
             `date` = :aim_date 
             WHERE `user_id` = :id;
@@ -121,7 +123,7 @@ class User {
     public function editProfile() {
 
         $stmt = $this->db->conn->prepare("
-            UPDATE ".$this->t_detail." SET 
+            UPDATE ".$this->t_detail . " SET 
             `firstname` = :firstname,
             `lastname` = :lastname,
             `birth` = :birth,
@@ -141,7 +143,8 @@ class User {
 
     public function formObject($obj = false) {
 
-        if($obj) return [
+        if($obj) {
+            return [
             "id" => $obj['id'],
             "firstname" => $obj['firstname'],
             "lastname" => $obj['lastname'],
@@ -154,6 +157,7 @@ class User {
                 "date" => $obj['aim_date']
             ]
         ];
+        }
         
     }
     

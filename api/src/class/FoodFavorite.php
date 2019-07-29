@@ -30,10 +30,10 @@ class FoodFavorite {
 
     /* ----------------- METHODS ---------------- */
 
-    public function read(){
+    public function read() {
 
         $stmt = $this->db->conn->prepare("
-            SELECT * FROM ".$this->t_main." 
+            SELECT * FROM ".$this->t_main . " 
             WHERE `user_id` = :user_id
         ");
 
@@ -49,10 +49,10 @@ class FoodFavorite {
 
     }
 
-    public function toggle(){
+    public function toggle() {
 
         $stmt = $this->db->conn->prepare("
-            SELECT * FROM ".$this->t_main." WHERE 
+            SELECT * FROM ".$this->t_main . " WHERE 
             `user_id` = :user_id AND
             `id` = :id
         ");
@@ -63,10 +63,10 @@ class FoodFavorite {
         );
         $this->db->execute($stmt);
 
-        if($stmt->rowCount() === 1){
+        if ($stmt->rowCount() === 1) {
 
             $stmt = $this->db->conn->prepare("
-                DELETE FROM ".$this->t_main." WHERE 
+                DELETE FROM ".$this->t_main . " WHERE 
                 `user_id` = :user_id AND
                 `id` = :id
             ");
@@ -77,7 +77,9 @@ class FoodFavorite {
             );
             $this->db->execute($stmt);
 
-            if($stmt->rowCount() !== 1) throw new Exception("delete_failed"); 
+            if($stmt->rowCount() !== 1) {
+                throw new Exception("delete_failed");
+            }
 
             return false;
 
@@ -107,7 +109,9 @@ class FoodFavorite {
 
     public function formObject($obj = false) {
 
-        if(!$obj) $obj = (array) $this;
+        if(!$obj) {
+            $obj = (array) $this;
+        }
 
         return [
             "id" => $obj['id'],

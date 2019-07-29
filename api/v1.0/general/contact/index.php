@@ -3,12 +3,12 @@
 define('PROCESS', "General/Contact"); /* Name of this Process */
 define('LOCATION', "../../../"); /* Location of this endpoint */        
 
-include_once LOCATION.'src/Engine.php'; /* Load API-Engine */
+include_once LOCATION . 'src/Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
-include_once LOCATION.'src/Security.php'; /* Load Security-Methods */
-include_once LOCATION.'src/Mail.php'; 
+include_once LOCATION . 'src/Security.php'; /* Load Security-Methods */
+include_once LOCATION . 'src/Mail.php'; 
 $_ContactMail = new Mail();
 $_InfoMail = new Mail();
 
@@ -33,7 +33,7 @@ try {
     include_once 'ContactMail.php';
     $_ContactT = new ContactMail();
     $_ContactMail->from_adress = $mail;
-    $_ContactMail->from_name = $firstname." ".$lastname;
+    $_ContactMail->from_name = $firstname . " " . $lastname;
     $_ContactMail->addReceiver("mail@eliareutlinger.ch", "Elia", "Reutlinger");
     $_ContactMail->setTemplate($_ContactT);
     $_ContactMail->setContent("subject", [

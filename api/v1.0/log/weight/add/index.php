@@ -3,12 +3,12 @@
 define('PROCESS', "Log/Weight/Add"); /* Name of this Process */
 define('LOCATION', "../../../../"); /* Location of this endpoint */        
 
-include_once LOCATION.'src/Engine.php'; /* Load API-Engine */
+include_once LOCATION . 'src/Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
-include_once LOCATION.'src/Security.php'; /* Load Security-Methods */
-include_once LOCATION.'src/class/log/WeightLog.php';
+include_once LOCATION . 'src/Security.php'; /* Load Security-Methods */
+include_once LOCATION . 'src/class/log/WeightLog.php';
 $_wLog = new WeightLog($_DBC);
 
 
@@ -24,7 +24,7 @@ try {
 
     $date = Validate::date($data->date, true);
     $time = Validate::time($data->time, true);
-    $_wLog->stamp = date('Y-m-d H:i:s', strtotime($date." ".$time));
+    $_wLog->stamp = date('Y-m-d H:i:s', strtotime($date . " " . $time));
 
     $_REP->content = array(
         "object"=>$_wLog->add(),

@@ -32,7 +32,7 @@ class Food {
     public function read($id = false) {
         
         $stmt = $this->db->conn->prepare("
-            SELECT * FROM ".$this->t_main." 
+            SELECT * FROM ".$this->t_main . " 
             WHERE `user_id` = :user_id
         ");
 
@@ -50,16 +50,16 @@ class Food {
     }
 
 
-    public function add(){
+    public function add() {
 
         $stmt = $this->db->conn->prepare("
-            INSERT INTO ".$this->t_main." 
+            INSERT INTO ".$this->t_main . " 
             (`user_id`, `title`, `amount`, `calories_per_100`, `img_url`, `img_lazy`, `img_phrase`) VALUES 
             (:user_id, :title, :amount, :calories_per_100, :img_url, :img_lazy, :img_phrase);
         ");
 
         $this->db->bind($stmt, 
-            ['user_id', 'title', 'amount', 'calories_per_100', 'img_url', 'img_lazy',  'img_phrase'],
+            ['user_id', 'title', 'amount', 'calories_per_100', 'img_url', 'img_lazy', 'img_phrase'],
             [$this->user_id, $this->title, $this->amount, $this->calories_per_100, $this->img_url, $this->img_lazy, $this->img_phrase]
         );
 
@@ -74,7 +74,7 @@ class Food {
     public function edit() {
 
         $stmt = $this->db->conn->prepare("
-            UPDATE ".$this->t_main." SET 
+            UPDATE ".$this->t_main . " SET 
             `title` = :title, 
             `amount` = :amount, 
             `calories_per_100` = :calories_per_100,
@@ -96,10 +96,10 @@ class Food {
     }
 
 
-    public function delete(){
+    public function delete() {
 
         $stmt = $this->db->conn->prepare("
-            DELETE FROM ".$this->t_main." WHERE 
+            DELETE FROM ".$this->t_main . " WHERE 
             `id` = :id AND 
             `user_id` = :user_id
         ");
@@ -107,16 +107,21 @@ class Food {
         $this->db->bind($stmt, ['id', 'user_id'], [$this->id, $this->user_id]);
         $this->db->execute($stmt);
 
-        if($stmt->rowCount() !== 1) throw new Exception("delete_failed"); 
+        if($stmt->rowCount() !== 1) {
+            throw new Exception("delete_failed");
+        }
 
     }
 
 
     public function formObject($obj = false) {
 
-        if(!$obj) $obj = (array) $this;
+        if(!$obj) {
+            $obj = (array) $this;
+        }
 
-        if($obj) return [
+        if($obj) {
+            return [
             "id" => $obj['id'],
             "title" => $obj['title'],
             "amount" => $obj['amount'],
@@ -125,6 +130,7 @@ class Food {
             "imgLazy" => $obj['img_lazy'],
             "imgPhrase" => $obj['img_phrase']
         ];
+        }
         
     }
     
