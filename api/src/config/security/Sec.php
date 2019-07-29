@@ -4,13 +4,10 @@ use \Firebase\JWT\JWT;
 
 class Sec {
 
-    public static function auth($required = true){
+    public static function auth(){
 
-        $missing = false;
-        if (!isset(getallheaders()['Authorization'])) $missing = "app";
-        else if (!isset($_COOKIE[Env::coo_name])) $missing = "secure";
-        if ($missing && $required) throw new ApiException(403, "token_missing", $missing);
-        else if ($missing) return $missing;
+        if (!isset(getallheaders()['Authorization'])) throw new ApiException(403, "token_missing", "app");
+        else if (!isset($_COOKIE[Env::coo_name])) throw new ApiException(403, "token_missing", "secure");
 
         list($type, $data) = explode(" ", getallheaders()['Authorization'], 2);
         if (strcasecmp($type, "Bearer") != 0) throw new ApiException(403, "token_invalid", "not_bearer");

@@ -14,16 +14,16 @@ $Auth = new Auth($_DBC);
 
 // ------------------ SCRIPT -----------------
 try {
-
+    
     $data = Core::getBody([
         'mail' => ['mail', true, ['min' => 1, 'max' => 90]],
         'password' => ['string', true]
     ]);
 
     $Auth->user->mail = $_LOG->identity = $data->mail;
-    if($Auth->check()->status === "verified"){
+    if ($Auth->check()->status === "verified") {
 
-        if (!$Auth->passwordLogin($data->password)) throw new ApiException(403, "password_wrong");            
+        if (!$Auth->passwordLogin($data->password)) throw new ApiException(403, "password_wrong");         
 
         $Auth->refresh_jti = Core::randomString(20);
         $Auth->setRefreshAuth();
@@ -36,7 +36,9 @@ try {
     else if ($Auth->status === "unverified") throw new ApiException(403, "account_not_verified");
     else throw new ApiException(401, "account_not_found");
 
-} catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
+} catch (\Exception $e) {
+    Core::processException($_REP, $_LOG, $e);
+}
 // -------------------------------------------
 
 
