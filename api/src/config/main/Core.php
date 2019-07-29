@@ -59,7 +59,7 @@ class Core {
         return Core::processGet($pattern, $data, 'x-www-form-urlencoded');
     }
 
-    public static function processGet($pattern, $received, $type = null, $level = []){
+    public static function processGet($pattern, $rec, $type = null, $level = []){
 
         $lstr = "";
         $pl = $pattern; 
@@ -69,19 +69,19 @@ class Core {
         }
 
         $numReq = (count($pl));
-        $numRec = (count((array)$received));
+        $numRec = (count((array)$rec));
         if($numRec > $numReq) throw new ApiException(400, "too_many_entities", ["entity" => $lstr, "received" => $numRec, "required" => $numReq, "syntax" => Core::formatPattern($pattern)]);
         else if (strlen($lstr)>0) $lstr .= ".";
 
         $data = new stdClass();
         foreach ($pl as $key => $unit) {
 
-            if (!array_key_exists($key, $received)) throw new ApiException(400, "missing_entity", ["entity" => $lstr.$key, "syntax" => Core::formatPattern($pattern), "requestType"=> $type]);
-            else if(gettype(array_values($unit)[0]) === "array") $data->$key = Core::processGet($pattern, $received->$key, $type, array_merge($level, [$key]));
-            else if(strlen(trim($received->$key)) <= 0 && $unit[0] !== "bool" && $unit[1]) throw new ApiException(400, "empty_value", ["entity" => $lstr.$key, "syntax" => Core::formatPattern($pattern), "requestType"=> $type]);
-            else if(strlen(trim($received->$key)) <= 0 && $unit[0] !== "bool" && !$unit[1]) $data->$key = NULL;
-            else if(strlen(trim($received->$key)) > 0 || $unit[0] === "bool") try {
-                $data->$key = Core::validateVar($received->$key, $unit[0], (isset($unit[2]) ? $unit[2] : []));
+            if (!array_key_exists($key, $rec)) throw new ApiException(400, "missing_entity", ["entity" => $lstr.$key, "syntax" => Core::formatPattern($pattern), "requestType"=> $type]);
+            else if(gettype(array_values($unit)[0]) === "array") $data->$key = Core::processGet($pattern, $rec->$key, $type, array_merge($level, [$key]));
+            else if(strlen(trim($rec->$key)) <= 0 && $unit[0] !== "bool" && $unit[1]) throw new ApiException(400, "empty_value", ["entity" => $lstr.$key, "syntax" => Core::formatPattern($pattern), "requestType"=> $type]);
+            else if(strlen(trim($rec->$key)) <= 0 && $unit[0] !== "bool" && !$unit[1]) $data->$key = NULL;
+            else if(strlen(trim($rec->$key)) > 0 || $unit[0] === "bool") try {
+                $data->$key = Core::validateVar($rec->$key, $unit[0], (isset($unit[2]) ? $unit[2] : []));
             } catch(Exception $e) { 
                 throw new ApiException($e->getCode(), "value_invalid", ["entity" => $lstr.$key, "error"=>$e->getMessage(), "syntax" => Core::formatPattern($pattern), "requestType"=> $type]);
             }
@@ -126,7 +126,7 @@ class Core {
         return $all;
     }
 
-    public static function getData($reqEntities = false){
+    public static function getData(){
         throw new Exception("getData() no longer supported", 400);
     }
 

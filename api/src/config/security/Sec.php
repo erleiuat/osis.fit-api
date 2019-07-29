@@ -15,8 +15,8 @@ class Sec {
         list($type, $data) = explode(" ", getallheaders()['Authorization'], 2);
         if (strcasecmp($type, "Bearer") != 0) throw new ApiException(403, "token_invalid", "not_bearer");
 
-        $access_token_sec = Sec::decode($_COOKIE[Env::coo_name], Env::tkn_secret_sec);
-        $access_token_app = Sec::decode($data, Env::tkn_secret_app);
+        $access_token_sec = Sec::decode($_COOKIE[Env::coo_name], Env::tkn_access_secret_sec);
+        $access_token_app = Sec::decode($data, Env::tkn_access_secret_app);
         $phrase = $access_token_sec->data->phrase . $access_token_app->data->phrase;
 
         if(!password_verify(Env::sec_phrase.$access_token_app->data->user->mail, $phrase)){
@@ -32,71 +32,58 @@ class Sec {
         try {
 
             $now = time();
-            $phrase = Env::sec_phrase.$Auth->user->mail;
-            $phrase_hash = password_hash($phrase, PASSWORD_BCRYPT);
+            $phrase = password_hash(Env::sec_phrase.$Auth->user->mail, Env::sec_encryption);
             $half = (int) ( (strlen($phrase) / 2) );
 
-            $contents_sec = [
+            $def = [
                 "iss" => Env::tkn_issuer,
                 "iat" => $now,
-                "exp" => $now + Env::tkn_lifetime,
                 "nbf" => $now,
-                "data" => [
-                    "phrase" => substr($phrase_hash, 0, $half)
-                ]
             ];
-        
-            $contents_app = [
-                "iss" => Env::tkn_issuer,
-                "iat" => $now,
-                "exp" => $now + Env::tkn_lifetime,
-                "nbf" => $now,
+
+            $jwt_sec = JWT::encode($def + [
+                "exp" => $now + Env::tkn_access_lifetime,
                 "data" => [
-                    "phrase" => substr($phrase_hash, $half),
+                    "phrase" => substr($phrase, 0, $half)
+                ]
+            ], Env::tkn_access_secret_sec);
+
+            $jwt_app = JWT::encode($def + [
+                "exp" => $now + Env::tkn_access_lifetime,
+                "data" => [
+                    "phrase" => substr($phrase, $half),
                     "user" => [
                         "id" => (int) $Auth->user->id,
                         "mail" => $Auth->user->mail,
                         "level" => $Auth->user->level
                     ]
                 ]
-            ];
+            ], Env::tkn_access_secret_app);
 
-            $contents_refresh = [
-                "iss" => Env::tkn_issuer,
-                "iat" => $now,
-                "exp" => $now + Env::rtkn_lifetime,
-                "nbf" => $now,
+            $jwt_refresh = JWT::encode($def + [
+                "exp" => $now + Env::tkn_refresh_lifetime,
                 "jti" => $Auth->refresh_jti,
                 "data" => [
                     "mail" => $Auth->user->mail,
                     "phrase" => $Auth->refresh_phrase,
                     "password_stamp" => $Auth->password_stamp
                 ]
-            ];
-
-            $jwt_sec = JWT::encode($contents_sec, Env::tkn_secret_sec);
-            $jwt_app = JWT::encode($contents_app, Env::tkn_secret_app);
-            $jwt_refresh = JWT::encode($contents_refresh, Env::rtkn_secret);
+            ], Env::tkn_refresh_secret);
             
             $c = [
-                "name" => Env::coo_name,
                 "data" => $jwt_sec,
-                "expire" => $now + Env::coo_lifetime,
-                "path" => Env::coo_path,
-                "domain" => Env::coo_domain,
-                "secure" => Env::coo_secure,
-                "httponly" => true
+                "exp" => $now + Env::coo_lifetime
             ];
 
-            $cookie = setcookie($c["name"], $c["data"], $c["expire"], $c["path"], $c["domain"], $c["secure"], $c["httponly"]);
+            $cookie = setcookie(Env::coo_name, $c["data"], $c["exp"], Env::coo_path, Env::coo_domain, Env::coo_secure, true);
 
             if($cookie) return (object) [
                 "access" => [
-                    "expire" => $now + Env::tkn_lifetime,
+                    "expire" => $now + Env::tkn_access_lifetime,
                     "token" => $jwt_app
                 ],
                 "refresh" => [
-                    "expire" => $now + Env::rtkn_lifetime,
+                    "expire" => $now + Env::tkn_refresh_lifetime,
                     "token" => $jwt_refresh
                 ]
             ];

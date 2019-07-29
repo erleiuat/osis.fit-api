@@ -17,7 +17,7 @@ try {
 
     $token = Sec::decode(Core::getBody([
         'token' => ['string', true, ['min' => 1]]
-    ])->token, Env::rtkn_secret);
+    ])->token, Env::tkn_refresh_secret);
     
     $Auth->user->mail = $_LOG->identity = $token->data->mail;
     if($Auth->check()->status === "verified"){

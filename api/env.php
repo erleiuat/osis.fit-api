@@ -42,18 +42,13 @@ class Env {
     const coo_path = "/";
 
 
-    /* Access Token */
-    const tkn_lifetime = (1*60*60); // 1 Hour
+    /* Tokens */
     const tkn_issuer = "osis.fit Application";
     const tkn_algorithm = ['HS256'];
-    const tkn_secret_sec = "1@78jmKHpx[89jkHBJ781";
-    const tkn_secret_app = "as89Jmncpo:@[]Mm7Hbeo";
-
-    
-    /* Refresh Token */
-    const rtkn_lifetime = (7*24*60*60); // 7 Days
-    const rtkn_issuer = "osis.fit Application";
-    const rtkn_algorithm = ['HS256'];
-    const rtkn_secret = "1@78jmx[89jkHBJ781";
+    const tkn_access_lifetime = (1*60*60); // 1 Hour
+    const tkn_access_secret_sec = "1@78jmKHpx[89jkHBJ781";
+    const tkn_access_secret_app = "as89Jmncpo:@[]Mm7Hbeo";
+    const tkn_refresh_lifetime = (7*24*60*60); // 7 Days
+    const tkn_refresh_secret = "1@78jmx[89jkHBJ781";
 
 }

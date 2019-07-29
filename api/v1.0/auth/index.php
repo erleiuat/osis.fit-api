@@ -20,7 +20,7 @@ try {
         'password' => ['string', true]
     ]);
 
-    $Auth->user->mail = $_LOG->identity = $data->mail;    
+    $Auth->user->mail = $_LOG->identity = $data->mail;
     if($Auth->check()->status === "verified"){
 
         if (!$Auth->passwordLogin($data->password)) throw new ApiException(403, "password_wrong");            
