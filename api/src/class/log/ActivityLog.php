@@ -27,7 +27,7 @@ class ActivityLog {
     public function read($from, $to) {
         
         $stmt = $this->db->conn->prepare("
-            SELECT * FROM ".$this->t_main." WHERE 
+            SELECT * FROM ".$this->t_main . " WHERE 
             `user_id` = :user_id AND 
             `stamp` >= :from AND 
             `stamp` < :to 
@@ -35,7 +35,7 @@ class ActivityLog {
         ");
 
         $this->db->bind($stmt, 
-            ['user_id','from', 'to'], 
+            ['user_id', 'from', 'to'], 
             [$this->user_id, $from, $to]
         );
         $this->db->execute($stmt);
@@ -50,10 +50,10 @@ class ActivityLog {
     }
 
 
-    public function add(){
+    public function add() {
 
         $stmt = $this->db->conn->prepare("
-            INSERT INTO ".$this->t_main." 
+            INSERT INTO ".$this->t_main . " 
             (`user_id`, `title`, `duration`, `calories`) VALUES 
             (:user_id, :title, :duration, :calories);
         ");
@@ -71,10 +71,10 @@ class ActivityLog {
     }
 
 
-    public function delete(){
+    public function delete() {
 
         $stmt = $this->db->conn->prepare("
-            DELETE FROM ".$this->t_main." 
+            DELETE FROM ".$this->t_main . " 
             WHERE `id` = :id 
             AND `user_id` = :user_id
         ");
@@ -82,14 +82,14 @@ class ActivityLog {
         $this->db->bind($stmt, ['id', 'user_id'], [$this->id, $this->user_id]);
         $this->db->execute($stmt);
 
-        if($stmt->rowCount() !== 1) throw new Exception("delete_failed"); 
+        if ($stmt->rowCount() !== 1) throw new Exception("delete_failed"); 
 
     }
 
 
     public function formObject($obj = false) {
 
-        if(!$obj) $obj = (array) $this;
+        if (!$obj) $obj = (array) $this;
 
         $timestamp = strtotime($obj['stamp']);
 

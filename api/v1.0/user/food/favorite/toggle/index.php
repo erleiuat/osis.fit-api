@@ -3,12 +3,12 @@
 define('PROCESS', "Template/User/Favorite/Toggle"); /* Name of this Process */
 define('LOCATION', "../../../../../"); /* Location of this endpoint */        
 
-include_once LOCATION.'src/Engine.php'; /* Load API-Engine */
+include_once LOCATION . 'src/Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
-include_once LOCATION.'src/Security.php'; /* Load Security-Methods */
-include_once LOCATION.'src/class/FoodFavorite.php';
+include_once LOCATION . 'src/Security.php'; /* Load Security-Methods */
+include_once LOCATION . 'src/class/FoodFavorite.php';
 $_fFav = new FoodFavorite($_DBC);
 
 

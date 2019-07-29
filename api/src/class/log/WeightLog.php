@@ -26,7 +26,7 @@ class WeightLog {
     public function read() {
         
         $stmt = $this->db->conn->prepare("
-            SELECT * FROM ".$this->t_main." 
+            SELECT * FROM ".$this->t_main . " 
             WHERE `user_id` = :user_id
             ORDER BY `stamp` DESC
         ");
@@ -43,10 +43,10 @@ class WeightLog {
 
     }
 
-    public function add(){
+    public function add() {
 
         $stmt = $this->db->conn->prepare("
-            INSERT INTO ".$this->t_main." 
+            INSERT INTO ".$this->t_main . " 
             (`user_id`, `weight`, `stamp`) VALUES 
             (:user_id, :weight, :stamp);
         ");
@@ -63,10 +63,10 @@ class WeightLog {
         
     }
 
-    public function delete(){
+    public function delete() {
 
         $stmt = $this->db->conn->prepare("
-            DELETE FROM ".$this->t_main." WHERE 
+            DELETE FROM ".$this->t_main . " WHERE 
             `id` = :id AND 
             `user_id` = :user_id
         ");
@@ -74,13 +74,17 @@ class WeightLog {
         $this->db->bind($stmt, ['id', 'user_id'], [$this->id, $this->user_id]);
         $this->db->execute($stmt);
 
-        if($stmt->rowCount() !== 1) throw new Exception("delete_failed"); 
+        if($stmt->rowCount() !== 1) {
+            throw new Exception("delete_failed");
+        }
 
     }
 
     public function formObject($obj = false) {
 
-        if(!$obj) $obj = (array) $this;
+        if(!$obj) {
+            $obj = (array) $this;
+        }
 
         $timestamp = strtotime($obj['stamp']);
 

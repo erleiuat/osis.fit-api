@@ -20,7 +20,7 @@ class Database {
         try {
 
             $this->conn = new PDO(
-                "mysql:host=" . $this->host . ";".
+                "mysql:host=" . $this->host . ";" .
                 "dbname=" . $this->db_name, 
                 $this->username, $this->password
             );
@@ -33,7 +33,7 @@ class Database {
 
     }
 
-    public function prepare($query){
+    public function prepare($query) {
         try {
             return $this->conn->prepare($query);
         } catch (PDOException $e) {
@@ -41,11 +41,11 @@ class Database {
         }
     }
 
-    public function bind($stmt, $params, $values){
+    public function bind($stmt, $params, $values) {
         try {
             $numParams = count($params);
             for ($i = 0; $i < $numParams; $i++) {
-                $stmt->bindParam(':'.$params[$i], $values[$i]);
+                $stmt->bindParam(':' . $params[$i], $values[$i]);
             }
             return $this;
         } catch (PDOException $e) {
@@ -53,7 +53,7 @@ class Database {
         }
     }
 
-    public function execute($stmt){
+    public function execute($stmt) {
         try {
             $stmt->execute();
             return $this;

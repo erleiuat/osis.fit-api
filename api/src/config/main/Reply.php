@@ -30,30 +30,30 @@ class Reply {
 
     /* ----------------- METHODS ---------------- */
 
-    public function setStatus($code, $condition = false, $info = false){
+    public function setStatus($code, $condition = false, $info = false) {
         $this->code = $code;
         $this->status = $this->status_options[$code];
         if ($condition) $this->condition = $condition;
         if ($info) $this->info = $info;
     }
 
-    public function addData($data, $name = false){
-        if(!$name) array_push($this->data, $data);
+    public function addData($data, $name = false) {
+        if (!$name) array_push($this->data, $data);
         else $this->data[$name] = $data;
     }
 
-    public function send(){
+    public function send() {
 
-        if($this->code === 204 && $this->data) $this->setStatus(200);
+        if ($this->code === 204 && $this->data) $this->setStatus(200);
 
         $response = ["status" => [
             "code" => $this->code, 
             "message" => $this->status
         ]];
 
-        if($this->condition) $response["condition"] = $this->condition;
-        if($this->info) $response["info"] = $this->info;
-        if($this->data) $response["data"] = $this->data;
+        if ($this->condition) $response["condition"] = $this->condition;
+        if ($this->info) $response["info"] = $this->info;
+        if ($this->data) $response["data"] = $this->data;
     
         http_response_code($this->code === 204 ? 200 : $this->code);
         echo json_encode($response, JSON_NUMERIC_CHECK);

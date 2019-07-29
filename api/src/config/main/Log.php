@@ -30,37 +30,37 @@ class Log {
         $this->stamp = date('Y-m-d G:i:s');
 
         $this->trace = (
-            "USER_AGENT|".$_SERVER['HTTP_USER_AGENT']."|;".
-            "REMOTE_ADDRESS|".$_SERVER['REMOTE_ADDR']."|;".
-            "REMOTE_PORT|".$_SERVER['REMOTE_PORT']."|;".
-            "PHP_SELF|".$_SERVER['PHP_SELF']."|;"
+            "USER_AGENT|" . $_SERVER['HTTP_USER_AGENT'] . "|;" .
+            "REMOTE_ADDRESS|" . $_SERVER['REMOTE_ADDR'] . "|;" .
+            "REMOTE_PORT|" . $_SERVER['REMOTE_PORT'] . "|;" .
+            "PHP_SELF|" . $_SERVER['PHP_SELF'] . "|;"
         );
 
-        if(isset($_SERVER['HTTP_X_FORWARDED_FOR'])){
-            $this->trace .= "X_FORWARDED_FOR|".$_SERVER['HTTP_X_FORWARDED_FOR']."|;";
+        if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $this->trace .= "X_FORWARDED_FOR|" . $_SERVER['HTTP_X_FORWARDED_FOR'] . "|;";
         }
 
-        if(isset($_SERVER['HTTP_REFERER'])){
-            $this->trace .= "REFERER|".$_SERVER['HTTP_REFERER']."|;";
+        if (isset($_SERVER['HTTP_REFERER'])) {
+            $this->trace .= "REFERER|" . $_SERVER['HTTP_REFERER'] . "|;";
         }
         
     }
 
     /* ----------------- METHODS ---------------- */
 
-    public function setStatus($level, $info){
+    public function setStatus($level, $info) {
         $this->level = $level;
         $this->addInfo($info);
     }
 
-    public function addInfo($info){
-        $this->information .= $info."; ";
+    public function addInfo($info) {
+        $this->information .= $info . "; ";
     }
 
-    public function write(){
+    public function write() {
 
         $stmt = $this->db->conn->prepare("
-            INSERT INTO ".$this->t_main." 
+            INSERT INTO ".$this->t_main . " 
             (`user_id`, `level`, `process`, `information`, `identity`, `trace`, `stamp`) VALUES 
             (:user_id, :level, :process, :information, :identity, :trace, :stamp);
         ");
