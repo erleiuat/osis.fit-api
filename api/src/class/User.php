@@ -72,6 +72,24 @@ class User {
 
     }
 
+    public function set($obj) {
+
+        $keys = [
+            'id', 'mail', 'level', 
+            'firstname', 'lastname', 'birth', 'height', 'gender',
+            'aim_weight', 'aim_bmi', 'aim_date'
+        ];
+
+        if(!is_object($obj)) $obj = (object) $obj;
+
+        foreach ($keys as $key) {
+            $this->$key = (isset($obj->$key) ? $obj->$key : null);
+        }
+
+        return $this;
+
+    }
+
     public function read() {
         
         $stmt = $this->db->conn->prepare("
@@ -85,67 +103,51 @@ class User {
         }
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        $this->mail = ($this->mail ? $this->mail : $row['mail']);
-        $this->level = $row['level'];
-
-        $this->firstname = $row['firstname'];
-        $this->lastname = $row['lastname'];
-        $this->birth = $row['birth'];
-        $this->height = $row['height'];
-        $this->gender = $row['gender'];
-
-        $this->aim_weight = $row['aim_weight'];
-        $this->aim_bmi = $row['aim_bmi'];
-        $this->aim_date = $row['aim_date'];
-
-        return $this;
+        return $this->set($row);
 
     }
 
-    public function editAims() {
+    public function edit() {
+
+        $stmt = $this->db->conn->prepare("
+            UPDATE ".$this->t_detail . " SET 
+            `firstname` = :firstname, 
+            `lastname` = :lastname, 
+            `gender` = :gender, 
+            `height` = :height, 
+            `birth` = :birth 
+            WHERE `user_id` = :user_id;
+        ");
+        $this->db->bind($stmt, 
+            ['user_id', 'firstname', 'lastname', 'gender', 'height', 'birth'],
+            [$this->id, $this->firstname, $this->lastname, $this->gender, $this->height, $this->birth]
+        )->execute($stmt);
 
         $stmt = $this->db->conn->prepare("
             UPDATE ".$this->t_aim . " SET 
             `weight` = :aim_weight, 
             `date` = :aim_date 
-            WHERE `user_id` = :id;
+            WHERE `user_id` = :user_id;
         ");
-
         $this->db->bind($stmt, 
-            ['aim_weight', 'aim_date', 'id'],
-            [$this->aim_weight, $this->aim_date, $this->id]
-        );
-
-        $this->db->execute($stmt);
+            ['user_id', 'aim_weight', 'aim_date'],
+            [$this->id, $this->aim_weight, $this->aim_date]
+        )->execute($stmt);
 
     }
 
-    public function editProfile() {
+    public function getObject($obj = false) {
 
-        $stmt = $this->db->conn->prepare("
-            UPDATE ".$this->t_detail . " SET 
-            `firstname` = :firstname,
-            `lastname` = :lastname,
-            `birth` = :birth,
-            `gender` = :gender,
-            `height` = :height
-            WHERE `user_id` = :id;
-        ");
+        if(!$obj) $obj = (array) $this;
+        else if (is_array($obj)){
+            $arr = [];
+            while ($val = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                array_push($val, $this->getObject($val));
+            }
+            return $arr;
+        }
 
-        $this->db->bind($stmt, 
-            ['firstname', 'lastname', 'birth', 'gender', 'height', 'id'],
-            [$this->firstname, $this->lastname, $this->birth, $this->gender, $this->height, $this->id]
-        );
-
-        $this->db->execute($stmt);
-
-    }
-
-    public function formObject($obj = false) {
-
-        if($obj) {
-            return [
-            "id" => $obj['id'],
+        return [
             "firstname" => $obj['firstname'],
             "lastname" => $obj['lastname'],
             "birthdate" => $obj['birth'],
@@ -153,11 +155,9 @@ class User {
             "gender" => $obj['gender'],
             "aims" => [
                 "weight" => $obj['aim_weight'],
-                "bmi" => $obj['aim_bmi'],
                 "date" => $obj['aim_date']
             ]
         ];
-        }
         
     }
     

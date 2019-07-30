@@ -1,6 +1,6 @@
 <?php
 
-define('PROCESS', "User/Read"); /* Name of this Process */
+define('PROCESS', "User/Edit"); /* Name of this Process */
 define('LOCATION', "../../../"); /* Location of this endpoint */           
 
 include_once LOCATION . 'src/Engine.php'; /* Load API-Engine */
@@ -13,10 +13,27 @@ include_once LOCATION . 'src/Security.php'; /* Load Security-Methods */
 try {
     
     $sec = Sec::auth();
+    $data = Core::getBody([
+        'firstname' => ['string', false, ['max' => 150]],
+        'lastname' => ['string', false, ['max' => 150]],
+        'birthdate' => ['date', false],
+        'height' => ['number', false],
+        'gender' => ['bool', false],
+        'aims' => [
+            'weight' => ['number', false],
+            'date' => ['date', false]
+        ]
+    ]);
     
-    include_once LOCATION . 'src/class/User.php';
+    $data->id = $sec->id;
+    $data->aim_weight = $data->aims->weight;
+    $data->aim_date = $data->aims->date;
 
-    $User = new User($_DBC, $sec->id);
+    include_once LOCATION . 'src/class/User.php';
+    $User = new User($_DBC);
+
+    $User->set($data)->edit();
+
     $_REP->addData($User->getObject(), "user");
     
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
