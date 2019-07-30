@@ -35,7 +35,6 @@ class Env {
 
 
     /* Cookie */
-    const coo_lifetime = (3*60*60); // 1 Hour
     const coo_name = "_osisFit_apiT_";
     const coo_secure = false;
     const coo_domain = "";

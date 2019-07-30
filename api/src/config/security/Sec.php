@@ -74,22 +74,15 @@ class Sec {
             
             $c = [
                 "data" => $jwt_sec,
-                "exp" => $now + Env::coo_lifetime
+                "exp" => $now + Env::tkn_access_lifetime
             ];
 
             $cookie = setcookie(Env::coo_name, $c["data"], $c["exp"], Env::coo_path, Env::coo_domain, Env::coo_secure, true);
 
             if ($cookie) return (object) [
-                "access" => [
-                    "expire" => $now + Env::tkn_access_lifetime,
-                    "token" => $jwt_app
-                ],
-                "refresh" => [
-                    "expire" => $now + Env::tkn_refresh_lifetime,
-                    "token" => $jwt_refresh
-                ]
+                    "access" => $jwt_app,
+                    "refresh" => $jwt_refresh
             ];
-            }
 
             throw new Exception("cookie_error", 500);
 

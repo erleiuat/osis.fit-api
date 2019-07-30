@@ -15,16 +15,13 @@ try {
 
     $data = Core::getBody([
         'mail' => ['mail', true, ['min' => 1, 'max' => 90]],
-        'code' => ['string', true, ['min' => 10, 'max' => 10]]
+        'code' => ['string', true]
     ]);
     
     $Auth->user->mail = $_LOG->identity = $data->mail;
     if ($Auth->check()->status === "unverified") {
         
-        $Auth->verifyMail($data->code);
-        if ($Auth->check()->status !== "verified") {
-            throw new ApiException(500, "account_verification_failed");
-        }
+        if (!$Auth->verifyMail($data->code)) throw new ApiException(500, "code_wrong");
 
     } else if ($Auth->status === "locked") {
         throw new ApiException(403, "account_locked");

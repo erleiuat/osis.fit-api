@@ -27,9 +27,7 @@ try {
     $Auth->user->lastname = $data->lastname;
     $Auth->user->level = "user";
     
-    if($Auth->check()->status) {
-        throw new ApiException(403, "mail_in_use", ["entity"=>"mail"]);
-    }
+    if($Auth->check()->status) throw new ApiException(403, "mail_in_use", ["entity"=>"mail"]);
 
     $Auth->user->create();
     $_LOG->addInfo("User created");

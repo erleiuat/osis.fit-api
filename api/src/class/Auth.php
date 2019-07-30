@@ -65,6 +65,7 @@ class Auth {
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         $this->user->id = ($this->user->id ? $this->user->id : $row['user_id']);
         $this->user->mail = ($this->user->mail ? $this->user->mail : $row['user_mail']);
+        $this->user->level = $row['user_level'];
         $this->id = $row['id'];
         $this->status = $row['status'];
         $this->password_stamp = $row['password_stamp'];
@@ -106,9 +107,11 @@ class Auth {
             ");
             $this->db->bind($stmt, ['user_id'], [$this->user->id])->execute($stmt);
 
-        } else {
-            throw new Exception('verification_error', 403);
+            return true;
+
         }
+
+        return false;
 
     }
 

@@ -22,10 +22,8 @@ try {
     $Auth->refresh_jti = $token->jti;
     $Auth->user->mail = $_LOG->identity = $token->data->mail;
     if ($Auth->check()->status === "verified") {
-
         $Auth->removeRefresh();
         Sec::removeAuth();
-        
     } else if ($Auth->status === "locked") {
         throw new ApiException(403, "account_locked");
     } else if ($Auth->status === "unverified") {

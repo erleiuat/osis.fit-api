@@ -28,9 +28,7 @@ try {
         $Auth->refresh_jti = Core::randomString(20);
         $Auth->setRefreshAuth();
         
-        $authData = Sec::getAuth($Auth);
-        $_REP->addData($authData->access, "access");
-        $_REP->addData($authData->refresh, "refresh");
+        $_REP->addData(Sec::getAuth($Auth), "tokens");
 
     } else if ($Auth->status === "locked") {
         throw new ApiException(403, "account_locked");
