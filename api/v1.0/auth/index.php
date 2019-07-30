@@ -23,9 +23,7 @@ try {
     $Auth->user->mail = $_LOG->identity = $data->mail;
     if ($Auth->check()->status === "verified") {
 
-        if (!$Auth->passwordLogin($data->password)) {
-            throw new ApiException(403, "password_wrong");
-        }
+        if(!$Auth->passwordLogin($data->password)) throw new ApiException(403, "password_wrong");
 
         $Auth->refresh_jti = Core::randomString(20);
         $Auth->setRefreshAuth();
