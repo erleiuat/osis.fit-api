@@ -1,9 +1,6 @@
 <?php
 
-class User {
-
-    /* ------------- PRIVATE PARAMS ------------- */
-    private $db;
+class User extends ApiObject {
 
     /* -------- TABLES (T) AND VIEWS (V) -------- */
     private $t_main = "user";
@@ -11,10 +8,11 @@ class User {
     private $t_aim = "user_aim";
     private $v_info = "v_user_info";
 
-    /* ----------- PUBLIC BASIC PARAMS ---------- */
-    public $id;
-    public $mail;
-    public $level;
+    /* ----------- PUBLIC PARAMS ---------- */
+    protected $keys = [
+        'firstname', 'lastname', 'birth', 'height', 'gender',
+        'aim_weight', 'aim_bmi', 'aim_date'
+    ];
 
     public $firstname;
     public $lastname;
@@ -26,19 +24,7 @@ class User {
     public $aim_bmi;
     public $aim_date;
 
-    /* --------- PUBLIC EXTENDED PARAMS --------- */
-
-    /* ------------------ INIT ------------------ */
-    public function __construct($db, $userid = false) { 
-        $this->db = $db;
-        if ($userid) {
-            $this->id = $userid;
-            $this->read();
-        }
-    }
-
     /* ----------------- METHODS ---------------- */
-
     public function create() {
 
         $stmt = $this->db->prepare("
@@ -48,9 +34,10 @@ class User {
         ");
         $this->db->bind($stmt, 
             ['mail', 'level'], 
-            [$this->mail, $this->level]
+            [$this->user->mail, $this->user->level]
         )->execute($stmt);
-        $this->id = $this->db->conn->lastInsertId();
+
+        $this->user->id = $this->db->conn->lastInsertId();
 
         $stmt = $this->db->prepare("
             INSERT INTO ".$this->t_detail . " 
@@ -59,7 +46,7 @@ class User {
         ");
         $this->db->bind($stmt, 
             ['user_id', 'firstname', 'lastname'], 
-            [$this->id, $this->firstname, $this->lastname]
+            [$this->user->id, $this->firstname, $this->lastname]
         )->execute($stmt);
 
         $stmt = $this->db->prepare("
@@ -67,26 +54,8 @@ class User {
             (`user_id`) VALUES (:user_id);
         ");
         $this->db->bind($stmt, 
-            ['user_id'], [$this->id]
+            ['user_id'], [$this->user->id]
         )->execute($stmt);
-
-    }
-
-    public function set($obj) {
-
-        $keys = [
-            'id', 'mail', 'level', 
-            'firstname', 'lastname', 'birth', 'height', 'gender',
-            'aim_weight', 'aim_bmi', 'aim_date'
-        ];
-
-        if(!is_object($obj)) $obj = (object) $obj;
-
-        foreach ($keys as $key) {
-            $this->$key = (isset($obj->$key) ? $obj->$key : null);
-        }
-
-        return $this;
 
     }
 
@@ -96,11 +65,9 @@ class User {
             SELECT * FROM ".$this->v_info . " 
             WHERE id = :id
         ");
-        $this->db->bind($stmt, ['id'], [$this->id])->execute($stmt);
+        $this->db->bind($stmt, ['id'], [$this->user->id])->execute($stmt);
 
-        if ($stmt->rowCount() !== 1) {
-            throw new Exception('entry_not_found', 404);
-        }
+        if ($stmt->rowCount() !== 1) throw new Exception('entry_not_found', 404);
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $this->set($row);
@@ -120,7 +87,7 @@ class User {
         ");
         $this->db->bind($stmt, 
             ['user_id', 'firstname', 'lastname', 'gender', 'height', 'birth'],
-            [$this->id, $this->firstname, $this->lastname, $this->gender, $this->height, $this->birth]
+            [$this->user->id, $this->firstname, $this->lastname, $this->gender, $this->height, $this->birth]
         )->execute($stmt);
 
         $stmt = $this->db->conn->prepare("
@@ -131,7 +98,7 @@ class User {
         ");
         $this->db->bind($stmt, 
             ['user_id', 'aim_weight', 'aim_date'],
-            [$this->id, $this->aim_weight, $this->aim_date]
+            [$this->user->id, $this->aim_weight, $this->aim_date]
         )->execute($stmt);
 
     }

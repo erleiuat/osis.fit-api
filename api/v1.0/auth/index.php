@@ -8,9 +8,6 @@ Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
 include_once LOCATION . 'src/Security.php'; /* Load Security-Methods */
-include_once LOCATION . 'src/class/Auth.php';
-$Auth = new Auth($_DBC);
-
 
 // ------------------ SCRIPT -----------------
 try {
@@ -20,7 +17,9 @@ try {
         'password' => ['string', true]
     ]);
 
-    $Auth->user->mail = $_LOG->identity = $data->mail;
+    include_once LOCATION . 'src/class/Auth.php';
+    $Auth = new Auth($_DBC, ["mail" => $data->mail]);
+
     if ($Auth->check()->status === "verified") {
 
         if(!$Auth->passwordLogin($data->password)) throw new ApiException(403, "password_wrong");

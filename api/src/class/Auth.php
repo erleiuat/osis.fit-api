@@ -1,9 +1,6 @@
 <?php
 
-class Auth {
-
-    /* ------------- PRIVATE PARAMS ------------- */
-    private $db;
+class Auth extends ApiObject {
     
     /* -------- TABLES (T) AND VIEWS (V) -------- */
     private $t_main = "auth";
@@ -12,8 +9,7 @@ class Auth {
     private $v_auth = "v_auth";
 
     /* ----------- PUBLIC BASIC PARAMS ---------- */
-    public $id;
-    public $user;
+    protected $keys = ['password', 'verify_code', 'password_code'];
 
     public $status;
     public $password;
@@ -25,42 +21,20 @@ class Auth {
     public $refresh_jti;
     public $refresh_phrase;
 
-    /* ------------------ INIT ------------------ */
-    public function __construct($db, $user = false) { 
-        
-        $this->db = $db;
-        if($user) {
-            $this->user = $user;
-        } else {
-            $this->user = (object) [
-            "id" => null,
-            "mail" => null,
-            "level" => null,
-        ];
-        }
-
-    }
-
     /* ----------------- METHODS ---------------- */
     public function check() {
 
         $this->status = false;
-        if ($this->user->id) {
-            $use = ['user_id', $this->user->id];
-        } else if($this->user->mail) {
-            $use = ['user_mail', $this->user->mail];
-        } else {
-            return $this;
-        }
+        if ($this->user->id)  $use = ['user_id', $this->user->id];
+        else if($this->user->mail) $use = ['user_mail', $this->user->mail];
+        else return $this;
 
         $stmt = $this->db->prepare("
             SELECT * FROM ".$this->v_auth." 
             WHERE `".$use[0]."` = :".$use[0]."
         ");
         $this->db->bind($stmt, [$use[0]], [$use[1]])->execute($stmt);
-        if ($stmt->rowCount() !== 1) {
-            return $this;
-        }
+        if ($stmt->rowCount() !== 1) return $this;
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         $this->user->id = ($this->user->id ? $this->user->id : $row['user_id']);

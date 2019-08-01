@@ -1,7 +1,7 @@
 
-DROP DATABASE IF EXISTS `osis.fit`;
-CREATE DATABASE `osis.fit` CHARACTER SET `utf8`;
-USE `osis.fit`;
+DROP DATABASE IF EXISTS `app.osis.fit`;
+CREATE DATABASE `app.osis.fit` CHARACTER SET `utf8`;
+USE `app.osis.fit`;
 
 -- ------------------------------------------------------------------------------------
 
@@ -127,11 +127,11 @@ CREATE TABLE `user_food_favorite` (
 );
 
 
-CREATE TABLE `user_log_calorie` (
+CREATE TABLE `user_calories` (
     id                  INT NOT NULL AUTO_INCREMENT,
     user_id             INT NOT NULL,
 
-    title               VARCHAR(60),
+    title               VARCHAR(150),
     calories            DOUBLE NOT NULL,
     stamp               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

@@ -12,7 +12,7 @@ include_once LOCATION . 'src/Security.php'; /* Load Security-Methods */
 // ------------------ SCRIPT -----------------
 try {
     
-    $sec = Sec::auth();
+    $sec = Sec::auth($_LOG);
     $data = Core::getBody([
         'firstname' => ['string', false, ['max' => 150]],
         'lastname' => ['string', false, ['max' => 150]],
@@ -25,15 +25,13 @@ try {
         ]
     ]);
     
-    $data->id = $sec->id;
     $data->aim_weight = $data->aims->weight;
     $data->aim_date = $data->aims->date;
 
     include_once LOCATION . 'src/class/User.php';
-    $User = new User($_DBC);
-
+    $User = new User($_DBC, $sec);
+    
     $User->set($data)->edit();
-
     $_REP->addData($User->getObject(), "user");
     
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }

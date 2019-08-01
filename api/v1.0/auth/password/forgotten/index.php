@@ -21,26 +21,27 @@ try {
         'password' => ['password', false]
     ]);
 
-    if ($data->mail && !$data->code && !$data->password) {
+    include_once LOCATION . 'src/class/Auth.php';
+    $Auth = new Auth($_DBC, ["mail" => $data->mail]);
 
-        $Auth->user->mail = $_LOG->identity = $data->mail;
-        if ($Auth->check()->status === "verified") {
+    if ($Auth->check()->status === "verified") {
+
+        if ($data->mail && !$data->code && !$data->password) {
 
             $Auth->password_code = Core::randomString(20);
             $Auth->passwordForgotten();
             $_LOG->addInfo("Code created");
-
-            include_once LOCATION . 'src/Mail.php';
+            
             include_once LOCATION . 'src/class/User.php';
-            $User = new User($_DBC, $Auth->user->id);
+            $User = new User($_DBC, $Auth->user);
+            $User->read();
+            
+            include_once LOCATION . 'src/Mail.php';
             $Mailer = new Mailer(new defaultMail());
-            $Mailer->addReceiver($User->mail, $User->firstname, $User->lastname);
+            $Mailer->addReceiver($data->mail, $User->firstname, $User->lastname);
 
-            if ($data->language === "de") {
-                include_once 'mail/content_de.php';
-            } else {
-                include_once 'mail/content_en.php';
-            }
+            if ($data->language === "de") include_once 'mail/content_de.php';
+            else include_once 'mail/content_en.php';
             $Mailer->prepare();
                 
             if (Env::api_env === "prod") {
@@ -52,23 +53,14 @@ try {
                 $_REP->addData($Mailer->getHTML(), "html");
             }
 
-        }
-
-    } else if ($data->mail && $data->code && $data->password) {
-
-        $Auth->user->mail = $_LOG->identity = $data->mail;
-        if ($Auth->check()->status === "verified") {
-
+        } else if ($data->mail && $data->code && $data->password) {
             $Auth->passwordForgotten($data->code)->passwordChange($data->password);
-
-        } else if ($Auth->status === "locked") {
-            throw new ApiException(403, "account_locked");
-        } else if ($Auth->status === "unverified") {
-            throw new ApiException(403, "account_not_verified");
-        } else {
-            throw new ApiException(401, "account_not_found");
         }
 
+    } else {
+        if ($Auth->status === "locked") throw new ApiException(403, "account_locked");
+        else if ($Auth->status === "unverified") throw new ApiException(403, "account_not_verified");
+        else throw new ApiException(401, "account_not_found");
     }
 
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }

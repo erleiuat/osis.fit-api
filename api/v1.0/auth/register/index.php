@@ -7,9 +7,7 @@ include_once LOCATION . 'src/Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
-include_once LOCATION . 'src/class/User.php';
-include_once LOCATION . 'src/class/Auth.php';
-$Auth = new Auth($_DBC, new User($_DBC));
+
 
 // ------------------ SCRIPT -----------------
 try {
@@ -21,31 +19,42 @@ try {
         'password' => ['password', true, ['min' => 8, 'max' => 255]],
         'language' => ['string', false, ['max' => 5]]
     ]);
-    
-    $Auth->user->mail = $_LOG->identity = $data->mail;
-    $Auth->user->firstname = $data->firstname;
-    $Auth->user->lastname = $data->lastname;
-    $Auth->user->level = "user";
+
+    include_once LOCATION . 'src/class/Auth.php';
+    $Auth = new Auth($_DBC, ["mail" => $data->mail]);
     
     if($Auth->check()->status) throw new ApiException(403, "mail_in_use", ["entity"=>"mail"]);
 
-    $Auth->user->create();
-    $_LOG->addInfo("User created");
+    include_once LOCATION . 'src/class/User.php';
+    $User = new User($_DBC, [
+        "mail" => $data->mail,
+        "level" => "user"
+    ]);
+    
+    $User->set([
+        "firstname" => $data->firstname,
+        "lastname" => $data->lastname
+    ])->create();
 
-    $Auth->verify_code = Core::randomString(10); 
-    $Auth->password = $data->password;
-    $Auth->register();
+    $_LOG->addInfo("User created");
+    
+    $Auth->setUser([
+        "id" => $User->user->id,
+        "mail" => $data->mail,
+        "level" => "user"
+    ])->set([
+        "verify_code" => Core::randomString(10),
+        "password" => $data->password
+    ])->register();
+    
     $_LOG->addInfo("User registered");
 
     include_once LOCATION . 'src/Mail.php';
     $Mailer = new Mailer(new defaultMail());
-    $Mailer->addReceiver($Auth->user->mail, $Auth->user->firstname, $Auth->user->lastname);
+    $Mailer->addReceiver($User->user->mail, $User->firstname, $User->lastname);
 
-    if ($data->language === "de") {
-        include_once 'mail/content_de.php';
-    } else {
-        include_once 'mail/content_en.php';
-    }
+    if ($data->language === "de") include_once 'mail/content_de.php';
+    else include_once 'mail/content_en.php';
     $Mailer->prepare();
         
     if (Env::api_env === "prod") {

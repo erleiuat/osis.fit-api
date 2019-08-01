@@ -4,7 +4,7 @@ use \Firebase\JWT\JWT;
 
 class Sec {
 
-    public static function auth() {
+    public static function auth($LOG = false) {
 
         if (!isset(getallheaders()['Authorization'])) {
             throw new ApiException(403, "token_missing", "app");
@@ -25,6 +25,7 @@ class Sec {
             throw new ApiException(403, "token_invalid", "phrase_wrong");
         }
         
+        if ($LOG) $LOG->setUser($access_token_app->data->user);
         return $access_token_app->data->user;
         
     }

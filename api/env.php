@@ -26,7 +26,7 @@ class Env {
 
     /* Database */
     const db_host = "localhost";                        
-    const db_database = "osis.fit";                        
+    const db_database = "app.osis.fit";                        
     const db_user = "root";                            
     const db_password = "";   
 

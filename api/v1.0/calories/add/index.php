@@ -1,7 +1,7 @@
 <?php
 
-define('PROCESS', "User/Read"); /* Name of this Process */
-define('LOCATION', "../../../"); /* Location of this endpoint */           
+define('PROCESS', "Calories/Add"); /* Name of this Process */
+define('LOCATION', "../../../"); /* Location of this endpoint */        
 
 include_once LOCATION . 'src/Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */
@@ -11,14 +11,23 @@ include_once LOCATION . 'src/Security.php'; /* Load Security-Methods */
 
 // ------------------ SCRIPT -----------------
 try {
-    
-    $sec = Sec::auth($_LOG);
-    
-    include_once LOCATION . 'src/class/User.php';
-    $User = new User($_DBC, $sec);
 
-    $_REP->addData($User->read()->getObject(), "user");
+    $sec = Sec::auth($_LOG);
+    $data = Core::getBody([
+        'title' => ['string', false, ['max' => 150]],
+        'calories' => ['number', true],
+        'date' => ['date', true],
+        'time' => ['time', true]
+    ]);
     
+    include_once LOCATION . 'src/class/Calories.php';
+    $Calories = new Calories($_DBC, $sec);
+
+    $obj = $Calories->set($data)->create()->getObject();
+
+    $_REP->addData($obj->id, "id");
+    $_REP->addData($obj, "object");
+
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------
 

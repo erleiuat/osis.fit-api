@@ -6,6 +6,7 @@ include_once LOCATION . 'src/config/main/headers.php';
 include_once LOCATION . 'src/config/main/Core.php';
 include_once LOCATION . 'src/config/main/Validate.php';
 include_once LOCATION . 'src/config/main/ApiException.php';
+include_once LOCATION . 'src/config/main/ApiObject.php';
 
 include_once LOCATION . 'src/config/main/Reply.php';
 include_once LOCATION . 'src/config/main/Database.php';

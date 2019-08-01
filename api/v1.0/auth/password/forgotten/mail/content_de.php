@@ -13,8 +13,8 @@ $Mailer->body = [
             </td></tr>
         </table><br/><br/>
         Oder nutze diesen Link: <br/>
-        <a href="https://app.osis.fit/auth/forgotten?mail='.$User->mail . '&code=' . $Auth->password_code . '">
-            app.osis.fit/auth/forgotten?mail='.$User->mail . '&code=' . $Auth->password_code . '
+        <a href="https://app.osis.fit/auth/forgotten?mail='.$Auth->user->mail . '&code=' . $Auth->password_code . '">
+            app.osis.fit/auth/forgotten?mail='.$Auth->user->mail . '&code=' . $Auth->password_code . '
         </a>
     ',
     "header.heading" => "Passwort vergessen? ",
@@ -27,7 +27,7 @@ $Mailer->body = [
         <a href='https://app.osis.fit/help/contact'>lass es uns wissen</a>. <br/><br/>
     ",
     "button.inner" => "Passwort ändern &rarr;",
-    "button.href" => "https://app.osis.fit/auth/forgotten?mail=" . $User->mail . "&code=" . $Auth->password_code
+    "button.href" => "https://app.osis.fit/auth/forgotten?mail=" . $Auth->user->mail . "&code=" . $Auth->password_code
 ];
 
 $Mailer->body["footer.inner"] = Env::mail_page_name . " - " . Env::mail_slogan_de . " <br/> <i>" . Env::mail_creator_de . "</i>";

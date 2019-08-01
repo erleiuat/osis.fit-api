@@ -14,7 +14,7 @@ class Log {
 
     /* ----------- PUBLIC BASIC PARAMS ---------- */
     public $id;
-    public $user_id = null;
+    public $user;
     public $level = "trace";
     public $process;
     public $information = "";
@@ -28,6 +28,11 @@ class Log {
         $this->db = $db;
         $this->process = $process;
         $this->stamp = date('Y-m-d G:i:s');
+        $this->user = (object) [
+            "id" => null,
+            "mail" => null,
+            "level" => null
+        ];
 
         $this->trace = (
             "USER_AGENT|" . $_SERVER['HTTP_USER_AGENT'] . "|;" .
@@ -48,6 +53,13 @@ class Log {
 
     /* ----------------- METHODS ---------------- */
 
+    public function setUser($obj) {
+        $keys = ['id', 'mail', 'level'];
+        if(!is_object($obj)) $obj = (object) $obj;
+        foreach ($keys as $key) $this->user->$key = (isset($obj->$key) ? $obj->$key : null);
+        return $this;
+    }
+    
     public function setStatus($level, $info) {
         $this->level = $level;
         $this->addInfo($info);
@@ -66,7 +78,7 @@ class Log {
         ");
         $this->db->bind($stmt, 
             ['user_id', 'level', 'process', 'information', 'identity', 'trace', 'stamp'], 
-            [$this->user_id, $this->level, $this->process, $this->information, $this->identity, $this->trace, $this->stamp]
+            [$this->user->id, $this->level, $this->process, $this->information, $this->identity, $this->trace, $this->stamp]
         );
 
         $this->db->execute($stmt);
