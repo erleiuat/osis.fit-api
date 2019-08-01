@@ -46,10 +46,10 @@ class Reply {
 
         if ($this->code === 204 && $this->data) $this->setStatus(200);
 
-        $response = ["status" => [
-            "code" => $this->code, 
-            "message" => $this->status
-        ]];
+        $response = [
+            "status" => $this->code,            
+            "statusMessage" => $this->status
+        ];
 
         if ($this->condition) $response["condition"] = $this->condition;
         if ($this->info) $response["info"] = $this->info;

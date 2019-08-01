@@ -6,7 +6,7 @@ class Calories extends ApiObject {
     private $t_main = "user_calories";
 
     /* ----------- BASIC PARAMS ---------- */
-    protected $keys = ['title', 'calories', 'stamp', 'date', 'time'];
+    protected $keys = ['id', 'title', 'calories', 'stamp', 'date', 'time'];
 
     public $id;
     public $title;
@@ -36,72 +36,86 @@ class Calories extends ApiObject {
 
     }
 
-    public function read() {
-        
-        $stmt = $this->db->conn->prepare("
-            SELECT * FROM ".$this->v_info . " 
-            WHERE id = :id
-        ");
-        $this->db->bind($stmt, ['id'], [$this->id])->execute($stmt);
+    public function edit() {
 
-        if ($stmt->rowCount() !== 1) {
-            throw new Exception('entry_not_found', 404);
-        }
-
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $this->set($row);
+        /* TODO? */
 
     }
 
-    public function edit() {
+    public function delete() {
 
         $stmt = $this->db->conn->prepare("
-            UPDATE ".$this->t_detail . " SET 
-            `firstname` = :firstname, 
-            `lastname` = :lastname, 
-            `gender` = :gender, 
-            `height` = :height, 
-            `birth` = :birth 
-            WHERE `user_id` = :user_id;
+            DELETE FROM ".$this->t_main." WHERE 
+            id = :id AND 
+            user_id = :user_id 
         ");
         $this->db->bind($stmt, 
-            ['user_id', 'firstname', 'lastname', 'gender', 'height', 'birth'],
-            [$this->id, $this->firstname, $this->lastname, $this->gender, $this->height, $this->birth]
+            ['id', 'user_id'],
+            [$this->id, $this->user->id]
         )->execute($stmt);
 
+        if($stmt->rowCount() !== 1) throw new Exception('entry_not_found', 404);
+        return $this;
+
+    }
+
+    public function read() {
+        
+        /* TODO Read unique by id
         $stmt = $this->db->conn->prepare("
-            UPDATE ".$this->t_aim . " SET 
-            `weight` = :aim_weight, 
-            `date` = :aim_date 
-            WHERE `user_id` = :user_id;
+            SELECT * FROM ".$this->t_main . " WHERE 
+            user_id = :user_id AND
+            stamp >= CONCAT(:date, ' 00:00:00') AND 
+            stamp <= CONCAT(:date, ' 23:59:59')
         ");
+
         $this->db->bind($stmt, 
-            ['user_id', 'aim_weight', 'aim_date'],
-            [$this->id, $this->aim_weight, $this->aim_date]
+            ['user_id', 'date'],
+            [$this->user->id, $date]
         )->execute($stmt);
+
+        if ($stmt->rowCount() > 1) throw new Exception('no_entries_found', 404);
+        */
+        return $this;
+
+    }
+
+    public function get($from = false, $to = false) {
+
+        if(!$from) $from = '1990-01-01';
+        if(!$to) $to = date('Y-m-d', time());
+
+        $stmt = $this->db->conn->prepare("
+            SELECT * FROM ".$this->t_main . " WHERE 
+            user_id = :user_id AND
+            stamp >= CONCAT(:from, ' 00:00:00') AND 
+            stamp <= CONCAT(:to, ' 23:59:59')
+        ");
+
+        $this->db->bind($stmt, 
+            ['user_id', 'from', 'to'],
+            [$this->user->id, $from, $to]
+        )->execute($stmt);
+
+        if ($stmt->rowCount() < 1) throw new Exception('no_entries_found', 204);
+        
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     }
 
     public function getObject($obj = false) {
-
-        if(!$obj) $obj = (array) $this;
         
-        else if (is_array($obj)){
-            $arr = [];
-            while ($val = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                array_push($val, $this->getObject($val));
-            }
-            return $arr;
-        }
+        if(!$obj) $obj = (array) $this;
+        else if(!is_array($obj)) $obj = (array) $obj;
 
         $timestamp = strtotime($obj['stamp']);
         return (object) [
             "id" => $obj['id'],
             "title" => $obj['title'],
             "calories" => $obj['calories'],
-            "stamp" => $obj['stamp'],
             "date" => date('Y-m-d', $timestamp),
-            "time" => date('H:i:s', $timestamp)
+            "time" => date('H:i', $timestamp),
+            "stamp" => $obj['stamp']
         ];
         
     }
