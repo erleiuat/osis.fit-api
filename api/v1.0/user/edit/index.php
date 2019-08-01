@@ -18,7 +18,7 @@ try {
         'lastname' => ['string', false, ['max' => 150]],
         'birthdate' => ['date', false],
         'height' => ['number', false],
-        'gender' => ['bool', false],
+        'gender' => ['string', false],
         'aims' => [
             'weight' => ['number', false],
             'date' => ['date', false]

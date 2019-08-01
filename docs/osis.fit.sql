@@ -72,12 +72,11 @@ CREATE TABLE `user_detail` (
     lastname            VARCHAR(150) NOT NULL,
     gender              ENUM('male','female'),
     height              DOUBLE,
-    birth               DATE,
+    birthdate           DATE,
 
     PRIMARY KEY (user_id),
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
-
 
 CREATE TABLE `user_aim` (
     user_id             INT NOT NULL,
@@ -89,7 +88,6 @@ CREATE TABLE `user_aim` (
     PRIMARY KEY (user_id),
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
-
 
 CREATE TABLE `user_food` (
     id                  INT NOT NULL AUTO_INCREMENT,
@@ -106,7 +104,6 @@ CREATE TABLE `user_food` (
     PRIMARY KEY (id, user_id),
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
-
 
 CREATE TABLE `user_food_favorite` (
     id                  INT NOT NULL AUTO_INCREMENT,
@@ -126,6 +123,16 @@ CREATE TABLE `user_food_favorite` (
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
+CREATE TABLE `user_weight` (
+    id                  INT NOT NULL AUTO_INCREMENT,
+    user_id             INT NOT NULL,
+
+    weight              DOUBLE NOT NULL,
+    stamp               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id, user_id),
+    FOREIGN KEY (user_id) REFERENCES user(id)
+);
 
 CREATE TABLE `user_calories` (
     id                  INT NOT NULL AUTO_INCREMENT,
@@ -139,24 +146,11 @@ CREATE TABLE `user_calories` (
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
-
-CREATE TABLE `user_log_weight` (
+CREATE TABLE `user_activity` (
     id                  INT NOT NULL AUTO_INCREMENT,
     user_id             INT NOT NULL,
 
-    weight              DOUBLE NOT NULL,
-    stamp               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    PRIMARY KEY (id, user_id),
-    FOREIGN KEY (user_id) REFERENCES user(id)
-);
-
-
-CREATE TABLE `user_log_activity` (
-    id                  INT NOT NULL AUTO_INCREMENT,
-    user_id             INT NOT NULL,
-
-    title               VARCHAR(60),
+    title               VARCHAR(150),
     duration            TIME,
     calories            DOUBLE,
     stamp               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -191,7 +185,7 @@ CREATE VIEW `v_user_info` AS
         us.level AS 'level',
         de.firstname AS 'firstname',
         de.lastname AS 'lastname',
-        de.birth AS 'birth',
+        de.birthdate AS 'birthdate',
         de.height AS 'height',
         de.gender AS 'gender',
         ai.weight AS 'aim_weight',

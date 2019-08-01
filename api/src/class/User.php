@@ -10,18 +10,17 @@ class User extends ApiObject {
 
     /* ----------- PUBLIC PARAMS ---------- */
     protected $keys = [
-        'firstname', 'lastname', 'birth', 'height', 'gender',
-        'aim_weight', 'aim_bmi', 'aim_date'
+        'firstname', 'lastname', 'birthdate', 'height', 'gender',
+        'aim_weight', 'aim_date'
     ];
 
     public $firstname;
     public $lastname;
-    public $birth;
+    public $birthdate;
     public $height;
     public $gender;
 
     public $aim_weight;
-    public $aim_bmi;
     public $aim_date;
 
     /* ----------------- METHODS ---------------- */
@@ -82,12 +81,12 @@ class User extends ApiObject {
             `lastname` = :lastname, 
             `gender` = :gender, 
             `height` = :height, 
-            `birth` = :birth 
+            `birthdate` = :birthdate 
             WHERE `user_id` = :user_id;
         ");
         $this->db->bind($stmt, 
-            ['user_id', 'firstname', 'lastname', 'gender', 'height', 'birth'],
-            [$this->user->id, $this->firstname, $this->lastname, $this->gender, $this->height, $this->birth]
+            ['user_id', 'firstname', 'lastname', 'gender', 'height', 'birthdate'],
+            [$this->user->id, $this->firstname, $this->lastname, $this->gender, $this->height, $this->birthdate]
         )->execute($stmt);
 
         $stmt = $this->db->conn->prepare("
@@ -117,7 +116,7 @@ class User extends ApiObject {
         return [
             "firstname" => $obj['firstname'],
             "lastname" => $obj['lastname'],
-            "birthdate" => $obj['birth'],
+            "birthdate" => $obj['birthdate'],
             "height" => $obj['height'],
             "gender" => $obj['gender'],
             "aims" => [
