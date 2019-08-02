@@ -8,7 +8,6 @@ Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
 include_once LOCATION . 'src/Security.php'; /* Load Security-Methods */
-include_once LOCATION . 'src/Image.php'; /* Load Image-Methods */
 
 // ------------------ SCRIPT -----------------
 try {
@@ -17,14 +16,12 @@ try {
     $img = new Bulletproof\Image($_FILES);
     if(!$img["image"]) throw new ApiException(403, 'upload_image_missing');
     
-    
-    $Image = new Image($_DBC, $sec);
     $folder = hash('ripemd160', $sec->id);
-
     $path = Env::api_static_path."/".Env::api_name."/".$folder;
     if (!is_dir($path."/lazy/")) mkdir($path."/lazy/", 0777, true);
 
-    $uFull = $img->setLocation($path)->upload();
+    $img->setLocation($path);
+    $uFull = $img->upload();
     if(!$uFull) throw new ApiException(500, 'upload_error_full', $img->getError());
 
     $uLazy = $path."/lazy/".$uFull->getName().".".$uFull->getMime();
@@ -39,6 +36,8 @@ try {
         true
     );
 
+    include_once LOCATION . 'src/Image.php'; /* Load Image-Methods */
+    $Image = new Image($_DBC, $sec);
     $Image->set([
         'name' => $uFull->getName(),
         'mime' => $uFull->getMime()

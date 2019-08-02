@@ -3,7 +3,7 @@
 class Image extends ApiObject {
     
     /* -------- TABLES (T) AND VIEWS (V) -------- */
-    private $t_main = "user_image";
+    private $t_main = "image";
     private $v_detail = "v_image_detail";
 
     /* ----------- PUBLIC BASIC PARAMS ---------- */
@@ -52,26 +52,26 @@ class Image extends ApiObject {
 
     }
 
-    public function read() {
-        
+    public function read($id = false) {
+        if(!$id) $id = $this->id;
+
         $stmt = $this->db->conn->prepare("
             SELECT * FROM ".$this->t_main . " WHERE 
             user_id = :user_id AND id = :id
         ");
         $this->db->bind($stmt, 
             ['user_id', 'id'],
-            [$this->user->id, $this->id]
+            [$this->user->id, $id]
         )->execute($stmt);
 
-        if ($stmt->rowCount() !== 1) throw new Exception('entry_not_found', 404);
+        if ($stmt->rowCount() !== 1) throw new ApiException(404,'entry_not_found', 'image');
 
-        $img = $stmt->fetch(PDO::FETCH_ASSOC);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
         $this->set([
-            'id' => $img['id'],
-            'name' => $img['name'],
-            'mime' => $img['mime']
+            'id' => $row['id'],
+            'name' => $row['name'],
+            'mime' => $row['mime']
         ]);
-
         return $this;
 
     }
@@ -80,18 +80,16 @@ class Image extends ApiObject {
         
         if(!$obj) $obj = (array) $this;
 
-        $folder = hash('ripemd160', $this->user->id);
         $url = Env::api_static_url."/".Env::api_name;
+        $folder = hash('ripemd160', $this->user->id);
         $path = $url."/".$folder;
+        $file = $obj['name'].".".$obj['mime'];
 
         return (object) [
             "id" => $obj['id'],
-            "name" => $obj['name'],
-            "mime" => $obj['mime'],
-            "folder" => $folder,
-            "url" => $url,
-            "fullPath" => $path."/".$obj['name'].".".$obj['mime'],
-            "lazyPath" => $path."/lazy/".$obj['name'].".".$obj['mime']
+            "file" => $file,
+            "fullPath" => $path."/".$file,
+            "lazyPath" => $path."/lazy/".$file
         ];
         
     }

@@ -89,23 +89,7 @@ CREATE TABLE `user_aim` (
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
-CREATE TABLE `user_food` (
-    id                  INT NOT NULL AUTO_INCREMENT,
-    user_id             INT NOT NULL,
-
-    title               VARCHAR(60) NOT NULL,
-    amount              DOUBLE,
-    calories_per_100    DOUBLE,
-
-    img_url             VARCHAR(255),
-    img_lazy            VARCHAR(255),
-    img_phrase          VARCHAR(255),
-
-    PRIMARY KEY (id, user_id),
-    FOREIGN KEY (user_id) REFERENCES user(id)
-);
-
-CREATE TABLE `user_image` (
+CREATE TABLE `image` (
     id                  INT NOT NULL AUTO_INCREMENT,
     user_id             INT NOT NULL,
 
@@ -116,6 +100,20 @@ CREATE TABLE `user_image` (
     access_stamp        TIMESTAMP,
 
     PRIMARY KEY (id, user_id),
+    FOREIGN KEY (user_id) REFERENCES user(id)
+);
+
+CREATE TABLE `user_food` (
+    id                  INT NOT NULL AUTO_INCREMENT,
+    user_id             INT NOT NULL,
+    image_id            INT,
+
+    title               VARCHAR(150) NOT NULL,
+    amount              DOUBLE,
+    calories_per_100    DOUBLE,
+
+    PRIMARY KEY (id, user_id),
+    FOREIGN KEY (image_id) REFERENCES image(id),
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
