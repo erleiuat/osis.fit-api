@@ -7,6 +7,8 @@ class Env {
     const api_version = "1.0";   
     const api_name = "osis.fit";   
     const api_timezone = "Europe/Zurich";
+    const api_static_url = "http://localhost/osis.io-static/store";
+    const api_static_path = "../../../../osis.io-static/store";
 
     /* Mail */
     const mail_from_name = "Osis.fit";

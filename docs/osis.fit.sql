@@ -105,6 +105,20 @@ CREATE TABLE `user_food` (
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
+CREATE TABLE `user_image` (
+    id                  INT NOT NULL AUTO_INCREMENT,
+    user_id             INT NOT NULL,
+
+    name                VARCHAR(255),
+    mime                VARCHAR(20),
+
+    upload_stamp        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    access_stamp        TIMESTAMP,
+
+    PRIMARY KEY (id, user_id),
+    FOREIGN KEY (user_id) REFERENCES user(id)
+);
+
 CREATE TABLE `user_food_favorite` (
     id                  INT NOT NULL AUTO_INCREMENT,
     user_id             INT NOT NULL,

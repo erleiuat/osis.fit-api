@@ -49,11 +49,6 @@ class Core {
         return Core::processGet($pattern, $data, 'raw');
     }
 
-    public static function getFile($pattern) {
-        $data = (object) $_FILES;
-        return Core::processGet($pattern, $data, 'form-data');
-    }
-
     public static function getPost($pattern) {
         $data = (object) $_POST;
         return Core::processGet($pattern, $data, 'x-www-form-urlencoded');
