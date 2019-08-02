@@ -56,7 +56,7 @@ class Reply {
         if ($this->data) $response["data"] = $this->data;
     
         http_response_code($this->code === 204 ? 200 : $this->code);
-        echo json_encode($response, JSON_NUMERIC_CHECK);
+        echo json_encode($response);
 
     }
 

@@ -18,6 +18,8 @@ class Food extends ApiObject {
     /* ----------------- METHODS ---------------- */
     public function create() {
 
+        $img = (isset($this->image->id) ? $this->image->id : null);
+
         $stmt = $this->db->prepare("
             INSERT INTO ".$this->t_main . " 
             (`user_id`, `image_id`, `title`, `amount`, `calories_per_100`) VALUES 
@@ -25,7 +27,7 @@ class Food extends ApiObject {
         ");
         $this->db->bind($stmt, 
             ['user_id', 'image_id', 'title', 'amount', 'calories_per_100'],
-            [$this->user->id, $this->image->id, $this->title, $this->amount, $this->calories_per_100]
+            [$this->user->id, $img, $this->title, $this->amount, $this->calories_per_100]
         )->execute($stmt);
 
         $this->id = $this->db->conn->lastInsertId();
@@ -85,8 +87,9 @@ class Food extends ApiObject {
     public function readAll() {
         
         $stmt = $this->db->conn->prepare("
-            SELECT * FROM ".$this->t_main . " WHERE 
-            user_id = :user_id
+            SELECT * FROM ".$this->t_main . " 
+            WHERE user_id = :user_id 
+            ORDER BY id DESC
         ");
         $this->db->bind($stmt, 
             ['user_id'],
@@ -105,10 +108,10 @@ class Food extends ApiObject {
         else if(!is_array($obj)) $obj = (array) $obj;
 
         return (object) [
-            "id" => $obj['id'],
+            "id" => (int) $obj['id'], //TODO: Set type everywhere
             "title" => $obj['title'],
-            "amount" => $obj['amount'],
-            "caloriesPer100" => $obj['calories_per_100'],
+            "amount" => (double) $obj['amount'],
+            "caloriesPer100" => (double) $obj['calories_per_100'],
             "image" => (isset($obj['image']) ? $obj['image'] : false)
         ];
         

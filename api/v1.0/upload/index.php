@@ -8,6 +8,7 @@ Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
 include_once LOCATION . 'src/Security.php'; /* Load Security-Methods */
+include_once LOCATION . 'src/Image.php'; /* Load Image-Methods */
 
 // ------------------ SCRIPT -----------------
 try {
@@ -36,7 +37,6 @@ try {
         true
     );
 
-    include_once LOCATION . 'src/Image.php'; /* Load Image-Methods */
     $Image = new Image($_DBC, $sec);
     $Image->set([
         'name' => $uFull->getName(),
