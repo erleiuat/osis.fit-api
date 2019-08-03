@@ -13,9 +13,7 @@ include_once LOCATION . 'src/Security.php'; /* Load Security-Methods */
 try {
 
     $sec = Sec::auth($_LOG);
-    $data = Core::getBody([
-        'id' => ['number', false]
-    ]);
+    $data = Core::getBody(['id' => ['number', false]]);
     
     include_once LOCATION . 'src/class/Food.php';
     $Food = new Food($_DBC, $sec);
@@ -25,7 +23,9 @@ try {
     if($data->id) {
 
         $obj = $Food->read($data->id)->getObject();
-        if($obj->image) $obj->image = $Image->read($obj->image)->getObject();
+        if ($obj->image) $obj->image = $Image->read($obj->image)->getObject();
+        $obj = Core::formResponse($obj);
+
         $_REP->addData(1, "total");
         $_REP->addData($obj, "item");
 
@@ -33,10 +33,12 @@ try {
 
         $arr = [];
         $entries = $Food->readAll();
+
         foreach ($entries as $entry) {
             $entry['image'] = $entry['image_id'];
             $obj = $Food->getObject($entry);
             if($obj->image) $obj->image = $Image->read($obj->image)->getObject();
+            $obj = Core::formResponse($obj);
             array_push($arr, $obj);
         }
 

@@ -19,16 +19,13 @@ class Image extends ApiObject {
     /* ----------------- METHODS ---------------- */
     public function create() {
 
-        $vars = ['user_id', 'name', 'mime'];
-        $vals = array_merge(
-            [ 'user_id' => $this->user->id ], 
-            (array) $this->getObject()
-        );
+        $vals = Core::mergeAssign([
+            'user_id' => $this->user->id, 
+            'name' => null,
+            'mime' => null
+        ], (array) $this->getObject());
 
-        $this->db->make(
-            'insert', $this->t_main, 
-            $vars, $vals
-        );
+        $this->db->makeInsert($this->t_main, $vals);
 
         $this->id = $this->db->conn->lastInsertId();        
         return $this;

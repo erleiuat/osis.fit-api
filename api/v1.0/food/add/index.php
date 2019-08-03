@@ -31,6 +31,7 @@ try {
     $Food = new Food($_DBC, $sec);
     
     $obj = $Food->set($data)->create()->getObject();
+    $obj = Core::formResponse($obj);
 
     $_REP->addData((int) $obj->id, "id");
     $_REP->addData($obj, "item");

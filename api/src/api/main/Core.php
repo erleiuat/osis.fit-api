@@ -20,6 +20,33 @@ class Core {
         return array_intersect_key($arr2, $arr1) + $arr1;
     }
 
+    public static function formResponse($obj){
+        if(!is_array($obj)) $obj = (array) $obj;
+
+        $response = [];
+        foreach ($obj as $key => $value){
+
+            $keyParts = explode("_", $key);  
+
+            if(count($keyParts) > 1){
+                $key = [];
+                foreach($keyParts as $keyPart){
+                    array_push($key, ucfirst($keyPart));
+                }
+                $key = lcfirst(implode("", $key));
+            }
+
+            if(is_array($value) || is_object($value)){
+                $value = Core::formResponse($value);
+            }
+            
+            $response[$key] = $value;
+        }
+
+        return (object) $response;
+
+    }
+
     public static function includeToVar($file) {
         ob_start();
         require($file);
