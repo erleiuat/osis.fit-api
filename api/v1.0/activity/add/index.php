@@ -26,8 +26,8 @@ try {
 
     $obj = $Activity->set($data)->create()->getObject();
 
-    $_REP->addData($obj->id, "id");
-    $_REP->addData($obj, "object");
+    $_REP->addData((int) $obj->id, "id");
+    $_REP->addData($obj, "item");
 
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------

@@ -31,8 +31,8 @@ try {
     include_once LOCATION . 'src/class/User.php';
     $User = new User($_DBC, $sec);
     
-    $User->set($data)->edit();
-    $_REP->addData($User->getObject(), "user");
+    $obj = $User->set($data)->edit()->getObject();
+    $_REP->addData($obj, "item");
     
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------

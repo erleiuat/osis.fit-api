@@ -13,14 +13,12 @@ include_once LOCATION . 'src/Security.php'; /* Load Security-Methods */
 try {
 
     $sec = Sec::auth($_LOG);
-    $data = Core::getBody([
-        'id' => ['number', true]
-    ]);
+    $data = Core::getBody(['id' => ['number', true]]);
     
     include_once LOCATION . 'src/class/Calories.php';
     $Calories = new Calories($_DBC, $sec);
 
-    $obj = $Calories->set($data)->delete();
+    $Calories->delete($data->id);
 
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------

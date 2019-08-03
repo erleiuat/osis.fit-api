@@ -21,72 +21,39 @@ class Activity extends ApiObject {
 
         if(!$this->stamp) $this->stamp = date('Y-m-d H:i:s', strtotime($this->date." ".$this->time));
 
-        $stmt = $this->db->conn->prepare("
-            INSERT INTO ".$this->t_main . " 
-            (`user_id`, `title`, `duration`, `calories`, `stamp`) VALUES 
-            (:user_id, :title, :duration, :calories, :stamp);
-        ");
+        $vals = Core::mergeAssign([
+            'user_id' => $this->user->id, 
+            'title' => null,
+            'duration' => null,
+            'calories' => null,
+            'stamp' => null
+        ], (array) $this->getObject());
+        $this->db->makeInsert($this->t_main, $vals);
 
-        $this->db->bind($stmt, 
-            ['user_id', 'title', 'duration', 'calories', 'stamp'],
-            [$this->user->id, $this->title, $this->duration, $this->calories, $this->stamp]
-        )->execute($stmt);
-
-        $this->id = $this->db->conn->lastInsertId();
+        $this->id = $this->db->conn->lastInsertId();        
         return $this;
 
     }
 
-    public function edit() {
-
-        /* TODO? */
-
-    }
-
-    public function delete() {
-
-        $stmt = $this->db->conn->prepare("
-            DELETE FROM ".$this->t_main." WHERE 
-            id = :id AND 
-            user_id = :user_id 
-        ");
-        $this->db->bind($stmt, 
-            ['id', 'user_id'],
-            [$this->id, $this->user->id]
-        )->execute($stmt);
-
-        if($stmt->rowCount() !== 1) throw new Exception('entry_not_found', 404);
-        return $this;
-
-    }
-
-    public function read() {
+    public function read($id = false) {
         
-        /* TODO Read unique by id
-        $stmt = $this->db->conn->prepare("
-            SELECT * FROM ".$this->t_main . " WHERE 
-            user_id = :user_id AND
-            stamp >= CONCAT(:date, ' 00:00:00') AND 
-            stamp <= CONCAT(:date, ' 23:59:59')
-        ");
+        $where = ['user_id' => $this->user->id, 'id' => ($id ?: $this->id)];
+        $result = $this->db->makeSelect($this->t_main, $where);
 
-        $this->db->bind($stmt, 
-            ['user_id', 'date'],
-            [$this->user->id, $date]
-        )->execute($stmt);
+        if (count($result) !== 1) throw new ApiException(404, 'item_not_found', get_class($this));
 
-        if ($stmt->rowCount() > 1) throw new Exception('no_entries_found', 404);
-        */
+        $this->set($result[0]);
         return $this;
 
     }
 
-    public function get($from = false, $to = false) {
+    public function readByDate($from = false, $to = false) {
 
         if(!$from) $from = '1990-01-01';
         if(!$to) $to = date('Y-m-d', time());
 
-        $stmt = $this->db->conn->prepare("
+        // TODO ? makeSelect with "between"
+        $stmt = $this->db->prepare("
             SELECT * FROM ".$this->t_main . " WHERE 
             user_id = :user_id AND
             stamp >= CONCAT(:from, ' 00:00:00') AND 
@@ -97,27 +64,39 @@ class Activity extends ApiObject {
             ['user_id', 'from', 'to'],
             [$this->user->id, $from, $to]
         )->execute($stmt);
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        if ($stmt->rowCount() < 1) throw new Exception('no_entries_found', 204);
-        
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (count($result) < 1) throw new ApiException(203, 'no_items_found', get_class($this));
+        return $result;
+
+    }
+
+    public function delete($id = false) {
+
+        $where = ['user_id' => $this->user->id, 'id' => ($id ?: $this->id)];
+        $changed = $this->db->makeDelete($this->t_main, $where);
+
+        if ($changed < 1) throw new ApiException(404, 'item_not_found', get_class($this));
+        else if ($changed > 1) throw new ApiException(500, 'too_many_changed', get_class($this));
+        return $this;
 
     }
 
     public function getObject($obj = false) {
         
-        if(!$obj) $obj = (array) $this;
-        else if(!is_array($obj)) $obj = (array) $obj;
+        if (!$obj) $obj = $this;
+        else if (!is_object($obj)) $obj = (object) $obj;
 
-        $timestamp = strtotime($obj['stamp']);
+        $timestamp = strtotime($obj->stamp);
+
         return (object) [
-            "id" => $obj['id'],
-            "title" => $obj['title'],
-            "duration" => $obj['duration'],
-            "calories" => $obj['calories'],
+            "id" => (int) $obj->id,
+            "title" => $obj->title,
+            "duration" => $obj->duration,
+            "calories" => (double) $obj->calories,
             "date" => date('Y-m-d', $timestamp),
             "time" => date('H:i', $timestamp),
-            "stamp" => $obj['stamp']
+            "stamp" => $obj->stamp
         ];
         
     }

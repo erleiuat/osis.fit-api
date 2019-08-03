@@ -1,5 +1,7 @@
 <?php
 
+// TODO
+
 class FoodFavorite {
 
     /* ------------- PRIVATE PARAMS ------------- */

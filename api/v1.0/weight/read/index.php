@@ -22,11 +22,11 @@ try {
     $Weight = new Weight($_DBC, $sec);
 
     $arr = [];
-    $entries = $Weight->get($data->from, $data->to);
+    $entries = $Weight->readByDate($data->from, $data->to);
     foreach ($entries as $entry) array_push($arr, $Weight->getObject($entry));
 
     $_REP->addData(count($arr), "total");
-    $_REP->addData($arr, "weight");
+    $_REP->addData($arr, "items");
 
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------

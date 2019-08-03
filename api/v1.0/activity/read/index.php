@@ -22,11 +22,11 @@ try {
     $Activity = new Activity($_DBC, $sec);
 
     $arr = [];
-    $entries = $Activity->get($data->from, $data->to);
+    $entries = $Activity->readByDate($data->from, $data->to);
     foreach ($entries as $entry) array_push($arr, $Activity->getObject($entry));
 
     $_REP->addData(count($arr), "total");
-    $_REP->addData($arr, "activity");
+    $_REP->addData($arr, "items");
 
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------

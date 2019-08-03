@@ -17,7 +17,8 @@ try {
     include_once LOCATION . 'src/class/User.php';
     $User = new User($_DBC, $sec);
 
-    $_REP->addData($User->read()->getObject(), "user");
+    $obj = $User->read()->getObject();
+    $_REP->addData($obj, "item");
     
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------

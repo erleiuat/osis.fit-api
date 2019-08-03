@@ -22,11 +22,11 @@ try {
     $Calories = new Calories($_DBC, $sec);
 
     $arr = [];
-    $entries = $Calories->get($data->from, $data->to);
+    $entries = $Calories->readByDate($data->from, $data->to);
     foreach ($entries as $entry) array_push($arr, $Calories->getObject($entry));
 
     $_REP->addData(count($arr), "total");
-    $_REP->addData($arr, "calories");
+    $_REP->addData($arr, "items");
 
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------

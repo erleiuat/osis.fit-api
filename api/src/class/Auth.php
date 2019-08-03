@@ -1,5 +1,7 @@
 <?php
 
+// TODO: Use new db statement structure
+
 class Auth extends ApiObject {
     
     /* -------- TABLES (T) AND VIEWS (V) -------- */
@@ -25,61 +27,55 @@ class Auth extends ApiObject {
     public function check() {
 
         $this->status = false;
-        if ($this->user->id)  $use = ['user_id', $this->user->id];
-        else if($this->user->mail) $use = ['user_mail', $this->user->mail];
+        if ($this->user->id) $where = ['user_id' => $this->user->id];
+        else if($this->user->mail) $where = ['user_mail' => $this->user->mail];
         else return $this;
 
-        $stmt = $this->db->prepare("
-            SELECT * FROM ".$this->v_auth." 
-            WHERE `".$use[0]."` = :".$use[0]."
-        ");
-        $this->db->bind($stmt, [$use[0]], [$use[1]])->execute($stmt);
-        if ($stmt->rowCount() !== 1) return $this;
+        $result = $this->db->makeSelect($this->v_auth, $where);
+        if (count($result) !== 1) return $this;
 
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        $this->user->id = ($this->user->id ? $this->user->id : $row['user_id']);
-        $this->user->mail = ($this->user->mail ? $this->user->mail : $row['user_mail']);
-        $this->user->level = $row['user_level'];
-        $this->id = $row['id'];
-        $this->status = $row['status'];
-        $this->password_stamp = $row['password_stamp'];
+        $this->user->id = $result[0]['user_id'];
+        $this->user->mail = $result[0]['user_mail'];
+        $this->user->level = $result[0]['user_level'];
+        $this->id = $result[0]['id'];
+        $this->status = $result[0]['status'];
+        $this->password_stamp = $result[0]['password_stamp'];
+
         return $this;
         
     }
 
     public function register() {
 
-        $stmt = $this->db->prepare("
-            INSERT INTO ".$this->t_main . " 
-            (`user_id`, `password`, `verify_code`, `password_stamp`) VALUES 
-            (:user_id, :password, :verify_code, now());
-        ");
-        $this->db->bind($stmt, 
-            ['user_id', 'password', 'verify_code'], 
-            [$this->user->id, password_hash($this->password, Env::sec_encryption), password_hash($this->verify_code, Env::sec_encryption)]
-        )->execute($stmt);
-        $this->id = $this->db->conn->lastInsertId();
+        $vals = [
+            'user_id' => $this->user->id, 
+            'password' => password_hash($this->password, Env::sec_encryption),
+            'verify_code' => password_hash($this->verify_code, Env::sec_encryption),
+            'password_stamp' => date('Y-m-d H:i:s', time())
+        ];
+        $this->db->makeInsert($this->t_main, $vals);
+
+        $this->id = $this->db->conn->lastInsertId();        
+
+        return $this;
 
     }
 
     public function verifyMail($code) {
 
-        $stmt = $this->db->prepare("
-            SELECT * FROM ".$this->t_main . " 
-            WHERE user_id = :user_id
-        ");
-        $this->db->bind($stmt, ['user_id'], [$this->user->id])->execute($stmt);
+        $where = ['user_id' => $this->user->id];
+        $result = $this->db->makeSelect($this->t_main, $where);
 
-        if ($stmt->rowCount() === 1 && password_verify($code, ($stmt->fetch(PDO::FETCH_ASSOC))["verify_code"])) {
+        if (count($result) === 1 && password_verify($code, $result[0]["verify_code"])) {
         
-            $stmt = $this->db->prepare("
-                UPDATE ".$this->t_main . " SET 
-                `status` = 'verified', 
-                `verify_stamp` = now(), 
-                `verify_code` = null 
-                WHERE `user_id` = :user_id
-            ");
-            $this->db->bind($stmt, ['user_id'], [$this->user->id])->execute($stmt);
+            $params = [ 
+                'status' => 'verified',
+                'verify_stamp' => date('Y-m-d H:i:s', time()),
+                'verify_code' => null
+            ];
+            
+            $changed = $this->db->makeUpdate($this->t_main, $params, $where);
+            if ($changed > 1) throw new ApiException(500, 'too_many_changed', get_class($this));
 
             return true;
 

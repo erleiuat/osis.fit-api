@@ -26,102 +26,85 @@ class User extends ApiObject {
     /* ----------------- METHODS ---------------- */
     public function create() {
 
-        $stmt = $this->db->prepare("
-            INSERT INTO ".$this->t_main . " 
-            (`mail`, `level`) VALUES
-            (:mail, :level);
-        ");
-        $this->db->bind($stmt, 
-            ['mail', 'level'], 
-            [$this->user->mail, $this->user->level]
-        )->execute($stmt);
+        $vals = [
+            'mail' => $this->user->mail, 
+            'level' => $this->user->level,
+        ];
+        $this->db->makeInsert($this->t_main, $vals);
 
         $this->user->id = $this->db->conn->lastInsertId();
 
-        $stmt = $this->db->prepare("
-            INSERT INTO ".$this->t_detail . " 
-            (`user_id`, `firstname`, `lastname`) VALUES 
-            (:user_id, :firstname, :lastname);
-        ");
-        $this->db->bind($stmt, 
-            ['user_id', 'firstname', 'lastname'], 
-            [$this->user->id, $this->firstname, $this->lastname]
-        )->execute($stmt);
+        $vals = Core::mergeAssign([
+            'user_id' => $this->user->id, 
+            'firstname' => null,
+            'lastname' => null
+        ], (array) $this->getObject());
+        $result = $this->db->makeInsert($this->t_detail, $vals);
+        
+        if ($result !== 1) throw new ApiException(500, 'detail_create_error', get_class($this));
+        
+        $vals = ['user_id' => $this->user->id];
+        $result = $this->db->makeInsert($this->t_aim, $vals);
+        
+        if ($result !== 1) throw new ApiException(500, 'aim_create_error', get_class($this));
 
-        $stmt = $this->db->prepare("
-            INSERT INTO ".$this->t_aim . " 
-            (`user_id`) VALUES (:user_id);
-        ");
-        $this->db->bind($stmt, 
-            ['user_id'], [$this->user->id]
-        )->execute($stmt);
+        return $this;
 
     }
 
-    public function read() {
-        
-        $stmt = $this->db->conn->prepare("
-            SELECT * FROM ".$this->v_info . " 
-            WHERE id = :id
-        ");
-        $this->db->bind($stmt, ['id'], [$this->user->id])->execute($stmt);
+    public function read($id = false) {
 
-        if ($stmt->rowCount() !== 1) throw new Exception('entry_not_found', 404);
+        $where = ['id' => ($id ?: $this->user->id)];
+        $result = $this->db->makeSelect($this->v_info, $where);
 
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $this->set($row);
+        if (count($result) !== 1) throw new ApiException(404, 'item_not_found', get_class($this));
+
+        $this->set($result[0]);
+        return $this;
 
     }
 
     public function edit() {
 
-        $stmt = $this->db->conn->prepare("
-            UPDATE ".$this->t_detail . " SET 
-            `firstname` = :firstname, 
-            `lastname` = :lastname, 
-            `gender` = :gender, 
-            `height` = :height, 
-            `birthdate` = :birthdate 
-            WHERE `user_id` = :user_id;
-        ");
-        $this->db->bind($stmt, 
-            ['user_id', 'firstname', 'lastname', 'gender', 'height', 'birthdate'],
-            [$this->user->id, $this->firstname, $this->lastname, $this->gender, $this->height, $this->birthdate]
-        )->execute($stmt);
+        $where = ['user_id' => $this->user->id];
 
-        $stmt = $this->db->conn->prepare("
-            UPDATE ".$this->t_aim . " SET 
-            `weight` = :aim_weight, 
-            `date` = :aim_date 
-            WHERE `user_id` = :user_id;
-        ");
-        $this->db->bind($stmt, 
-            ['user_id', 'aim_weight', 'aim_date'],
-            [$this->user->id, $this->aim_weight, $this->aim_date]
-        )->execute($stmt);
+        $params = Core::mergeAssign([ 
+            'firstname' => null,
+            'lastname' => null,
+            'gender' => null,
+            'height' => null,
+            'birthdate' => null,
+        ], (array) $this->getObject());
+        $changed = $this->db->makeUpdate($this->t_detail, $params, $where);
+
+        if ($changed > 1) throw new ApiException(500, 'too_many_changed', get_class($this));
+
+        $params = [ 
+            'weight' => $this->aim_weight,
+            'date' => $this->aim_date
+        ];
+        $changed = $this->db->makeUpdate($this->t_aim, $params, $where);
+        
+        if ($changed > 1) throw new ApiException(500, 'too_many_changed', get_class($this));
+
+        return $this;
 
     }
 
     public function getObject($obj = false) {
 
-        if(!$obj) $obj = (array) $this;
-        else if (is_array($obj)){
-            $arr = [];
-            while ($val = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                array_push($val, $this->getObject($val));
-            }
-            return $arr;
-        }
+        if (!$obj) $obj = $this;
+        else if (!is_object($obj)) $obj = (object) $obj;
 
-        return [
-            "firstname" => $obj['firstname'],
-            "lastname" => $obj['lastname'],
-            "birthdate" => $obj['birthdate'],
-            "height" => $obj['height'],
-            "gender" => $obj['gender'],
+        return (object) [
+            "firstname" => $obj->firstname,
+            "lastname" => $obj->lastname,
+            "birthdate" => $obj->birthdate,
+            "height" => ($obj->height ? (double) $obj->height : null),
+            "gender" => $obj->gender,
             "aims" => [
-                "weight" => $obj['aim_weight'],
-                "date" => $obj['aim_date']
+                "weight" => ($obj->aim_weight ? (double) $obj->aim_weight : null),
+                "date" => $obj->aim_date,
             ]
         ];
         

@@ -24,51 +24,33 @@ class Image extends ApiObject {
             'name' => null,
             'mime' => null
         ], (array) $this->getObject());
-
         $this->db->makeInsert($this->t_main, $vals);
 
         $this->id = $this->db->conn->lastInsertId();        
         return $this;
-
-    }
-
-    public function delete() {
-
-        $stmt = $this->db->conn->prepare("
-            DELETE FROM ".$this->t_main." WHERE 
-            id = :id AND 
-            user_id = :user_id 
-        ");
-        $this->db->bind($stmt, 
-            ['id', 'user_id'],
-            [$this->id, $this->user->id]
-        )->execute($stmt);
-
-        if($stmt->rowCount() !== 1) throw new Exception('entry_not_found', 404);
-        return $this;
-
+        
     }
 
     public function read($id = false) {
         if(!$id) $id = $this->id;
 
-        $stmt = $this->db->conn->prepare("
-            SELECT * FROM ".$this->t_main . " WHERE 
-            user_id = :user_id AND id = :id
-        ");
-        $this->db->bind($stmt, 
-            ['user_id', 'id'],
-            [$this->user->id, $id]
-        )->execute($stmt);
+        $where = ['user_id' => $this->user->id, 'id' => ($id ?: $this->id)];
+        $result = $this->db->makeSelect($this->t_main, $where);
 
-        if ($stmt->rowCount() !== 1) throw new ApiException(404,'entry_not_found', 'image');
+        if (count($result) !== 1) throw new ApiException(404, 'item_not_found', get_class($this));
 
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        $this->set([
-            'id' => $row['id'],
-            'name' => $row['name'],
-            'mime' => $row['mime']
-        ]);
+        $this->set($result[0]);
+        return $this;
+
+    }
+
+    public function delete($id = false) {
+
+        $where = ['user_id' => $this->user->id, 'id' => ($id ?: $this->id)];
+        $changed = $this->db->makeDelete($this->t_main, $where);
+
+        if ($changed < 1) throw new ApiException(404, 'item_not_found', get_class($this));
+        else if ($changed > 1) throw new ApiException(500, 'too_many_changed', get_class($this));
         return $this;
 
     }
