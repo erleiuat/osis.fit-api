@@ -43,8 +43,8 @@ try {
         'mime' => $uFull->getMime()
     ])->create();
 
-    $_REP->addData($Image->id, "id");
-    $_REP->addData($Image->getObject(), "object");
+    $_REP->addData((int) $Image->id, "id");
+    $_REP->addData($Image->getObject(), "item");
 
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------

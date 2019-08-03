@@ -1,6 +1,6 @@
 <?php
 
-define('PROCESS', "Food/Add"); /* Name of this Process */
+define('PROCESS', "Food/Edit"); /* Name of this Process */
 define('LOCATION', "../../../"); /* Location of this endpoint */        
 
 include_once LOCATION . 'src/Engine.php'; /* Load API-Engine */
@@ -14,23 +14,24 @@ try {
 
     $sec = Sec::auth($_LOG);
     $data = Core::getBody([
+        'id' => ['number', true],
         'title' => ['string', true, ['max' => 150]],
         'amount' => ['number', true],
         'caloriesPer100' => ['number', true],
         'imageID' => ['number', false]
     ]);
-    $data->calories_per_100 = $data->caloriesPer100;
+
+    include_once LOCATION . 'src/class/Food.php';
+    $Food = new Food($_DBC, $sec);
     
     if($data->imageID) {
         include_once LOCATION . 'src/class/Image.php';
         $Image = new Image($_DBC, $sec);
         $data->image = $Image->set(['id'=>$data->imageID])->read()->getObject();
     }
-
-    include_once LOCATION . 'src/class/Food.php';
-    $Food = new Food($_DBC, $sec);
     
-    $obj = $Food->set($data)->create()->getObject();
+    $data->calories_per_100 = $data->caloriesPer100;
+    $obj = $Food->set($data)->edit()->getObject();
 
     $_REP->addData((int) $obj->id, "id");
     $_REP->addData($obj, "item");

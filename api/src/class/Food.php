@@ -18,101 +18,88 @@ class Food extends ApiObject {
     /* ----------------- METHODS ---------------- */
     public function create() {
 
-        $img = (isset($this->image->id) ? $this->image->id : null);
+        $vals = Core::mergeAssign([
+            'user_id' => $this->user->id, 
+            'image_id' => (isset($this->image->id) ? $this->image->id : null),
+            'title' => null,
+            'amount' => null,
+            'calories_per_100' => null
+        ], (array) $this->getObject());
+        $this->db->makeInsert($this->t_main, $vals);
 
-        $stmt = $this->db->prepare("
-            INSERT INTO ".$this->t_main . " 
-            (`user_id`, `image_id`, `title`, `amount`, `calories_per_100`) VALUES 
-            (:user_id, :image_id, :title, :amount, :calories_per_100);
-        ");
-        $this->db->bind($stmt, 
-            ['user_id', 'image_id', 'title', 'amount', 'calories_per_100'],
-            [$this->user->id, $img, $this->title, $this->amount, $this->calories_per_100]
-        )->execute($stmt);
-
-        $this->id = $this->db->conn->lastInsertId();
+        $this->id = $this->db->conn->lastInsertId();        
         return $this;
 
     }
 
-    public function edit() {
-
-        /* TODO */
-
-    }
-
-    public function delete() {
-
-        $stmt = $this->db->conn->prepare("
-            DELETE FROM ".$this->t_main." WHERE 
-            id = :id AND 
-            user_id = :user_id 
-        ");
-        $this->db->bind($stmt, 
-            ['id', 'user_id'],
-            [$this->id, $this->user->id]
-        )->execute($stmt);
-
-        if($stmt->rowCount() !== 1) throw new Exception('entry_not_found', 404);
-        return $this;
-
-    }
-
-    public function read($id) {
-        if(!$id) $id = $this->id;
+    public function read($id = false) {
         
-        $stmt = $this->db->conn->prepare("
-            SELECT * FROM ".$this->t_main . " WHERE 
-            user_id = :user_id AND id = :id
-        ");
-        $this->db->bind($stmt, 
-            ['user_id', 'id'],
-            [$this->user->id, $id]
-        )->execute($stmt);
+        $where = ['user_id' => $this->user->id, 'id' => ($id ?: $this->id)];
+        $result = $this->db->makeSelect($this->t_main, $where);
 
-        if ($stmt->rowCount() !== 1) throw new ApiException(404,'entry_not_found', 'food');
+        if (count($result) !== 1) throw new ApiException(404, 'item_not_found', 'food');
 
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        $this->set([
-            'id' => $row['id'],
-            'image' => $row['image_id'],
-            'title' => $row['title'],
-            'amount' => $row['amount'],
-            'calories_per_100' => $row['calories_per_100']
-        ]);
+        $this->set(Core::mergeAssign([
+            'id' => null, 
+            'image' => $result[0]['image_id'], 
+            'title' => null,
+            'amount' => null, 
+            'calories_per_100' => null
+        ], $result[0]));
+
         return $this;
 
     }
 
     public function readAll() {
         
-        $stmt = $this->db->conn->prepare("
-            SELECT * FROM ".$this->t_main . " 
-            WHERE user_id = :user_id 
-            ORDER BY id DESC
-        ");
-        $this->db->bind($stmt, 
-            ['user_id'],
-            [$this->user->id]
-        )->execute($stmt);
+        $where = ['user_id' => $this->user->id];
+        $result = $this->db->makeSelect($this->t_main, $where);
 
-        if ($stmt->rowCount() < 1) throw new Exception('no_entries_found', 204);
+        if (count($result) < 1) throw new ApiException(203, 'no_items_found', 'food');
+        return $result;
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function edit($id = false) {
+        
+        $where = ['user_id' => $this->user->id, 'id' => ($id ?: $this->id)];
+        $params = Core::mergeAssign([ 
+            'image_id' => (isset($this->image->id) ? $this->image->id : null),
+            'title' => null,
+            'amount' => null,
+            'calories_per_100' => null
+        ], (array) $this->getObject());
+        
+        $changed = $this->db->makeUpdate($this->t_main, $params, $where);
+        if ($changed > 1) throw new ApiException(500, 'too_many_changed', 'food');
+
+        return $this;
+
+    }
+
+    public function delete($id = false) {
+
+        $where = ['user_id' => $this->user->id, 'id' => ($id ?: $this->id)];
+        $changed = $this->db->makeDelete($this->t_main, $where);
+
+        if ($changed < 1) throw new ApiException(404, 'item_not_found', 'food');
+        else if ($changed > 1) throw new ApiException(500, 'too_many_changed', 'food');
+        return $this;
 
     }
 
     public function getObject($obj = false) {
         
-        if(!$obj) $obj = (array) $this;
-        else if(!is_array($obj)) $obj = (array) $obj;
+        if (!$obj) $obj = $this;
+        else if (!is_object($obj)) $obj = (object) $obj;
 
         return (object) [
-            "id" => (int) $obj['id'], //TODO: Set type everywhere
-            "title" => $obj['title'],
-            "amount" => (double) $obj['amount'],
-            "caloriesPer100" => (double) $obj['calories_per_100'],
-            "image" => (isset($obj['image']) ? $obj['image'] : false)
+            "id" => (int) $obj->id,
+            "title" => $obj->title,
+            "amount" => (double) $obj->amount,
+            "calories_per_100" => (double) $obj->calories_per_100,
+            "image" => (isset($obj->image) ? $obj->image : false)
         ];
         
     }

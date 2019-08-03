@@ -1,27 +1,24 @@
 <?php
 
-define('PROCESS', "User/Food/Read"); /* Name of this Process */
-define('LOCATION', "../../../../"); /* Location of this endpoint */        
+define('PROCESS', "Food/Delete"); /* Name of this Process */
+define('LOCATION', "../../../"); /* Location of this endpoint */        
 
 include_once LOCATION . 'src/Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
 include_once LOCATION . 'src/Security.php'; /* Load Security-Methods */
-include_once LOCATION . 'src/class/Food.php';
-$_Food = new Food($_DBC);
-
 
 // ------------------ SCRIPT -----------------
 try {
 
-    $auth = Sec::auth();
-    $_LOG->user_id = $auth->id;
-    $data = Core::getData();
+    $sec = Sec::auth($_LOG);
+    $data = Core::getBody(['id' => ['number', true]]);
+    
+    include_once LOCATION . 'src/class/Food.php';
+    $Food = new Food($_DBC, $sec);
 
-    $_Food->user_id = $auth->id;
-
-    $_REP->addData("food", $_Food->read());
+    $Food->delete($data->id);
 
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------

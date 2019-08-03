@@ -19,18 +19,18 @@ class Image extends ApiObject {
     /* ----------------- METHODS ---------------- */
     public function create() {
 
-        $stmt = $this->db->conn->prepare("
-            INSERT INTO ".$this->t_main . " 
-            (`user_id`, `name`, `mime`) VALUES 
-            (:user_id, :name, :mime);
-        ");
+        $vars = ['user_id', 'name', 'mime'];
+        $vals = array_merge(
+            [ 'user_id' => $this->user->id ], 
+            (array) $this->getObject()
+        );
 
-        $this->db->bind($stmt, 
-            ['user_id', 'name', 'mime'],
-            [$this->user->id, $this->name, $this->mime]
-        )->execute($stmt);
+        $this->db->make(
+            'insert', $this->t_main, 
+            $vars, $vals
+        );
 
-        $this->id = $this->db->conn->lastInsertId();
+        $this->id = $this->db->conn->lastInsertId();        
         return $this;
 
     }
@@ -78,16 +78,18 @@ class Image extends ApiObject {
 
     public function getObject($obj = false) {
         
-        if(!$obj) $obj = (array) $this;
+        if (!$obj) $obj = $this;
+        else if (!is_object($obj)) $obj = (object) $obj;
 
         $url = Env::api_static_url."/".Env::api_name;
         $folder = hash('ripemd160', $this->user->id);
         $path = $url."/".$folder;
-        $file = $obj['name'].".".$obj['mime'];
+        $file = $obj->name.".".$obj->mime;
 
         return (object) [
-            "id" => $obj['id'],
-            "file" => $file,
+            "id" => (int) $obj->id,
+            "name" => $obj->name,
+            "mime" => $obj->mime,
             "fullPath" => $path."/".$file,
             "lazyPath" => $path."/lazy/".$file
         ];

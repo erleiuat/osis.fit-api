@@ -16,6 +16,10 @@ class Core {
         flush();
     }
 
+    public static function mergeAssign($arr1, $arr2){
+        return array_intersect_key($arr2, $arr1) + $arr1;
+    }
+
     public static function includeToVar($file) {
         ob_start();
         require($file);
