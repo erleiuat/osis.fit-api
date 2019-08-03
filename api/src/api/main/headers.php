@@ -1,6 +1,11 @@
 <?php
 
 error_reporting(Env::sec_error_reports);
+set_error_handler(function($errno, $errstr, $errfile, $errline ){
+    $code = ($errno ? $errno : 'NOT_SET');
+    throw new ErrorException('internal_root_exception:'.$code, 500);
+});
+
 date_default_timezone_set(Env::api_timezone);
 
 header("Content-Type: " . (defined("CTYPE") ? CTYPE : "application/json; charset=UTF-8"));
