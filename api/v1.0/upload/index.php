@@ -17,6 +17,8 @@ try {
     $img = new Bulletproof\Image($_FILES);
     if(!$img["image"]) throw new ApiException(403, 'upload_image_missing');
     
+    $img->setSize(100, 500 * 1000000); // Min. 100 Byte, Max. 500 MegaByte (0.5 GB)
+    
     $folder = hash('ripemd160', $sec->id);
     $path = Env::api_static_path."/".Env::api_name."/".$folder;
     if (!is_dir($path."/lazy/")) mkdir($path."/lazy/", 0777, true);
