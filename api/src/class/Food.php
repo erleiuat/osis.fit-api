@@ -56,7 +56,7 @@ class Food extends ApiObject {
         $where = ['user_id' => $this->user->id];
         $result = $this->db->makeSelect($this->t_main, $where);
 
-        if (count($result) < 1) throw new ApiException(203, 'no_items_found', get_class($this));
+        if (count($result) < 1) throw new ApiException(204, 'no_items_found', get_class($this));
         return $result;
 
     }

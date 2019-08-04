@@ -59,8 +59,7 @@ CREATE TABLE `log` (
     stamp               TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     trace               TEXT,
 
-    PRIMARY KEY (id),
-    FOREIGN KEY (user_id) REFERENCES user(id)
+    PRIMARY KEY (id)
 );
 
 -- ------------------------------------------------------------------------------------
@@ -96,11 +95,27 @@ CREATE TABLE `image` (
     name                VARCHAR(255),
     mime                VARCHAR(20),
 
-    upload_stamp        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     access_stamp        TIMESTAMP,
+    upload_stamp        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (id, user_id),
     FOREIGN KEY (user_id) REFERENCES user(id)
+);
+
+CREATE TABLE `image_sizes` (
+    image_id            INT NOT NULL,
+
+    full                BOOLEAN NOT NULL DEFAULT 0,
+    xl                  BOOLEAN NOT NULL DEFAULT 0,
+    lg                  BOOLEAN NOT NULL DEFAULT 0,
+    md                  BOOLEAN NOT NULL DEFAULT 0,
+    sm                  BOOLEAN NOT NULL DEFAULT 0,
+    xs                  BOOLEAN NOT NULL DEFAULT 0,
+    lazy                BOOLEAN NOT NULL DEFAULT 0,
+    update_stamp        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (image_id),
+    FOREIGN KEY (image_id) REFERENCES image(id)
 );
 
 CREATE TABLE `user_food` (
@@ -207,3 +222,22 @@ CREATE VIEW `v_user_info` AS
     FROM user AS us
     LEFT JOIN user_detail AS de ON de.user_id = us.id
     LEFT JOIN user_aim AS ai ON ai.user_id = us.id;
+
+CREATE VIEW `v_image_info` AS
+
+    SELECT
+
+        img.id AS 'id',
+        img.user_id AS 'user_id',
+        img.name AS 'name',
+        img.mime AS 'mime',
+        sz.full AS 'full',
+        sz.xl AS 'xl',
+        sz.lg AS 'lg',
+        sz.md AS 'md',
+        sz.sm AS 'sm',
+        sz.xs AS 'xs',
+        sz.lazy AS 'lazy'
+
+    FROM image AS img
+    LEFT JOIN image_sizes AS sz ON sz.image_id = img.id;
