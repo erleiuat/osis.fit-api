@@ -23,9 +23,8 @@ try {
     $img->setDimension(10000, 10000); 
     $img->setMime(['jpeg', 'png']);
     
-    $user = hash('ripemd160', $sec->id);
     $name = date('Y_m_d_H_i_s-').$img->getName();
-    $path = Env::api_static_path."/".Env::api_name."/".$user."/".$name;
+    $path = Env::api_static_path."/".Env::api_name."/".hash('ripemd160', $sec->id)."/".$name;
     if (!is_dir($path)) mkdir($path, 0777, true);
     
     $img->setName("original");
@@ -55,6 +54,10 @@ Core::endAsync($_REP);
 
 // -------------- AFTER RESPONSE -------------
 
+unset($img);
+unset($sec);
+unset($_REP);
+
 try {
 
     $done = [
@@ -70,22 +73,40 @@ try {
     $origin = $path."/origin.jpeg";
     if (!copy($original, $origin)) throw new ApiException(500, 'img_copy', 'origin');
     if ($mime === 'png') $Image->convertToJPG($origin);
-    list($oWidth, $oHeight, $type, $attr) = getimagesize($origin);
 
-    $versions = [
-        ['xl', 2000, 80],
-        ['lg', 1800, 80],
-        ['md', 1200, 80],
-        ['sm', 900, 80],
-        ['xs', 600, 10],
-        ['lazy', 300, 50]
-    ];
+    list($oWidth, $oHeight, $type, $attr) = getimagesize($origin);
+    if($oWidth > $oHeight){
+        $maxWidth = ($oWidth > 2500 ? 2500 : $oWidth);
+        $maxHeight = false;
+    } else {
+        $maxHeight = ($oHeight > 2500 ? 2500 : $oHeight);
+        $maxWidth = false;
+    }
+
+    $tmpOrigin = imagecreatefromjpeg($origin);
+    $Image->createClone(
+        $tmpOrigin, [$oWidth, $oHeight], 
+        [$maxWidth, $maxHeight],
+        $origin
+    );
+    imagedestroy($tmpOrigin);
+
+    list($oW, $oH, $type, $attr) = getimagesize($origin);
 
     $origin = imagecreatefromjpeg($origin);
+
+    $versions = [
+        ['xl', ($oW < 2400 ? $oW : 2400), 86],
+        ['lg', ($oW < 1800 ? $oW : 1800), 88],
+        ['md', ($oW < 1200 ? $oW : 1200), 92],
+        ['sm', ($oW < 900 ? $oW : 900), 95],
+        ['xs', ($oW < 600 ? $oW : 600), 100],
+        ['lazy', ($oW < 500 ? $oW : 500), 70]
+    ];
+
     foreach ($versions as $v) {
         $Image->createClone(
-            $origin, 
-            [$oWidth, $oHeight], 
+            $origin, [$oW, $oH], 
             [$v[1], false, $v[2]], 
             $path."/".$v[0].".jpeg"
         );
@@ -95,8 +116,6 @@ try {
 } catch (\Exception $e) {
     $_LOG->addInfo($e);
 }
-
-
 
 $Image->setSizes($done);
 

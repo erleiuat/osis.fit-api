@@ -112,9 +112,15 @@ class Image extends ApiObject {
 
     public static function createClone($img, $sizes, $cloneInfo, $destination) {
 
-        if($cloneInfo[1] === false) {
+        if ($cloneInfo[1] === false) {
             $cloneInfo[1] = (int) ($cloneInfo[0] / $sizes[0] * $sizes[1]);
+        } 
+        
+        if ($cloneInfo[0] === false) {
+            $cloneInfo[0] = (int) ($cloneInfo[1] / $sizes[1] * $sizes[0]);
         }
+
+        if (!isset($cloneInfo[2])) $cloneInfo[2] = 100;
 
         $tmpImg = imagecreatetruecolor($cloneInfo[0], $cloneInfo[1]);
 
