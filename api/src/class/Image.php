@@ -80,13 +80,9 @@ class Image extends ApiObject {
         if (!$obj) $obj = (array) $this;
         else if (is_object($obj)) $obj = (array) $obj;
 
-        $name = $obj['name'];
         $url = Env::api_static_url."/".Env::api_name;
         $folder = hash('ripemd160', $this->user->id);
-
-        $path = $url."/".$folder."/".$name;
-
-        $full = $path."/".$obj['name'].".".$obj['mime'];
+        $path = $url."/".$folder."/".$obj['name'];
 
         $files = [
             "xl" => null,
@@ -97,13 +93,13 @@ class Image extends ApiObject {
             "lazy" => null
         ];
 
-        $current = $full;
+        $original = $path."/original.".$obj['mime'];
+        $current = $original;
         foreach ($files as $key => $value) {
             if($obj[$key]) $current = $path."/".$key.".jpeg";
             $files[$key] = $current;
         }
-
-        $files['full'] = $full;
+        $files['original'] = $original;
 
         return (object) [
             "id" => (int) $obj['id'],
@@ -112,6 +108,27 @@ class Image extends ApiObject {
             "path" => $files
         ];
         
+    }
+
+    public static function createClone($img, $sizes, $cloneInfo, $destination) {
+
+        if($cloneInfo[1] === false) {
+            $cloneInfo[1] = (int) ($cloneInfo[0] / $sizes[0] * $sizes[1]);
+        }
+
+        $tmpImg = imagecreatetruecolor($cloneInfo[0], $cloneInfo[1]);
+
+        imagecopyresampled(
+            $tmpImg, $img, 0,0,0,0,
+            $cloneInfo[0],
+            $cloneInfo[1],
+            $sizes[0],
+            $sizes[1]
+        );
+
+        imagejpeg($tmpImg, $destination, $cloneInfo[2]);
+        imagedestroy($tmpImg);
+
     }
 
     public static function convertToJPG($file) {
