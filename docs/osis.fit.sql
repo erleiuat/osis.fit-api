@@ -106,11 +106,9 @@ CREATE TABLE `image_sizes` (
     image_id            INT NOT NULL,
 
     full                BOOLEAN NOT NULL DEFAULT 0,
-    xl                  BOOLEAN NOT NULL DEFAULT 0,
-    lg                  BOOLEAN NOT NULL DEFAULT 0,
-    md                  BOOLEAN NOT NULL DEFAULT 0,
-    sm                  BOOLEAN NOT NULL DEFAULT 0,
-    xs                  BOOLEAN NOT NULL DEFAULT 0,
+    large               BOOLEAN NOT NULL DEFAULT 0,
+    medium              BOOLEAN NOT NULL DEFAULT 0,
+    small               BOOLEAN NOT NULL DEFAULT 0,
     lazy                BOOLEAN NOT NULL DEFAULT 0,
     update_stamp        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
@@ -232,11 +230,9 @@ CREATE VIEW `v_image_info` AS
         img.name AS 'name',
         img.mime AS 'mime',
         sz.full AS 'full',
-        sz.xl AS 'xl',
-        sz.lg AS 'lg',
-        sz.md AS 'md',
-        sz.sm AS 'sm',
-        sz.xs AS 'xs',
+        sz.large AS 'large',
+        sz.medium AS 'medium',
+        sz.small AS 'small',
         sz.lazy AS 'lazy'
 
     FROM image AS img

@@ -60,21 +60,13 @@ unset($_REP);
 
 try {
 
-    $done = [
-        "full" => true,
-        "xl" => false,
-        "lg" => false,
-        "md" => false,
-        "sm" => false,
-        "xs" => false,
-        "lazy" => false
-    ];
+    $done = [];
+    
+    $full = $path."/full.jpeg";
+    if (!copy($original, $full)) throw new ApiException(500, 'img_copy', 'full');
+    if ($mime === 'png') $Image->convertToJPG($full);
 
-    $origin = $path."/origin.jpeg";
-    if (!copy($original, $origin)) throw new ApiException(500, 'img_copy', 'origin');
-    if ($mime === 'png') $Image->convertToJPG($origin);
-
-    list($oWidth, $oHeight, $type, $attr) = getimagesize($origin);
+    list($oWidth, $oHeight, $type, $attr) = getimagesize($full);
     if($oWidth > $oHeight){
         $maxWidth = ($oWidth > 2500 ? 2500 : $oWidth);
         $maxHeight = false;
@@ -83,30 +75,28 @@ try {
         $maxWidth = false;
     }
 
-    $tmpOrigin = imagecreatefromjpeg($origin);
+    $tmpOrigin = imagecreatefromjpeg($full);
     $Image->createClone(
         $tmpOrigin, [$oWidth, $oHeight], 
         [$maxWidth, $maxHeight],
-        $origin
+        $full
     );
     imagedestroy($tmpOrigin);
+    list($oW, $oH, $type, $attr) = getimagesize($full);
+    $full = imagecreatefromjpeg($full);
 
-    list($oW, $oH, $type, $attr) = getimagesize($origin);
-
-    $origin = imagecreatefromjpeg($origin);
+    $done['full'] = true;
 
     $versions = [
-        ['xl', ($oW < 2400 ? $oW : 2400), 86],
-        ['lg', ($oW < 1800 ? $oW : 1800), 88],
-        ['md', ($oW < 1200 ? $oW : 1200), 92],
-        ['sm', ($oW < 900 ? $oW : 900), 95],
-        ['xs', ($oW < 600 ? $oW : 600), 100],
-        ['lazy', ($oW < 500 ? $oW : 500), 70]
+        ['large', ($oW < 2400 ? $oW : 2400), 95],
+        ['medium', ($oW < 1200 ? $oW : 1200), 80],
+        ['small', ($oW < 650 ? $oW : 650), 80],
+        ['lazy', ($oW < 300 ? $oW : 300), 60]
     ];
 
     foreach ($versions as $v) {
         $Image->createClone(
-            $origin, [$oW, $oH], 
+            $full, [$oW, $oH], 
             [$v[1], false, $v[2]], 
             $path."/".$v[0].".jpeg"
         );

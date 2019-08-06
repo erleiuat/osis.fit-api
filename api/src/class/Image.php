@@ -10,7 +10,7 @@ class Image extends ApiObject {
     /* ----------- PUBLIC BASIC PARAMS ---------- */
     protected $keys = [
         'id', 'name', 'mime',
-        'full', 'xl', 'lg', 'md', 'sm', 'xs', 'lazy'
+        'full', 'large', 'medium', 'small', 'lazy'
     ];
 
     public $id;
@@ -18,11 +18,9 @@ class Image extends ApiObject {
     public $mime;
 
     public $full;
-    public $xl;
-    public $lg;
-    public $md;
-    public $sm;
-    public $xs;
+    public $large;
+    public $mediun;
+    public $small;
     public $lazy;
     
     public $upload_stamp;
@@ -85,11 +83,10 @@ class Image extends ApiObject {
         $path = $url."/".$folder."/".$obj['name'];
 
         $files = [
-            "xl" => null,
-            "lg" => null,
-            "md" => null,
-            "sm" => null,
-            "xs" => null,
+            "full" => null,
+            "large" => null,
+            "medium" => null,
+            "small" => null,
             "lazy" => null
         ];
 
