@@ -13,13 +13,15 @@ include_once LOCATION . 'src/Image.php'; /* Load Image-Methods */
 // ------------------ SCRIPT -----------------
 try {
 
+    $maxFileSize = 15 * 1000000;
+
     // INIT
     $sec = Sec::auth($_LOG);
     $Image = new Image($_DBC, $sec);
     $img = new Bulletproof\Image($_FILES);
     if(!$img["image"]) throw new ApiException(403, 'img_upload_image_missing');
     
-    $img->setSize(100, 500 * 1000000); // Min. 100 Byte, Max. 500 MegaByte (0.5 GB)
+    $img->setSize(50, $maxFileSize); // Min. 50 Byte, Max. 15 MegaByte (0.15 GB)
     $img->setDimension(10000, 10000); 
     $img->setMime(['jpeg', 'png']);
     
@@ -29,7 +31,13 @@ try {
     
     $img->setName("original");
     $img->setLocation($path);
-    if (!$img->upload()) throw new ApiException(500, 'img_upload_error_full', $img->getError());
+    if (!$img->upload()) {
+        if($img->getSize() >= $maxFileSize){
+            throw new ApiException(500, 'img_upload_error_full', 'file_too_large');
+        } else {
+            throw new ApiException(500, 'img_upload_error_full', $img->getError());
+        }
+    }
 
     $mime = $img->getMime();
     $original = $path."/original.".$mime;

@@ -1,19 +1,22 @@
 
-DROP DATABASE IF EXISTS `app.osis.fit`;
-CREATE DATABASE `app.osis.fit` CHARACTER SET `utf8`;
+CREATE DATABASE IF NOT EXISTS `app.osis.fit` CHARACTER SET `utf8`;
 USE `app.osis.fit`;
+
 
 -- ------------------------------------------------------------------------------------
 
+DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
     id                  INT NOT NULL AUTO_INCREMENT,
     mail                VARCHAR(89) NOT NULL,
     level               ENUM('user', 'moderator', 'admin') NOT NULL DEFAULT 'user',
+    premium             BOOLEAN NOT NULL DEFAULT 0,
 
     UNIQUE INDEX unique_mail (mail),
     PRIMARY KEY (id)
 );
 
+DROP TABLE IF EXISTS `auth`;
 CREATE TABLE `auth` (
     id                  INT NOT NULL AUTO_INCREMENT,
     user_id             INT NOT NULL,
@@ -32,8 +35,10 @@ CREATE TABLE `auth` (
 
     PRIMARY KEY (id),
     FOREIGN KEY (user_id) REFERENCES user(id)
+
 );
 
+DROP TABLE IF EXISTS `auth_refresh`;
 CREATE TABLE `auth_refresh` (
     auth_id             INT NOT NULL,
 
@@ -48,6 +53,7 @@ CREATE TABLE `auth_refresh` (
     FOREIGN KEY (auth_id) REFERENCES auth(id)
 );
 
+DROP TABLE IF EXISTS `log`;
 CREATE TABLE `log` (
     id                  INT NOT NULL AUTO_INCREMENT,
     level               ENUM('trace','debug','info', 'warn', 'error', 'fatal') NOT NULL DEFAULT 'trace',
@@ -64,6 +70,7 @@ CREATE TABLE `log` (
 
 -- ------------------------------------------------------------------------------------
 
+DROP TABLE IF EXISTS `user_detail`;
 CREATE TABLE `user_detail` (
     user_id             INT NOT NULL,
     
@@ -77,6 +84,7 @@ CREATE TABLE `user_detail` (
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
+DROP TABLE IF EXISTS `user_aim`;
 CREATE TABLE `user_aim` (
     user_id             INT NOT NULL,
 
@@ -88,6 +96,7 @@ CREATE TABLE `user_aim` (
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
+DROP TABLE IF EXISTS `image`;
 CREATE TABLE `image` (
     id                  INT NOT NULL AUTO_INCREMENT,
     user_id             INT NOT NULL,
@@ -102,6 +111,7 @@ CREATE TABLE `image` (
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
+DROP TABLE IF EXISTS `image_sizes`;
 CREATE TABLE `image_sizes` (
     image_id            INT NOT NULL,
 
@@ -116,6 +126,7 @@ CREATE TABLE `image_sizes` (
     FOREIGN KEY (image_id) REFERENCES image(id)
 );
 
+DROP TABLE IF EXISTS `user_food`;
 CREATE TABLE `user_food` (
     id                  INT NOT NULL AUTO_INCREMENT,
     user_id             INT NOT NULL,
@@ -130,6 +141,7 @@ CREATE TABLE `user_food` (
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
+DROP TABLE IF EXISTS `user_food_favorite`;
 CREATE TABLE `user_food_favorite` (
     id                  INT NOT NULL AUTO_INCREMENT,
     user_id             INT NOT NULL,
@@ -148,6 +160,7 @@ CREATE TABLE `user_food_favorite` (
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
+DROP TABLE IF EXISTS `user_weight`;
 CREATE TABLE `user_weight` (
     id                  INT NOT NULL AUTO_INCREMENT,
     user_id             INT NOT NULL,
@@ -159,6 +172,7 @@ CREATE TABLE `user_weight` (
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
+DROP TABLE IF EXISTS `user_calories`;
 CREATE TABLE `user_calories` (
     id                  INT NOT NULL AUTO_INCREMENT,
     user_id             INT NOT NULL,
@@ -171,6 +185,7 @@ CREATE TABLE `user_calories` (
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
 
+DROP TABLE IF EXISTS `user_activity`;
 CREATE TABLE `user_activity` (
     id                  INT NOT NULL AUTO_INCREMENT,
     user_id             INT NOT NULL,
@@ -186,6 +201,7 @@ CREATE TABLE `user_activity` (
 
 -- ------------------------------------------------------------------------------------
 
+DROP VIEW IF EXISTS `v_auth`;
 CREATE VIEW `v_auth` AS
 
     SELECT
@@ -195,12 +211,14 @@ CREATE VIEW `v_auth` AS
         au.password_stamp AS 'password_stamp',
         us.id AS 'user_id',
         us.mail AS 'user_mail',
-        us.level AS 'user_level'
+        us.level AS 'user_level',
+        us.premium AS 'user_premium'
 
     FROM user AS us
     LEFT JOIN auth AS au ON au.user_id = us.id;
 
 
+DROP VIEW IF EXISTS `v_user_info`;
 CREATE VIEW `v_user_info` AS
 
     SELECT
@@ -221,6 +239,8 @@ CREATE VIEW `v_user_info` AS
     LEFT JOIN user_detail AS de ON de.user_id = us.id
     LEFT JOIN user_aim AS ai ON ai.user_id = us.id;
 
+
+DROP VIEW IF EXISTS `v_image_info`;
 CREATE VIEW `v_image_info` AS
 
     SELECT

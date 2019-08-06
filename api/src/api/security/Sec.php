@@ -58,7 +58,8 @@ class Sec {
                     "user" => [
                         "id" => (int) $Auth->user->id,
                         "mail" => $Auth->user->mail,
-                        "level" => $Auth->user->level
+                        "level" => $Auth->user->level,
+                        "premium" => (bool) $Auth->user->premium
                     ]
                 ]
             ], Env::tkn_access_secret_app);

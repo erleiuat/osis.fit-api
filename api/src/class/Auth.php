@@ -37,6 +37,7 @@ class Auth extends ApiObject {
         $this->user->id = $result[0]['user_id'];
         $this->user->mail = $result[0]['user_mail'];
         $this->user->level = $result[0]['user_level'];
+        $this->user->premium = $result[0]['user_premium'];
         $this->id = $result[0]['id'];
         $this->status = $result[0]['status'];
         $this->password_stamp = $result[0]['password_stamp'];
