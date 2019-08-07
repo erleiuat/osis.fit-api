@@ -1,5 +1,5 @@
 <?php
 
-include_once LOCATION . 'src/libs/bulletproof/src/bulletproof.php';
+require ROOT . 'libs/bulletproof/src/bulletproof.php';
 
-include_once LOCATION . 'src/class/Image.php';
+require ROOT . 'class/Image.php';

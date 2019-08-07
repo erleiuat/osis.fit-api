@@ -1,14 +1,14 @@
 <?php
 
 define('PROCESS', "App/Activity/Add"); /* Name of this Process */
-define('LOCATION', "../../../../../"); /* Path to root */      
+define('ROOT', "../../../../../src/"); /* Path to root */      
 define('REC', "../../../../src/class/"); /* Path to classes of current version */ /* Path to root */        
 
-include_once LOCATION . 'src/Engine.php'; /* Load API-Engine */
+require_once ROOT . 'Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
-include_once LOCATION . 'src/Security.php'; /* Load Security-Methods */
+require_once ROOT . 'Security.php'; /* Load Security-Methods */
 
 // ------------------ SCRIPT -----------------
 try {
@@ -22,7 +22,7 @@ try {
         'time' => ['time', true]
     ]);
     
-    include_once REC . 'Activity.php';
+    require_once REC . 'Activity.php';
     $Activity = new Activity($_DBC, $sec);
 
     $obj = $Activity->set($data)->create()->getObject();

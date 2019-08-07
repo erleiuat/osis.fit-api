@@ -1,6 +1,6 @@
 <?php
 
-include_once LOCATION . 'env/Security.php';
-include_once LOCATION . 'src/Billing.php';
+require ROOT . '../env/Auth.php';
+require ROOT . 'Billing.php';
 
-include_once LOCATION . 'src/api/sec/Auth.php';
+require ROOT . 'api/sec/Auth.php';

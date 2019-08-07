@@ -1,14 +1,14 @@
 <?php
 
 define('PROCESS', "Auth/Password/Change"); /* Name of this Process */
-define('LOCATION', "../../../../../"); /* Path to root */      
+define('ROOT', "../../../../../src/"); /* Path to root */      
 define('REC', "../../../../src/class/"); /* Path to classes of current version */ /* Path to root */        
 
-include_once LOCATION . 'src/Engine.php'; /* Load API-Engine */
+require_once ROOT . 'Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
-include_once LOCATION . 'src/Security.php'; /* Load Security-Methods */
+require_once ROOT . 'Security.php'; /* Load Security-Methods */
 
 // ------------------ SCRIPT -----------------
 try {
@@ -19,7 +19,7 @@ try {
         'new' => ['password', true]
     ]);
     
-    include_once LOCATION . 'src/Authentication.php';
+    require_once ROOT . 'Authentication.php';
     $Auth = new Auth($_DBC, $sec);
 
     if ($Auth->check()->status === "verified") {

@@ -71,8 +71,8 @@ class Auth extends ApiObject {
 
         $vals = [
             'user_id' => $this->user->id, 
-            'password' => password_hash($this->password, Env_sec::encryption),
-            'verify_code' => password_hash($this->verify_code, Env_sec::encryption),
+            'password' => password_hash($this->password, Env_auth::pw_crypt),
+            'verify_code' => password_hash($this->verify_code, Env_auth::pw_crypt),
             'password_stamp' => date('Y-m-d H:i:s', time())
         ];
         $this->db->makeInsert($this->t_main, $vals);
@@ -141,7 +141,7 @@ class Auth extends ApiObject {
             ");
             $this->db->bind($stmt, 
                 ['refresh_jti', 'auth_id', 'oldJti', 'refresh_phrase'], 
-                [$this->refresh_jti, $this->id, $oldJti, password_hash($this->refresh_phrase, Env_sec::encryption)]
+                [$this->refresh_jti, $this->id, $oldJti, password_hash($this->refresh_phrase, Env_auth::pw_crypt)]
             )->execute($stmt);
         } else {
             $stmt = $this->db->prepare("
@@ -151,7 +151,7 @@ class Auth extends ApiObject {
             ");
             $this->db->bind($stmt, 
                 ['auth_id', 'refresh_jti', 'refresh_phrase'], 
-                [$this->id, $this->refresh_jti, password_hash($this->refresh_phrase, Env_sec::encryption)]
+                [$this->id, $this->refresh_jti, password_hash($this->refresh_phrase, Env_auth::pw_crypt)]
             )->execute($stmt);
         }
 
@@ -204,7 +204,7 @@ class Auth extends ApiObject {
     public function passwordForgotten($code = false) {
 
         $password_stamp = date("Y-m-d H:i:s");
-        $password_code = password_hash($this->password_code, Env_sec::encryption);
+        $password_code = password_hash($this->password_code, Env_auth::pw_crypt);
 
         if ($code) {
             $stmt = $this->db->prepare("
@@ -248,7 +248,7 @@ class Auth extends ApiObject {
         ");
         $this->db->bind($stmt,
             ['user_id', 'password'], 
-            [$this->user->id, password_hash($pw, Env_sec::encryption)]
+            [$this->user->id, password_hash($pw, Env_auth::pw_crypt)]
         )->execute($stmt);
 
     }

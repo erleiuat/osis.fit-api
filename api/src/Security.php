@@ -1,10 +1,10 @@
 <?php
 
-include_once LOCATION . 'env/Security.php';
+require ROOT . '../env/Security.php';
 
-include_once LOCATION . 'src/libs/php-jwt-master/src/BeforeValidException.php';
-include_once LOCATION . 'src/libs/php-jwt-master/src/ExpiredException.php';
-include_once LOCATION . 'src/libs/php-jwt-master/src/SignatureInvalidException.php';
-include_once LOCATION . 'src/libs/php-jwt-master/src/JWT.php';
+require ROOT . 'libs/php-jwt-master/src/BeforeValidException.php';
+require ROOT . 'libs/php-jwt-master/src/ExpiredException.php';
+require ROOT . 'libs/php-jwt-master/src/SignatureInvalidException.php';
+require ROOT . 'libs/php-jwt-master/src/JWT.php';
 
-include_once LOCATION . 'src/api/sec/Sec.php';
+require ROOT . 'api/sec/Sec.php';

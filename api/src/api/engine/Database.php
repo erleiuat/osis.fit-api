@@ -1,7 +1,5 @@
 <?php
 
-include_once LOCATION . 'env/Database.php';
-
 class Database {
     
     private $host;

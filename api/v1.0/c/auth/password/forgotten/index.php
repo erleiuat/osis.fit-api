@@ -1,14 +1,14 @@
 <?php
 
 define('PROCESS', "Auth/Password/Forgotten"); /* Name of this Process */
-define('LOCATION', "../../../../../"); /* Path to root */      
+define('ROOT', "../../../../../src/"); /* Path to root */      
 define('REC', "../../../../src/class/"); /* Path to classes of current version */ /* Path to root */        
 
-include_once LOCATION . 'src/Engine.php'; /* Load API-Engine */
+require_once ROOT . 'Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
-include_once LOCATION . 'src/Authentication.php';
+require_once ROOT . 'Authentication.php';
 $Auth = new Auth($_DBC);
 
 
@@ -22,7 +22,7 @@ try {
         'password' => ['password', false]
     ]);
 
-    include_once LOCATION . 'src/Authentication.php';
+    require_once ROOT . 'Authentication.php';
     $Auth = new Auth($_DBC, ["mail" => $data->mail]);
 
     if ($Auth->check()->status === "verified") {
@@ -33,16 +33,16 @@ try {
             $Auth->passwordForgotten();
             $_LOG->addInfo("Code created");
             
-            include_once REC . 'User.php';
+            require_once REC . 'User.php';
             $User = new User($_DBC, $Auth->user);
             $User->read();
             
-            include_once LOCATION . 'src/Mail.php';
+            require_once ROOT . 'Mail.php';
             $Mailer = new Mailer(new defaultMail());
             $Mailer->addReceiver($data->mail, $User->firstname, $User->lastname);
 
-            if ($data->language === "de") include_once 'mail/content_de.php';
-            else include_once 'mail/content_en.php';
+            if ($data->language === "de") require_once 'mail/content_de.php';
+            else require_once 'mail/content_en.php';
             $Mailer->prepare();
                 
             if (Env_api::env === "prod") {

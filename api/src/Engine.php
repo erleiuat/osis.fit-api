@@ -1,16 +1,18 @@
 <?php
 
-include_once LOCATION . 'env/Api.php';
+require ROOT . '../env/Api.php';
 
-include_once LOCATION . 'src/api/main/headers.php';
-include_once LOCATION . 'src/api/main/Core.php';
-include_once LOCATION . 'src/api/main/Validate.php';
-include_once LOCATION . 'src/api/main/ApiException.php';
-include_once LOCATION . 'src/api/main/ApiObject.php';
+require ROOT . 'api/main/headers.php';
+require ROOT . 'api/main/Core.php';
+require ROOT . 'api/main/Validate.php';
+require ROOT . 'api/main/ApiException.php';
+require ROOT . 'api/main/ApiObject.php';
 
-include_once LOCATION . 'src/api/engine/Reply.php';
-include_once LOCATION . 'src/api/engine/Database.php';
-include_once LOCATION . 'src/api/engine/Log.php';
+require ROOT . '../env/Database.php';
+
+require ROOT . 'api/engine/Database.php';
+require ROOT . 'api/engine/Reply.php';
+require ROOT . 'api/engine/Log.php';
 
 $_REP = new Reply();
 $_DBC = new Database();
