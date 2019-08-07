@@ -27,7 +27,7 @@ try {
     $img->setMime(['jpeg', 'png']);
     
     $name = date('Y_m_d_H_i_s-').$img->getName();
-    $path = Env_api::static_path."/".Env_api::name."/".hash('ripemd160', $sec->id)."/".$name;
+    $path = ROOT ."/". Env_api::static_path."/".Env_api::name."/".hash('ripemd160', $sec->id)."/".$name;
     if (!is_dir($path)) mkdir($path, 0777, true);
     
     $img->setName("original");

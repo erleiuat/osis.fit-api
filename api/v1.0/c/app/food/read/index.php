@@ -18,7 +18,7 @@ try {
     
     require_once REC . 'Food.php';
     $Food = new Food($_DBC, $sec);
-    require_once REC . 'Image.php';
+    require_once ROOT . 'Image.php';
     $Image = new Image($_DBC, $sec);
 
     if($data->id) {

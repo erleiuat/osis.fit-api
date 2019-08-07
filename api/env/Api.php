@@ -7,7 +7,7 @@ class Env_api {
     const name = "osis.fit";   
     const timezone = "Europe/Zurich";
     const static_url = "http://localhost/osis.io-static/usercontent";
-    const static_path = "../../../../osis.io-static/usercontent";
+    const static_path = "../../../osis.io-static/usercontent";
     const error_reports = E_ALL;
     const cors = "http://localhost:8080";
 
