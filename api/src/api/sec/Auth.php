@@ -7,7 +7,6 @@ class Auth extends ApiObject {
     private $t_main = "auth";
     private $t_user = "user";
     private $t_refresh = "auth_refresh";
-    private $t_subs = "user_subscription";
     private $v_auth = "v_auth";
 
     /* ----------- PUBLIC BASIC PARAMS ---------- */
@@ -15,6 +14,7 @@ class Auth extends ApiObject {
 
     public $status;
     public $premium;
+
     public $password;
     public $password_stamp;
     
@@ -42,29 +42,8 @@ class Auth extends ApiObject {
         $this->status = $result[0]['status'];
         $this->password_stamp = $result[0]['password_stamp'];
 
-        if($result[0]['active']){
-            // TODO: Check subscription
-            $this->premium = true;
-        } else {
-            $this->premium = false;
-        }
-
         return $this;
         
-    }
-
-    public function setSubscription($info) {
-
-        $vals = [
-            'user_id' => $this->user->id, 
-            'subscription_id' => $info->subscription,
-            'plan_id' => $info->plan,
-            'active' => $info->active
-        ];
-        $changed = $this->db->makeInsert($this->t_subs, $vals);
-
-        if ($changed !== 1) throw new ApiException(500, 'subscription_insert_failed', get_class($this));
-
     }
 
     public function register() {

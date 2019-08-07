@@ -26,6 +26,10 @@ try {
         if (!$Auth->verifyRefresh($token->data->phrase)) throw new ApiException(403, "token_invalid", "phrase_error");
         if ($Auth->password_stamp !== $token->data->password_stamp) throw new ApiException(403, "token_invalid", "password_stamp_error");
         
+        require_once ROOT . 'Billing.php';
+        $Billing = new Billing($_DBC, $Auth->user);
+        $Auth->premium = $Billing->hasPremium();
+
         $Auth->refresh_jti = Core::randomString(20);
         $Auth->refresh_phrase = Core::randomString(20);
         $Auth->setRefreshAuth($token->jti);

@@ -25,6 +25,10 @@ try {
 
         if(!$Auth->passwordLogin($data->password)) throw new ApiException(403, "password_wrong");
 
+        require_once ROOT . 'Billing.php';
+        $Billing = new Billing($_DBC, $Auth->user);
+        $Auth->premium = $Billing->hasPremium();
+
         $Auth->refresh_jti = Core::randomString(20);
         $Auth->setRefreshAuth();
         

@@ -1,6 +1,6 @@
 <?php
 
-define('PROCESS', "Billing/Premium/Verify"); /* Name of this Process */
+define('PROCESS', "Billing/Premium/Remove"); /* Name of this Process */
 define('ROOT', "../../../../../src/"); /* Path to root */      
 define('REC', "../../../../src/class/"); /* Path to classes of current version */ /* Path to root */           
 
@@ -18,32 +18,34 @@ try {
         'token' => ['string', true]
     ]);
 
-    require_once ROOT . 'Billing.php';
-
-    ChargeBee_Environment::configure(Env_bill::cb_site, Env_bill::cb_tkn);
-    $result = ChargeBee_HostedPage::retrieve($data->token);
-    $hostedPage = $result->hostedPage()->getValues();
-    $info = (object) $hostedPage['content']['subscription'];
-
-    if($info->customer_id !== $sec->id) throw new ApiException(500, 'user_no_match', 'billing');
-
     require_once ROOT . 'Authentication.php';
     $Auth = new Auth($_DBC, $sec);
-
     if ($Auth->check()->status !== "verified") throw new ApiException(500, 'not_verified', 'billing');
     
-    $active = false;
-    if($info->status === 'active'){
-        $active = true;
+
+    require_once ROOT . 'Billing.php';
+    $Billing = new Billing($_DBC, $sec);
+
+    $info = $Billing->cbCheckout($data->token);
+    $sub = (object) $info->subscription;
+    if ($sub->status !== 'active') throw new ApiException(500, 'sub_not_active', 'billing');
+    if ($sub->customer_id !== $Auth->user->id) throw new ApiException(500, 'user_dont_match', 'billing');
+
+
+    $user = $Billing->readUser();
+    if($user->subscription){
+        $check = $Billing->cbSubscription($user->subscription);
+        if ($check->status === 'active') throw new ApiException(500, 'already_active', 'billing');
+        else $Billing->unSub();
     }
 
     $details = (object) [
-        "subscription" => $info->id,
-        "plan" => $info->plan_id,
-        "active" => $active
+        "subscription" => $sub->id,
+        "plan" => $sub->plan_id,
+        "active" => true
     ];
 
-    $Auth->setSubscription($details);
+    $Billing->setSub($details);
 
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------
