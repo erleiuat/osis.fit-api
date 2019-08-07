@@ -34,8 +34,8 @@ class Mailer {
         $this->mail->isHTML(true);
         $this->mail->CharSet = "UTF-8";
 
-        $this->from_name = Env::mail_from_name;
-        $this->from_adress = Env::mail_from_adress;
+        $this->from_name = Env_mail::from_name;
+        $this->from_adress = Env_mail::from_adress;
         if($template) {
             $this->template = $template;
         }

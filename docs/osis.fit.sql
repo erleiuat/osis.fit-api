@@ -7,19 +7,20 @@ USE `app.osis.fit`;
 
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
-    id                  INT NOT NULL AUTO_INCREMENT,
+    id                  VARCHAR(40) NOT NULL,
     mail                VARCHAR(89) NOT NULL,
     level               ENUM('user', 'moderator', 'admin') NOT NULL DEFAULT 'user',
-    premium             BOOLEAN NOT NULL DEFAULT 0,
 
+    UNIQUE INDEX unique_id (id),
     UNIQUE INDEX unique_mail (mail),
+
     PRIMARY KEY (id)
 );
 
 DROP TABLE IF EXISTS `auth`;
 CREATE TABLE `auth` (
     id                  INT NOT NULL AUTO_INCREMENT,
-    user_id             INT NOT NULL,
+    user_id             VARCHAR(40) NOT NULL,
 
     status              ENUM('unverified', 'verified', 'locked', 'deleted') NOT NULL DEFAULT 'unverified',
     password            VARCHAR(255) NOT NULL,
@@ -70,9 +71,23 @@ CREATE TABLE `log` (
 
 -- ------------------------------------------------------------------------------------
 
+DROP TABLE IF EXISTS `user_subscription`;
+CREATE TABLE `user_subscription` (
+    user_id             VARCHAR(40) NOT NULL,
+
+    subscription_id     VARCHAR(255) NOT NULL,
+    plan_id             VARCHAR(255) NOT NULL,
+    active              BOOLEAN NOT NULL DEFAULT 0,
+
+    UNIQUE INDEX unique_subscription (subscription_id),
+
+    PRIMARY KEY (user_id),
+    FOREIGN KEY (user_id) REFERENCES user(id)
+);
+
 DROP TABLE IF EXISTS `user_detail`;
 CREATE TABLE `user_detail` (
-    user_id             INT NOT NULL,
+    user_id             VARCHAR(40) NOT NULL,
     
     firstname           VARCHAR(150) NOT NULL,
     lastname            VARCHAR(150) NOT NULL,
@@ -86,7 +101,7 @@ CREATE TABLE `user_detail` (
 
 DROP TABLE IF EXISTS `user_aim`;
 CREATE TABLE `user_aim` (
-    user_id             INT NOT NULL,
+    user_id             VARCHAR(40) NOT NULL,
 
     weight              DOUBLE,
     bmi                 DOUBLE,
@@ -99,7 +114,7 @@ CREATE TABLE `user_aim` (
 DROP TABLE IF EXISTS `image`;
 CREATE TABLE `image` (
     id                  INT NOT NULL AUTO_INCREMENT,
-    user_id             INT NOT NULL,
+    user_id             VARCHAR(40) NOT NULL,
 
     name                VARCHAR(255),
     mime                VARCHAR(20),
@@ -129,7 +144,7 @@ CREATE TABLE `image_sizes` (
 DROP TABLE IF EXISTS `user_food`;
 CREATE TABLE `user_food` (
     id                  INT NOT NULL AUTO_INCREMENT,
-    user_id             INT NOT NULL,
+    user_id             VARCHAR(40) NOT NULL,
     image_id            INT,
 
     title               VARCHAR(150) NOT NULL,
@@ -144,7 +159,7 @@ CREATE TABLE `user_food` (
 DROP TABLE IF EXISTS `user_food_favorite`;
 CREATE TABLE `user_food_favorite` (
     id                  INT NOT NULL AUTO_INCREMENT,
-    user_id             INT NOT NULL,
+    user_id             VARCHAR(40) NOT NULL,
 
     title               VARCHAR(60) NOT NULL,
     amount              DOUBLE,
@@ -163,7 +178,7 @@ CREATE TABLE `user_food_favorite` (
 DROP TABLE IF EXISTS `user_weight`;
 CREATE TABLE `user_weight` (
     id                  INT NOT NULL AUTO_INCREMENT,
-    user_id             INT NOT NULL,
+    user_id             VARCHAR(40) NOT NULL,
 
     weight              DOUBLE NOT NULL,
     stamp               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -175,7 +190,7 @@ CREATE TABLE `user_weight` (
 DROP TABLE IF EXISTS `user_calories`;
 CREATE TABLE `user_calories` (
     id                  INT NOT NULL AUTO_INCREMENT,
-    user_id             INT NOT NULL,
+    user_id             VARCHAR(40) NOT NULL,
 
     title               VARCHAR(150),
     calories            DOUBLE NOT NULL,
@@ -188,7 +203,7 @@ CREATE TABLE `user_calories` (
 DROP TABLE IF EXISTS `user_activity`;
 CREATE TABLE `user_activity` (
     id                  INT NOT NULL AUTO_INCREMENT,
-    user_id             INT NOT NULL,
+    user_id             VARCHAR(40) NOT NULL,
 
     title               VARCHAR(150),
     duration            TIME,
@@ -212,10 +227,12 @@ CREATE VIEW `v_auth` AS
         us.id AS 'user_id',
         us.mail AS 'user_mail',
         us.level AS 'user_level',
-        us.premium AS 'user_premium'
+        su.subscription_id AS 'subscription',
+        su.active AS 'active'
 
     FROM user AS us
-    LEFT JOIN auth AS au ON au.user_id = us.id;
+    LEFT JOIN auth AS au ON au.user_id = us.id
+    LEFT JOIN user_subscription AS su ON su.user_id = us.id;
 
 
 DROP VIEW IF EXISTS `v_user_info`;

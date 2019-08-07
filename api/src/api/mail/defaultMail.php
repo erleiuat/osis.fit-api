@@ -19,8 +19,8 @@ class defaultMail {
         );
 
         $this->body = $template;
-        $this->defaults["footer.inner"] = Env::mail_page_name . " - " . Env::mail_slogan . " <br/> <i>" . Env::mail_creator . "</i>";
-        $this->defaults["header.image"] = Env::mail_logo_url;
+        $this->defaults["footer.inner"] = Env_mail::page_name . " - " . Env_mail::slogan . " <br/> <i>" . Env_mail::creator . "</i>";
+        $this->defaults["header.image"] = Env_mail::logo_url;
 
     }
 

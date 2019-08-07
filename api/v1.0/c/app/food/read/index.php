@@ -1,0 +1,59 @@
+<?php
+
+define('PROCESS', "App/Food/Read"); /* Name of this Process */
+define('LOCATION', "../../../../../"); /* Path to root */      
+define('REC', "../../../../src/class/"); /* Path to classes of current version */ /* Path to root */        
+
+include_once LOCATION . 'src/Engine.php'; /* Load API-Engine */
+Core::startAsync(); /* Start Async-Request */
+
+// --------------- DEPENDENCIES --------------
+include_once LOCATION . 'src/Security.php'; /* Load Security-Methods */
+
+// ------------------ SCRIPT -----------------
+try {
+
+    $sec = Sec::auth($_LOG);
+    $data = Core::getBody(['id' => ['number', false]]);
+    
+    include_once REC . 'Food.php';
+    $Food = new Food($_DBC, $sec);
+    include_once REC . 'Image.php';
+    $Image = new Image($_DBC, $sec);
+
+    if($data->id) {
+
+        $obj = $Food->read($data->id)->getObject();
+        if ($obj->image) $obj->image = $Image->read($obj->image)->getObject();
+        $obj = Core::formResponse($obj);
+
+        $_REP->addData(1, "total");
+        $_REP->addData($obj, "item");
+
+    } else {
+
+        $arr = [];
+        $entries = $Food->readAll();
+
+        foreach ($entries as $entry) {
+            $entry['image'] = $entry['image_id'];
+            $obj = $Food->getObject($entry);
+            if($obj->image) $obj->image = $Image->read($obj->image)->getObject();
+            $obj = Core::formResponse($obj);
+            array_push($arr, $obj);
+        }
+
+        $_REP->addData(count($arr), "total");
+        $_REP->addData($arr, "items");
+
+    }
+
+} catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
+// -------------------------------------------
+
+
+// -------------- ASYNC RESPONSE -------------
+Core::endAsync($_REP);
+
+// -------------- AFTER RESPONSE -------------
+$_LOG->write();
