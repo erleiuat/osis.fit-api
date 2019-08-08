@@ -68,8 +68,22 @@ class Image extends ApiObject {
         if (count($result) !== 1) throw new ApiException(404, 'item_not_found', get_class($this));
 
         $this->set($result[0]);
+        $this->stampAccess();
         return $this;
 
+    }
+
+    public function stampAccess($id = false, $stamp = false) {
+
+        if(!$id) $id = $this->id;
+        if(!$stamp) $stamp = date('Y-m-d H:i:s', time());
+
+        $where = ['id' => $this->id];
+        $params = ["access_stamp" => $stamp];
+        $changed = $this->db->makeUpdate($this->t_main, $params, $where);
+
+        if ($changed !== 1) throw new ApiException(500, 'sizes_saving_error', get_class($this));
+    
     }
 
     public function delete($id = false) {
