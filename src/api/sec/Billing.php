@@ -109,19 +109,29 @@ class Billing extends ApiObject {
 
     public function hasPremium(){
 
+        $plan = false;
+        $active = false;
+        $subscription = false;
+
         $user = $this->readUser();
         
-        if(!$user->subscription) return false;
+        if ($user->subscription) {
 
-        $sub = $this->cbSubscription($user->subscription);
+            $sub = $this->cbSubscription($user->subscription);
 
-        if ($sub->user_id === $user->user_id){
-            if ($sub->status === 'active' && !$sub->deleted) return true;
-        } else {
-            throw new ApiException(500, 'subscription_user_mismatch', get_class($this));
+            if ($sub->user_id !== $user->user_id) throw new ApiException(500, 'subscription_user_mismatch', get_class($this));
+
+            $plan = $sub->plan;
+            $subscription = $sub->id;
+            if ($sub->status === 'active' && !$sub->deleted) $active = true;
+
         }
 
-        return false;
+        return (object) [
+            "active" => $active,
+            "subscription" => $subscription,
+            "plan" => $plan
+        ];
 
     }
 
@@ -133,19 +143,12 @@ class Billing extends ApiObject {
             'plan_id' => $info->plan,
             'active' => $info->active
         ];
-        $changed = $this->db->makeInsert($this->t_main, $vals);
 
-        if ($changed !== 1) throw new ApiException(500, 'subscription_insert_failed', get_class($this));
+        $changed = $this->db->makeReplace($this->t_main, $vals);
 
-    }
+        if ($changed < 1) throw new ApiException(500, 'nothing_changed', get_class($this));
+        if ($changed > 2) throw new ApiException(500, 'too_many_changed', get_class($this));
 
-    public function unSub() {
-
-        $where = ['user_id' => $this->user->id];
-        $changed = $this->db->makeDelete($this->t_main, $where);
-
-        if ($changed < 1) throw new ApiException(404, 'item_not_found', get_class($this));
-        else if ($changed > 1) throw new ApiException(500, 'too_many_changed', get_class($this));
         return $this;
 
     }

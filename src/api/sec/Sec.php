@@ -55,11 +55,11 @@ class Sec {
                 "exp" => $now + Env_sec::t_access_lifetime,
                 "data" => [
                     "phrase" => substr($phrase, $half),
+                    "premium" => $Auth->premium,
                     "user" => [
                         "id" => $Auth->user->id,
                         "mail" => $Auth->user->mail,
-                        "level" => $Auth->user->level,
-                        "premium" => (bool) $Auth->premium
+                        "level" => $Auth->user->level
                     ]
                 ]
             ], Env_sec::t_access_secret_app);

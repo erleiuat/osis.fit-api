@@ -54,6 +54,21 @@ class Database {
 
     }
 
+    public function makeReplace ($table, $par) {
+
+        $par = $this->formParams($par);
+
+        $stmt = $this->prepare("
+            REPLACE INTO ".$table." 
+            (".implode(",", $par->e).") VALUES 
+            (".implode(",", $par->k).");
+        ");
+
+        $this->bind($stmt, $par->k, $par->v)->execute($stmt);
+        return $stmt->rowCount();
+
+    }
+
     public function makeInsert ($table, $par) {
 
         $par = $this->formParams($par);
