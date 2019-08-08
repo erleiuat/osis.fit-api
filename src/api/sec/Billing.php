@@ -89,7 +89,7 @@ class Billing extends ApiObject {
         $where = ['user_id' => $this->user->id];
         $result = $this->db->makeSelect($this->t_main, $where);
 
-        if (count($result) !== 1) throw new ApiException(404, 'item_not_found', get_class($this));
+        if (count($result) !== 1) return false;
 
         return (object) [
             "user_id" => $result[0]['user_id'],
@@ -105,7 +105,6 @@ class Billing extends ApiObject {
         $user = $this->readUser();
         $sub = $this->cbSubscription($user->subscription);
 
-        if(!$sub->plan === Env_bill::plan) return false;
         if($sub->status === 'active' && !$sub->deleted) return true;
 
     }
