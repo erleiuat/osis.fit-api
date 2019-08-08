@@ -1,9 +1,4 @@
 
-CREATE DATABASE IF NOT EXISTS `app.osis.fit` CHARACTER SET `utf8`;
-USE `app.osis.fit`;
-
-
--- ------------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
