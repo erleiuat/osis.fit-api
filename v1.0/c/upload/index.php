@@ -32,7 +32,7 @@ try {
     $img->setLocation($path);
 
     if (!$img->upload()) {
-        if($img->getSize() >= $maxFileSize){
+        if($img->getSize() >= Env_img::size["max"]){
             throw new ApiException(500, 'img_upload_error_full', 'file_too_large');
         } else {
             throw new ApiException(500, 'img_upload_error_full', $img->getError());
@@ -43,13 +43,14 @@ try {
     $original = $path."/original";
     unset($img);
 
-    $Image = new Image($_DBC, $sec);
     rename ($original.".".$mime, $original);
-    if ($mime === 'jpeg') $Image->correctOrientation($original);
+    if ($mime === 'jpeg') Img::correctOrientation($original);
     
-    $full = $Image->generate($original, Env_img::full, $mime);
-    $Image->generate($full, Env_img::lazy);
+    $full = Img::generate($original, Env_img::full, $mime);
+    Img::generate($full, Env_img::lazy);
+
     
+    $Image = new Image($_DBC, $sec);
     $Image->set([
         'name' => $dir,
         'mime' => $mime
@@ -84,13 +85,13 @@ try {
 
     $done = [];
     
-    $Image->generate($full, Env_img::large);
+    Img::generate($full, Env_img::large);
     $done["large"] = true;
 
-    $Image->generate($full, Env_img::medium);
+    Img::generate($full, Env_img::medium);
     $done["medium"] = true;
 
-    $Image->generate($full, Env_img::small);
+    Img::generate($full, Env_img::small);
     $done["small"] = true;
 
 } catch (\Exception $e) {
