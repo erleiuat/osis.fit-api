@@ -89,23 +89,39 @@ class Billing extends ApiObject {
         $where = ['user_id' => $this->user->id];
         $result = $this->db->makeSelect($this->t_main, $where);
 
-        if (count($result) !== 1) return false;
+        if (count($result) > 1) throw new ApiException(500, 'too_many_found', get_class($this));
 
-        return (object) [
-            "user_id" => $result[0]['user_id'],
+        if (count($result) === 1) return (object) [
+            "user_id" => $this->user->id,
             "subscription" => $result[0]['subscription_id'],
             "plan" => $result[0]['plan_id'],
             "active" => $result[0]['active']
         ];
+        else return (object) [
+            "user_id" => $this->user->id,
+            "subscription" => false,
+            "plan" => false,
+            "active" => false
+        ];
+
 
     }
 
     public function hasPremium(){
 
         $user = $this->readUser();
+        
+        if(!$user->subscription) return false;
+
         $sub = $this->cbSubscription($user->subscription);
 
-        if($sub->status === 'active' && !$sub->deleted) return true;
+        if ($sub->user_id === $user->user_id){
+            if ($sub->status === 'active' && !$sub->deleted) return true;
+        } else {
+            throw new ApiException(500, 'subscription_user_mismatch', get_class($this));
+        }
+
+        return false;
 
     }
 
