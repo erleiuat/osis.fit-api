@@ -34,17 +34,27 @@ class Image extends ApiObject {
             'name' => null,
             'mime' => null
         ], (array) $this->getObject());
-        $this->db->makeInsert($this->t_main, $vals);
 
+        $this->db->makeInsert($this->t_main, $vals);
         $this->id = $this->db->conn->lastInsertId();        
+
+        $this->db->makeInsert($this->t_sizes, ["image_id" => $this->id]);
+
         return $this;
         
     }
 
     public function setSizes($sizes) {
 
-        $sizes["image_id"] = $this->id;
-        $this->db->makeInsert($this->t_sizes, $sizes);
+        $where = ['image_id' => $this->id];
+        $changed = $this->db->makeUpdate($this->t_sizes, $sizes, $where);
+
+        if ($changed !== 1) throw new ApiException(500, 'sizes_saving_error', get_class($this));
+        
+        foreach($sizes as $key => $size){
+            $this->$key = $size;
+        }
+
         return $this;
 
     }
@@ -78,7 +88,7 @@ class Image extends ApiObject {
         if (!$obj) $obj = (array) $this;
         else if (is_object($obj)) $obj = (array) $obj;
 
-        $url = Env_api::static_url."/".Env_api::name;
+        $url = Env_img::url."/".Env_img::folder;
         $folder = hash('ripemd160', $this->user->id);
         $path = $url."/".$folder."/".$obj['name'];
 
@@ -90,10 +100,10 @@ class Image extends ApiObject {
             "lazy" => null
         ];
 
-        $original = $path."/original.".$obj['mime'];
+        $original = $path."/original";
         $current = $original;
         foreach ($files as $key => $value) {
-            if($obj[$key]) $current = $path."/".$key.".jpeg";
+            if($obj[$key]) $current = $path."/".$key;
             $files[$key] = $current;
         }
         $files['original'] = $original;
@@ -107,29 +117,77 @@ class Image extends ApiObject {
         
     }
 
-    public static function createClone($img, $sizes, $cloneInfo, $destination) {
+    public function getInfo($path){
+        $info = getimagesize($path);
+        return [
+            "w" => $info[0],
+            "h" => $info[1]
+        ];
+    }
 
-        if ($cloneInfo[1] === false) {
-            $cloneInfo[1] = (int) ($cloneInfo[0] / $sizes[0] * $sizes[1]);
-        } 
-        
-        if ($cloneInfo[0] === false) {
-            $cloneInfo[0] = (int) ($cloneInfo[1] / $sizes[1] * $sizes[0]);
+    public function generate($original, $params, $mime = 'jpeg', $path = false){
+
+        if(!$path) $path = dirname($original);
+        $path = $path ."/". $params['name'];
+
+        if (!copy($original, $path)) throw new ApiException(500, 'img_copy', 'full');
+
+        if ($mime === 'png') $this->convertToJPG($path);
+
+        $info = $this->getInfo($path);
+
+        $maxH = $maxW = false;
+        if($info['w'] > $info['h']){
+            if ($info['w'] > $params['w']) $maxW = $params['w'];
+            else $maxW = $info['w'];
+        } else {
+            if ($info['h'] > $params['h']) $maxH = $params['h'];
+            else $maxH = $info['h'];
         }
 
-        if (!isset($cloneInfo[2])) $cloneInfo[2] = 100;
+        $tmpImg = imagecreatefromjpeg($path);
+        $this->createClone(
+            $tmpImg, 
+            [
+                "w" => $info['w'], 
+                "h" => $info['h']
+            ], 
+            [
+                "w" => $maxW, 
+                "h" => $maxH
+            ],
+            $path
+        );
+        imagedestroy($tmpImg);
 
-        $tmpImg = imagecreatetruecolor($cloneInfo[0], $cloneInfo[1]);
+        return $path;
+
+    }
+
+    public static function createClone($img, $info, $clone, $path) {
+
+
+        if ($clone["h"] === false) {
+            $clone["h"] = (int) ($clone["w"] / $info["w"] * $info["h"]);
+        } 
+        
+        if ($clone["w"] === false) {
+            $clone["w"] = (int) ($clone["h"] / $info["h"] * $info["w"]);
+        }
+
+        if (!isset($clone["q"])) $clone["q"] = 100;
+
+        $tmpImg = imagecreatetruecolor($clone["w"], $clone["h"]);
 
         imagecopyresampled(
             $tmpImg, $img, 0,0,0,0,
-            $cloneInfo[0],
-            $cloneInfo[1],
-            $sizes[0],
-            $sizes[1]
+            $clone["w"],
+            $clone["h"],
+            $info["w"],
+            $info["h"]
         );
 
-        imagejpeg($tmpImg, $destination, $cloneInfo[2]);
+        imagejpeg($tmpImg, $path, $clone["q"]);
         imagedestroy($tmpImg);
 
     }

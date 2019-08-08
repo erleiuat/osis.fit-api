@@ -4,6 +4,7 @@ define('PROCESS', "Upload"); /* Name of this Process */
 define('ROOT', "../../../src/"); /* Path to root */      
 define('REC', "../../src/class/"); /* Path to classes of current version */ /* Path to root */        
 
+
 require_once ROOT . 'Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */
 
@@ -14,24 +15,22 @@ require_once ROOT . 'Image.php'; /* Load Image-Methods */
 // ------------------ SCRIPT -----------------
 try {
 
-    $maxFileSize = 15 * 1000000;
-
-    // INIT
     $sec = Sec::auth($_LOG);
-    $Image = new Image($_DBC, $sec);
     $img = new Bulletproof\Image($_FILES);
     if(!$img["image"]) throw new ApiException(403, 'img_upload_image_missing');
     
-    $img->setSize(50, $maxFileSize); // Min. 50 Byte, Max. 15 MegaByte (0.15 GB)
+    $img->setSize(Env_img::size["min"], Env_img::size["max"]);
     $img->setDimension(10000, 10000); 
     $img->setMime(['jpeg', 'png']);
     
-    $name = date('Y_m_d_H_i_s-').$img->getName();
-    $path = ROOT ."/". Env_api::static_path."/".Env_api::name."/".hash('ripemd160', $sec->id)."/".$name;
-    if (!is_dir($path)) mkdir($path, 0777, true);
+    $dir = date('Y_m_d_H_i_s-').$img->getName();
+    $path = ROOT ."/". Env_img::path."/".Env_img::folder."/".hash('ripemd160', $sec->id)."/".$dir;
     
+    if(!mkdir($path, 0777, true)) throw new ApiException(403, 'dir_creation_failed');
+
     $img->setName("original");
     $img->setLocation($path);
+
     if (!$img->upload()) {
         if($img->getSize() >= $maxFileSize){
             throw new ApiException(500, 'img_upload_error_full', 'file_too_large');
@@ -39,16 +38,28 @@ try {
             throw new ApiException(500, 'img_upload_error_full', $img->getError());
         }
     }
-
+    
     $mime = $img->getMime();
-    $original = $path."/original.".$mime;
-    if ($mime === 'jpeg') $Image->correctOrientation($original);
+    $original = $path."/original";
+    unset($img);
 
+    $Image = new Image($_DBC, $sec);
+    rename ($original.".".$mime, $original);
+    if ($mime === 'jpeg') $Image->correctOrientation($original);
+    
+    $full = $Image->generate($original, Env_img::full, $mime);
+    $Image->generate($full, Env_img::lazy);
+    
     $Image->set([
-        'name' => $name,
+        'name' => $dir,
         'mime' => $mime
     ])->create();
 
+    $Image->setSizes([
+        'full' => true, 
+        'lazy' => true
+    ]);
+    
     $_REP->addData((int) $Image->id, "id");
     $_REP->addData($Image->getObject(), "item");
 
@@ -60,57 +71,27 @@ try {
 
 // -------------- ASYNC RESPONSE -------------
 Core::endAsync($_REP);
+unset($sec);
+unset($_REP); // TODO Unset All method
+unset($original);
+unset($mime);
+unset($dir);
+unset($path);
 
 // -------------- AFTER RESPONSE -------------
-
-unset($img);
-unset($sec);
-unset($_REP);
 
 try {
 
     $done = [];
     
-    $full = $path."/full.jpeg";
-    if (!copy($original, $full)) throw new ApiException(500, 'img_copy', 'full');
-    if ($mime === 'png') $Image->convertToJPG($full);
+    $Image->generate($full, Env_img::large);
+    $done["large"] = true;
 
-    list($oWidth, $oHeight, $type, $attr) = getimagesize($full);
-    if($oWidth > $oHeight){
-        $maxWidth = ($oWidth > 2500 ? 2500 : $oWidth);
-        $maxHeight = false;
-    } else {
-        $maxHeight = ($oHeight > 2500 ? 2500 : $oHeight);
-        $maxWidth = false;
-    }
+    $Image->generate($full, Env_img::medium);
+    $done["medium"] = true;
 
-    $tmpOrigin = imagecreatefromjpeg($full);
-    $Image->createClone(
-        $tmpOrigin, [$oWidth, $oHeight], 
-        [$maxWidth, $maxHeight],
-        $full
-    );
-    imagedestroy($tmpOrigin);
-    list($oW, $oH, $type, $attr) = getimagesize($full);
-    $full = imagecreatefromjpeg($full);
-
-    $done['full'] = true;
-
-    $versions = [
-        ['large', ($oW < 2400 ? $oW : 2400), 95],
-        ['medium', ($oW < 1200 ? $oW : 1200), 80],
-        ['small', ($oW < 650 ? $oW : 650), 80],
-        ['lazy', ($oW < 300 ? $oW : 300), 60]
-    ];
-
-    foreach ($versions as $v) {
-        $Image->createClone(
-            $full, [$oW, $oH], 
-            [$v[1], false, $v[2]], 
-            $path."/".$v[0].".jpeg"
-        );
-        $done[$v[0]] = true;
-    }
+    $Image->generate($full, Env_img::small);
+    $done["small"] = true;
 
 } catch (\Exception $e) {
     $_LOG->addInfo($e);
