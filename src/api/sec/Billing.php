@@ -104,7 +104,6 @@ class Billing extends ApiObject {
             "active" => false
         ];
 
-
     }
 
     public function hasPremium(){
@@ -123,7 +122,9 @@ class Billing extends ApiObject {
 
             $plan = $sub->plan;
             $subscription = $sub->id;
-            if ($sub->status === 'active' && !$sub->deleted) $active = true;
+            if (!$sub->deleted) {
+                if($sub->status === 'active' || $sub->status === 'non_renewing') $active = true;
+            } 
 
         }
 
