@@ -25,9 +25,24 @@ class Sec {
         if (!password_verify(Env_sec::phrase . $access->data->account->mail, $phrase)) {
             throw new ApiException(403, "token_invalid", "phrase_wrong");
         }
-        
+
+        $sub = $access->data->subscription;
+        $premium = false;
+
+        if ($sub->id && !$sub->deleted) {
+            if ($sub->status === 'active') $premium = true;
+            else if ($sub->status === 'non_renewing') $premium = true;
+        }
+
+        $sec = (object) [
+            "id" => $access->data->account->id,
+            "mail" => $access->data->account->mail,
+            "level" => $access->data->level,
+            "premium" => $premium,
+        ];
+
         if ($LOG) $LOG->setUser($access->data->account);
-        return $access->data->account;
+        return $sec;
         
     }
 

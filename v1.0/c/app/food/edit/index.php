@@ -25,7 +25,7 @@ try {
     require_once REC . 'Food.php';
     $Food = new Food($_DBC, $sec);
     
-    if($data->imageID) {
+    if($data->imageID && $sec->premium) {
         require_once ROOT . 'Image.php';
         $Image = new Image($_DBC, $sec);
         $data->image = $Image->set(['id'=>$data->imageID])->read()->getObject();

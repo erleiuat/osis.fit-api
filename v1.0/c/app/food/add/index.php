@@ -22,7 +22,7 @@ try {
     ]);
     $data->calories_per_100 = $data->caloriesPer100;
     
-    if($data->imageID) {
+    if($data->imageID && $sec->premium) {
         require_once ROOT . 'Image.php';
         $Image = new Image($_DBC, $sec);
         $data->image = $Image->set(['id'=>$data->imageID])->read()->getObject();

@@ -16,6 +16,8 @@ require_once ROOT . 'Image.php'; /* Load Image-Methods */
 try {
 
     $sec = Sec::auth($_LOG);
+    if(!$sec->premium) throw new ApiException(401, 'premium_required');
+
     $img = new Bulletproof\Image($_FILES);
     if(!$img["image"]) throw new ApiException(403, 'img_upload_image_missing');
     
