@@ -28,7 +28,7 @@ class Log {
         $this->db = $db;
         $this->process = $process;
         $this->stamp = date('Y-m-d G:i:s');
-        $this->user = (object) [
+        $this->account = (object) [
             "id" => null,
             "mail" => null,
             "level" => null
@@ -56,7 +56,7 @@ class Log {
     public function setUser($obj) {
         $keys = ['id', 'mail', 'level'];
         if(!is_object($obj)) $obj = (object) $obj;
-        foreach ($keys as $key) $this->user->$key = (isset($obj->$key) ? $obj->$key : null);
+        foreach ($keys as $key) $this->account->$key = (isset($obj->$key) ? $obj->$key : null);
         return $this;
     }
     
@@ -73,12 +73,12 @@ class Log {
 
         $stmt = $this->db->conn->prepare("
             INSERT INTO ".$this->t_main . " 
-            (`user_id`, `level`, `process`, `information`, `identity`, `trace`, `stamp`) VALUES 
-            (:user_id, :level, :process, :information, :identity, :trace, :stamp);
+            (`account_id`, `level`, `process`, `information`, `identity`, `trace`, `stamp`) VALUES 
+            (:account_id, :level, :process, :information, :identity, :trace, :stamp);
         ");
         $this->db->bind($stmt, 
-            ['user_id', 'level', 'process', 'information', 'identity', 'trace', 'stamp'], 
-            [$this->user->id, $this->level, $this->process, $this->information, $this->identity, $this->trace, $this->stamp]
+            ['account_id', 'level', 'process', 'information', 'identity', 'trace', 'stamp'], 
+            [$this->account->id, $this->level, $this->process, $this->information, $this->identity, $this->trace, $this->stamp]
         );
 
         $this->db->execute($stmt);

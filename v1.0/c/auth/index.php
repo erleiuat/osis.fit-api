@@ -21,6 +21,7 @@ try {
     require_once ROOT . 'Authentication.php';
     $Auth = new Auth($_DBC);
 
+    $_LOG->addInfo($data->mail);
     if ($Auth->check($data->mail)->status === "verified") {
 
         if (!$Auth->pass($data->password)) throw new ApiException(403, "password_wrong");

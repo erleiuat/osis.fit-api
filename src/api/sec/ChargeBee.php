@@ -25,7 +25,7 @@ class ChargeBee extends ApiObject {
         $sub = $result->subscription();
 
         return (object) [
-            "user_id" => $sub->customerId,
+            "account_id" => $sub->customerId,
             "status" => $sub->status,
             "deleted" => $sub->deleted,
             "subscription" => $sub->id,
@@ -48,10 +48,10 @@ class ChargeBee extends ApiObject {
                 "planId" => Env_bill::plan
             ], 
             "customer" => [
-                "email" => $this->user->mail, 
+                "email" => $this->account->mail, 
                 "firstName" => $uInfo->firstname, 
                 "lastName" => $uInfo->lastname,
-                "id" => $this->user->id
+                "id" => $this->account->id
             ],
             "billingAddress" => [
                 "firstName" => $uInfo->firstname, 
@@ -67,7 +67,7 @@ class ChargeBee extends ApiObject {
 
         $result = ChargeBee_PortalSession::create([
             "customer" => [
-                "id" => $this->user->id
+                "id" => $this->account->id
             ]
         ]);
 
@@ -87,7 +87,7 @@ class ChargeBee extends ApiObject {
 
             $sub = $this->cbSubscription($user->subscription);
 
-            if ($sub->user_id !== $user->user_id) throw new ApiException(500, 'subscription_user_mismatch', get_class($this));
+            if ($sub->account_id !== $user->account_id) throw new ApiException(500, 'subscription_user_mismatch', get_class($this));
 
             $plan = $sub->plan;
             $subscription = $sub->id;
@@ -108,7 +108,7 @@ class ChargeBee extends ApiObject {
     public function setSub($info) {
 
         $vals = [
-            'user_id' => $this->user->id, 
+            'account_id' => $this->account->id, 
             'subscription_id' => $info->subscription,
             'plan_id' => $info->plan,
             'active' => $info->active

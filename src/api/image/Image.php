@@ -5,7 +5,7 @@ class Image extends ApiObject {
     /* -------- TABLES (T) AND VIEWS (V) -------- */
     private $t_main = "image";
     private $t_sizes = "image_sizes";
-    private $v_info = "v_image_info";
+    private $v_info = "v_image";
 
     /* ----------- PUBLIC BASIC PARAMS ---------- */
     protected $keys = [
@@ -27,7 +27,7 @@ class Image extends ApiObject {
     public function create() {
 
         $vals = Core::mergeAssign([
-            'user_id' => $this->user->id, 
+            'account_id' => $this->account->id, 
             'name' => null,
             'mime' => null
         ], (array) $this->getObject());
@@ -59,7 +59,7 @@ class Image extends ApiObject {
     public function read($id = false) {
         if(!$id) $id = $this->id;
 
-        $where = ['user_id' => $this->user->id, 'id' => ($id ?: $this->id)];
+        $where = ['account_id' => $this->account->id, 'id' => ($id ?: $this->id)];
         $result = $this->db->makeSelect($this->v_info, $where);
 
         if (count($result) !== 1) throw new ApiException(404, 'item_not_found', get_class($this));
@@ -85,7 +85,7 @@ class Image extends ApiObject {
 
     public function delete($id = false) {
 
-        $where = ['user_id' => $this->user->id, 'id' => ($id ?: $this->id)];
+        $where = ['account_id' => $this->account->id, 'id' => ($id ?: $this->id)];
         $changed = $this->db->makeDelete($this->t_main, $where);
 
         if ($changed < 1) throw new ApiException(404, 'item_not_found', get_class($this));
@@ -100,7 +100,7 @@ class Image extends ApiObject {
         else if (is_object($obj)) $obj = (array) $obj;
 
         $url = Env_img::url."/".Env_img::folder;
-        $folder = hash('ripemd160', $this->user->id);
+        $folder = hash('ripemd160', $this->account->id);
         $path = $url."/".$folder."/".$obj['name'];
 
         $files = [

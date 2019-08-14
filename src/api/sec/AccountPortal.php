@@ -98,16 +98,16 @@ class AccountPortal extends ApiObject {
         if ($code) {
             $stmt = $this->db->prepare("
                 SELECT * FROM ".$this->t_main . " 
-                WHERE user_id = :user_id
+                WHERE account_id = :account_id
             ");
-            $this->db->bind($stmt, ['user_id'], [$this->user->id])->execute($stmt);
+            $this->db->bind($stmt, ['account_id'], [$this->account->id])->execute($stmt);
             
             if ($stmt->rowCount() === 1 && password_verify($code, ($stmt->fetch(PDO::FETCH_ASSOC))["password_code"])) {
                 $password_code = null;
                 $password_stamp = null;
             } else {
-                $this->user->mail = null;
-                $this->user->id = null;
+                $this->account->mail = null;
+                $this->account->id = null;
                 throw new Exception('code_validation_error', 403);
             }
         }
@@ -116,11 +116,11 @@ class AccountPortal extends ApiObject {
             UPDATE ".$this->t_main . " SET 
             `password_code` = :password_code, 
             `password_stamp` = :password_stamp 
-            WHERE `user_id` = :user_id
+            WHERE `account_id` = :account_id
         ");
         $this->db->bind($stmt, 
-            ['user_id', 'password_stamp', 'password_code'], 
-            [$this->user->id, $password_stamp, $password_code]
+            ['account_id', 'password_stamp', 'password_code'], 
+            [$this->account->id, $password_stamp, $password_code]
         )->execute($stmt);
 
         return $this;
@@ -133,11 +133,11 @@ class AccountPortal extends ApiObject {
             UPDATE ".$this->t_main . " SET 
             `password` = :password,
             `password_stamp` = now()  
-            WHERE `id` = :user_id
+            WHERE `id` = :account_id
         ");
         $this->db->bind($stmt,
-            ['user_id', 'password'], 
-            [$this->user->id, password_hash($pw, Env_auth::pw_crypt)]
+            ['account_id', 'password'], 
+            [$this->account->id, password_hash($pw, Env_auth::pw_crypt)]
         )->execute($stmt);
 
     }
