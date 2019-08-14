@@ -28,12 +28,25 @@ class Auth extends ApiObject {
 
 
     /* ----------------- METHODS ---------------- */
+    public function addSubscription($subID) {
+
+        $where = ['id' => $this->id];
+        $res = $this->db->makeUpdate($this->t_main, [
+            "subscription" => $subID
+        ], $where);
+        
+        if ($res !== 1) throw new ApiException(500, 'sub_add_error', get_class($this));
+        
+        return $this;
+
+    }
+
     public function setSubscription($subID = null) {
 
         $sub = false;
 
         if ($subID) {
-            ChargeBee_Environment::configure(Env_bill::cb_site, Env_bill::cb_tkn);
+            ChargeBee_Environment::configure(Env_auth::sub_site, Env_auth::sub_tkn);
             $result = ChargeBee_Subscription::retrieve($subID);
             $sub = $result->subscription();
         }

@@ -22,7 +22,7 @@ try {
     require_once ROOT . 'Authentication.php';
     $Auth = new Auth($_DBC, $sec);
 
-    if ($Auth->check()->status === "verified") {
+    if ($Auth->check($sec->mail)->status === "verified") {
         
         if (!$Auth->passwordLogin($data->current)) throw new ApiException(403, "password_wrong");
         $Auth->passwordChange($data->new);

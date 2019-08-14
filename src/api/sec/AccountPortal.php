@@ -11,9 +11,6 @@ class AccountPortal extends ApiObject {
     private $t_auth_pass = "auth_pass";
     private $t_auth_verify = "auth_verify";
 
-    /* ----------- PUBLIC BASIC PARAMS ---------- */
-
-
     /* ----------------- METHODS ---------------- */
     public function createAccount($mail) {
 

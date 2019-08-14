@@ -25,7 +25,7 @@ try {
     require_once ROOT . 'Authentication.php';
     $Auth = new Auth($_DBC);
 
-    if ($Auth->check()->status === "verified") {
+    if ($Auth->check($sec->mail)->status === "verified") {
 
         if ($data->mail && !$data->code && !$data->password) {
 
