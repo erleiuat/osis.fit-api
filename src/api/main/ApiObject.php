@@ -5,24 +5,29 @@ class ApiObject {
     /* ----------- BASIC PARAMS ---------- */
     protected $db;
     protected $keys = [];
-    public $user;
+    public $account;
 
     /* ------------------ INIT ------------------ */
-    public function __construct($db, $user = false) {
+    public function __construct($db, $account = false) {
         $this->db = $db;
-        if ($user) $this->setUser($user);
-        else $this->setUser();
+        if ($account) $this->setAccount($account);
+        else $this->setAccount();
     }
 
     /* ----------------- METHODS ---------------- */
-    public function setUser($obj = []) {
+    public function setAccount($obj = []) {
         if(!is_object($obj)) $obj = (object) $obj;
-        $this->user = (object) [
+        $this->account = (object) [
             "id" => (isset($obj->id) ? $obj->id : null),
-            "mail" => (isset($obj->mail) ? $obj->mail : null),
-            "level" => (isset($obj->level) ? $obj->level : null),
+            "mail" => (isset($obj->mail) ? $obj->mail : null)
         ];
-        return $this;
+    }
+    
+    public function getAccount(){
+        return [
+            "id" => $this->account->id,
+            "mail" => $this->account->mail
+        ];
     }
 
     public function set($obj) {

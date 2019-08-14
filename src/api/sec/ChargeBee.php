@@ -1,7 +1,7 @@
 <?php
 
 // TODO: Use new db statement structure
-class Billing extends ApiObject {
+class ChargeBee extends ApiObject {
     
     /* -------- TABLES (T) AND VIEWS (V) -------- */
     private $t_main = "auth";
@@ -10,16 +10,16 @@ class Billing extends ApiObject {
     protected $keys = [];
 
     /* ------------------ INIT ------------------ */
-    public function __construct($db, $user = false) {
+    public function __construct($db, $account = false) {
         ChargeBee_Environment::configure(Env_bill::cb_site, Env_bill::cb_tkn);
         $this->db = $db;
-        if ($user) $this->setUser($user);
-        else $this->setUser();
+        if ($account) $this->setAccount($account);
+        else $this->setAccount();
     }
 
     /* ----------------- METHODS ---------------- */
 
-    public function cbSubscription($subID) {
+    public function subscription($subID) {
 
         $result = ChargeBee_Subscription::retrieve($subID);
         $sub = $result->subscription();

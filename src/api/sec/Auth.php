@@ -5,250 +5,162 @@ class Auth extends ApiObject {
     
     /* -------- TABLES (T) AND VIEWS (V) -------- */
     private $t_main = "auth";
-    private $t_user = "user";
+    private $t_pass = "auth_pass";
+    private $t_verify = "auth_verify";
     private $t_refresh = "auth_refresh";
-    private $v_auth = "v_auth";
+
+    private $v_check = "v_auth_check";
 
     /* ----------- PUBLIC BASIC PARAMS ---------- */
     protected $keys = ['password', 'verify_code', 'password_code'];
 
-    public $status;
-    public $premium;
+    public $id;
+    public $level;
+    public $status = false;
+    public $subscription;
 
-    public $password;
-    public $password_stamp;
-    
-    public $password_code;
-    public $verify_code;
-
+    public $pass_stamp;
     public $refresh_jti;
     public $refresh_phrase;
 
+    /* Verify: code, stamp */
+    public $verify;
+
+
     /* ----------------- METHODS ---------------- */
-    public function check() {
+    public function setSubscription($subID = null) {
 
-        $this->status = false;
-        if ($this->user->id) $where = ['user_id' => $this->user->id];
-        else if($this->user->mail) $where = ['user_mail' => $this->user->mail];
-        else return $this;
+        $sub = false;
 
-        $result = $this->db->makeSelect($this->v_auth, $where);
+        if ($subID) {
+            ChargeBee_Environment::configure(Env_bill::cb_site, Env_bill::cb_tkn);
+            $result = ChargeBee_Subscription::retrieve($subID);
+            $sub = $result->subscription();
+        }
+
+        $this->subscription = (object) [
+            "id" => ($sub ? $sub->id : null),
+            "status" => ($sub ? $sub->status : null),
+            "deleted" => ($sub ? $sub->deleted : null),
+            "expiration_stamp" => ($sub ? $sub->currentTermEnd : null),
+            "plan" => ($sub ? $sub->planId : null)
+        ];
+
+    }
+
+    public function check($mail) {
+
+        $result = $this->db->makeSelect($this->v_check, [
+            'account_mail' => $mail
+        ]);
+
         if (count($result) !== 1) return $this;
 
-        $this->user->id = $result[0]['user_id'];
-        $this->user->mail = $result[0]['user_mail'];
-        $this->user->level = $result[0]['user_level'];
-        $this->id = $result[0]['id'];
-        $this->status = $result[0]['status'];
-        $this->password_stamp = $result[0]['password_stamp'];
+        $this->id = $result[0]['auth_id'];
+        $this->status = $result[0]['auth_status'];
+        $this->level = $result[0]['auth_level'];
+
+        $this->pass_stamp = $result[0]['pass_update_stamp'];
+
+        $this->setSubscription($result[0]['auth_subscription']);
+        $this->setAccount([
+            "id" => $result[0]['account_id'],
+            "mail" => $mail,
+        ]);
 
         return $this;
         
     }
 
-    public function register() {
+    public function pass($pw) {
 
-        $vals = [
-            'user_id' => $this->user->id, 
-            'password' => password_hash($this->password, Env_auth::pw_crypt),
-            'verify_code' => password_hash($this->verify_code, Env_auth::pw_crypt),
-            'password_stamp' => date('Y-m-d H:i:s', time())
+        $result = $this->db->makeSelect($this->t_pass, [
+            'auth_id' => $this->id
+        ]);
+
+        if (count($result) !== 1) return false;
+        if (password_verify($pw, $result[0]['password'])) return true;
+
+        return false;
+
+    }
+
+    public function token() {
+
+        return (object) [
+            "level" => $this->level,
+            "account" => (object) [
+                "id" => $this->account->id,
+                "mail" => $this->account->mail
+            ],
+            "subscription" => $this->subscription,
+            "refresh" => (object) [
+                "mail" => $this->account->mail,
+                "phrase" => $this->refresh_phrase,
+                "jti" => $this->refresh_jti
+            ]
         ];
-        $this->db->makeInsert($this->t_main, $vals);
 
-        $this->id = $this->db->conn->lastInsertId();        
+    }
+
+    public function refresh($jti, $phrase) {
+        
+        $where = ['auth_id' => $this->id, 'jti' => $jti];
+        $res = $this->db->makeUpdate($this->t_refresh, [
+            "phrase" => password_hash($phrase, Env_auth::pw_crypt)
+        ], $where);
+        
+        if ($res !== 1) throw new ApiException(500, 'refresh_error', get_class($this));
+        
+        $this->refresh_jti = $jti;
+        $this->refresh_phrase = $phrase;
+        
+        return $this;
+        
+    }
+
+    public function initRefresh($jti, $phrase) {
+
+        $res = $this->db->makeInsert($this->t_refresh, [
+            "auth_id" => $this->id,
+            "jti" => $jti,
+            "phrase" => password_hash($phrase, Env_auth::pw_crypt)
+        ]);
+
+        if ($res !== 1) throw new ApiException(500, 'refresh_init_error', get_class($this));
+        
+        $this->refresh_jti = $jti;
+        $this->refresh_phrase = $phrase;
 
         return $this;
 
-    }
-
-    public function verifyMail($code) {
-
-        $where = ['user_id' => $this->user->id];
-        $result = $this->db->makeSelect($this->t_main, $where);
-
-        if (count($result) === 1 && password_verify($code, $result[0]["verify_code"])) {
-        
-            $params = [ 
-                'status' => 'verified',
-                'verify_stamp' => date('Y-m-d H:i:s', time()),
-                'verify_code' => null
-            ];
-            
-            $changed = $this->db->makeUpdate($this->t_main, $params, $where);
-            if ($changed > 1) throw new ApiException(500, 'too_many_changed', get_class($this));
-
-            return true;
-
-        }
-
-        return false;
-
-    }
-
-    public function verifyRefresh($phrase) {
-
-        $stmt = $this->db->prepare("
-            SELECT * FROM ".$this->t_refresh . " 
-            WHERE `auth_id` = :auth_id 
-            AND `refresh_jti` = :refresh_jti
-        ");
-        $this->db->bind($stmt, 
-            ['auth_id', 'refresh_jti'], 
-            [$this->id, $this->refresh_jti]
-        )->execute($stmt);
-
-        $phrase_hash = ($stmt->fetch(PDO::FETCH_ASSOC))["refresh_phrase"];
-        if ($stmt->rowCount() === 1 && password_verify($phrase, $phrase_hash)) {
-            return true;
-        }
-        return false;
-
-    }
-
-    public function setRefreshAuth($oldJti = false) {
-
-        if ($oldJti) {
-            $stmt = $this->db->prepare("
-                UPDATE ".$this->t_refresh . " SET 
-                `refresh_jti` = :refresh_jti,
-                `refresh_phrase` = :refresh_phrase,
-                `updated_stamp` = now(), 
-                `updated_total` = `updated_total` + 1 
-                WHERE `auth_id` = :auth_id 
-                AND `refresh_jti` = :oldJti
-            ");
-            $this->db->bind($stmt, 
-                ['refresh_jti', 'auth_id', 'oldJti', 'refresh_phrase'], 
-                [$this->refresh_jti, $this->id, $oldJti, password_hash($this->refresh_phrase, Env_auth::pw_crypt)]
-            )->execute($stmt);
-        } else {
-            $stmt = $this->db->prepare("
-                INSERT INTO ".$this->t_refresh . " 
-                (`auth_id`, `refresh_jti`, `refresh_phrase`) VALUES
-                (:auth_id, :refresh_jti, :refresh_phrase);
-            ");
-            $this->db->bind($stmt, 
-                ['auth_id', 'refresh_jti', 'refresh_phrase'], 
-                [$this->id, $this->refresh_jti, password_hash($this->refresh_phrase, Env_auth::pw_crypt)]
-            )->execute($stmt);
-        }
-
-        $stmt = $this->db->prepare("
-            UPDATE ".$this->t_main . " SET 
-            `auth_stamp` = now(),
-            `auth_total` = `auth_total` + 1  
-            WHERE `id` = :id
-        ");
-        $this->db->bind($stmt, 
-            ['id'], [$this->id]
-        )->execute($stmt);
-
-    }
-
-    public function removeRefresh() {
-        $stmt = $this->db->prepare("
-            DELETE FROM ".$this->t_refresh . " WHERE 
-            `auth_id` = :auth_id AND 
-            `refresh_jti` = :refresh_jti 
-        ");
-        $this->db->bind($stmt, 
-            ['auth_id', 'refresh_jti'], 
-            [$this->id, $this->refresh_jti]
-        )->execute($stmt);
     }
     
-    public function passwordLogin($pw) {
+    public function verifyRefresh($jti, $phrase) {
 
-        $stmt = $this->db->prepare("
-            SELECT password FROM ".$this->t_main . " 
-            WHERE user_id = :user_id
-        ");
-        $this->db->bind($stmt, 
-            ['user_id'], 
-            [$this->user->id]
-        );
-        $this->db->execute($stmt);
+        $result = $this->db->makeSelect($this->t_refresh, [
+            'auth_id' => $this->id, 'jti' => $jti
+        ]);
 
-        $password_hash = ($stmt->fetch(PDO::FETCH_ASSOC))["password"];
+        if (count($result) !== 1) return false;
+        if (password_verify($phrase, $result[0]['phrase'])) return true;
 
-        if ($stmt->rowCount() === 1 && password_verify($pw, $password_hash)) {
-            return true;
-        }
-            
         return false;
 
     }
 
-    public function passwordForgotten($code = false) {
+    public function removeRefresh($jti) {
 
-        $password_stamp = date("Y-m-d H:i:s");
-        $password_code = password_hash($this->password_code, Env_auth::pw_crypt);
+        $result = $this->db->makeDelete($this->t_refresh, [
+            'auth_id' => $this->id, 'jti' => $jti
+        ]);
 
-        if ($code) {
-            $stmt = $this->db->prepare("
-                SELECT * FROM ".$this->t_main . " 
-                WHERE user_id = :user_id
-            ");
-            $this->db->bind($stmt, ['user_id'], [$this->user->id])->execute($stmt);
-            
-            if ($stmt->rowCount() === 1 && password_verify($code, ($stmt->fetch(PDO::FETCH_ASSOC))["password_code"])) {
-                $password_code = null;
-                $password_stamp = null;
-            } else {
-                $this->user->mail = null;
-                $this->user->id = null;
-                throw new Exception('code_validation_error', 403);
-            }
-        }
+        if ($result !== 1) throw new ApiException(404, 'refresh_remove_error', get_class($this));;
 
-        $stmt = $this->db->prepare("
-            UPDATE ".$this->t_main . " SET 
-            `password_code` = :password_code, 
-            `password_stamp` = :password_stamp 
-            WHERE `user_id` = :user_id
-        ");
-        $this->db->bind($stmt, 
-            ['user_id', 'password_stamp', 'password_code'], 
-            [$this->user->id, $password_stamp, $password_code]
-        )->execute($stmt);
-
-        return $this;
+        return true;
 
     }
-
-    public function passwordChange($pw) {
-
-        $stmt = $this->db->prepare("
-            UPDATE ".$this->t_main . " SET 
-            `password` = :password,
-            `password_stamp` = now()  
-            WHERE `id` = :user_id
-        ");
-        $this->db->bind($stmt,
-            ['user_id', 'password'], 
-            [$this->user->id, password_hash($pw, Env_auth::pw_crypt)]
-        )->execute($stmt);
-
-    }
-
-    public function disable() {
-
-        $stmt = $this->db->prepare("
-            UPDATE ".$this->t_main . " SET 
-            `status` = 'deleted',
-            `password` = concat('DELETED:', password, '|ID:', id) 
-            WHERE `user_id` = :user_id
-        ");
-        $this->db->bind($stmt, ['user_id'], [$this->user->id])->execute($stmt);
-
-        $stmt = $this->db->prepare("
-            UPDATE ".$this->t_user . " SET 
-            `mail` = concat('DELETED:', mail, '|ID:', id)
-            WHERE `id` = :user_id 
-        ");
-        $this->db->bind($stmt, ['user_id'], [$this->user->id])->execute($stmt);
-
-    }
+    
+    
     
 }

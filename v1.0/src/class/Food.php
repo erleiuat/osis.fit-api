@@ -19,7 +19,7 @@ class Food extends ApiObject {
     public function create() {
 
         $vals = Core::mergeAssign([
-            'user_id' => $this->user->id, 
+            'account_id' => $this->account->id, 
             'image_id' => (isset($this->image->id) ? $this->image->id : null),
             'title' => null,
             'amount' => null,
@@ -34,7 +34,7 @@ class Food extends ApiObject {
 
     public function read($id = false) {
         
-        $where = ['user_id' => $this->user->id, 'id' => ($id ?: $this->id)];
+        $where = ['account_id' => $this->account->id, 'id' => ($id ?: $this->id)];
         $result = $this->db->makeSelect($this->t_main, $where);
 
         if (count($result) !== 1) throw new ApiException(404, 'item_not_found', get_class($this));
@@ -53,7 +53,7 @@ class Food extends ApiObject {
 
     public function readAll() {
         
-        $where = ['user_id' => $this->user->id];
+        $where = ['account_id' => $this->account->id];
         $result = $this->db->makeSelect($this->t_main, $where);
 
         if (count($result) < 1) throw new ApiException(204, 'no_items_found', get_class($this));
@@ -63,7 +63,7 @@ class Food extends ApiObject {
 
     public function edit($id = false) {
         
-        $where = ['user_id' => $this->user->id, 'id' => ($id ?: $this->id)];
+        $where = ['account_id' => $this->account->id, 'id' => ($id ?: $this->id)];
         $params = Core::mergeAssign([ 
             'image_id' => (isset($this->image->id) ? $this->image->id : null),
             'title' => null,
@@ -80,7 +80,7 @@ class Food extends ApiObject {
 
     public function delete($id = false) {
 
-        $where = ['user_id' => $this->user->id, 'id' => ($id ?: $this->id)];
+        $where = ['account_id' => $this->account->id, 'id' => ($id ?: $this->id)];
         $changed = $this->db->makeDelete($this->t_main, $where);
 
         if ($changed < 1) throw new ApiException(404, 'item_not_found', get_class($this));

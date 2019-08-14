@@ -13,20 +13,20 @@ $Mailer->body = [
             </td></tr>
         </table><br/><br/>
         Oder nutze diesen Code auf 
-        <a href="https://app.osis.fit/auth/verify?mail='.$User->user->mail . '">app.osis.fit/auth/verify</a>: 
+        <a href="https://app.osis.fit/auth/verify?mail='.$data->mail . '">app.osis.fit/auth/verify</a>: 
         <br/><br/>
-        <strong>'.$Auth->verify_code . '</strong>
+        <strong>'.$verify_code . '</strong>
     ',
     "header.heading" => "Willkommen bei Osis.fit!",
     "header.subheading" => "Verifiziere deine E-Mail-Adresse",
-    "content.heading" => "Hallo " . $User->firstname . "!",
+    "content.heading" => "Hallo " . $data->firstname . "!",
     "content.inner" => "
         Wir haben gerade eine Registrierung über deine E-Mail-Adresse erhalten.
         Falls du das warst, folge bitte den Anweisungen weiter unten, um dein Konto zu aktivieren.
         Andernfalls kannst du dieses E-Mail einfach ignorieren.
     ",
     "button.inner" => "Konto bestätigen &rarr;",
-    "button.href" => "https://app.osis.fit/auth/verify?mail=" . $User->user->mail . "&code=" . $Auth->verify_code
+    "button.href" => "https://app.osis.fit/auth/verify?mail=" . $data->mail . "&code=" . $verify_code
 ];
 
 $Mailer->body["footer.inner"] = Env_mail::page_name . " - " . Env_mail::slogan_de . " <br/> <i>" . Env_mail::creator_de . "</i>";

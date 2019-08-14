@@ -13,18 +13,18 @@ $Mailer->body = [
             </td></tr>
         </table><br/><br/>
         Or use this code on 
-        <a href="https://app.osis.fit/auth/verify?mail='.$User->user->mail . '">app.osis.fit/auth/verify</a>: 
+        <a href="https://app.osis.fit/auth/verify?mail='.$data->mail . '">app.osis.fit/auth/verify</a>: 
         <br/><br/>
-        <strong>'.$Auth->verify_code . '</strong>
+        <strong>'.$verify_code . '</strong>
     ',
     "header.heading" => "Welcome to Osis.fit!",
     "header.subheading" => "Verify your email address",
-    "content.heading" => "Hello " . $User->firstname . "!",
+    "content.heading" => "Hello " . $data->firstname . "!",
     "content.inner" => "
         We have just received a registration via your email address.
         If this was you, please follow the instructions below to activate your account.
         Otherwise, you can simply ignore this email.
     ",
     "button.inner" => "Confirm Account &rarr;",
-    "button.href" => "https://app.osis.fit/auth/verify?mail=" . $User->user->mail . "&code=" . $Auth->verify_code
+    "button.href" => "https://app.osis.fit/auth/verify?mail=" . $data->mail . "&code=" . $verify_code
 ];

@@ -23,7 +23,7 @@ try {
     ]);
 
     require_once ROOT . 'Authentication.php';
-    $Auth = new Auth($_DBC, ["mail" => $data->mail]);
+    $Auth = new Auth($_DBC);
 
     if ($Auth->check()->status === "verified") {
 

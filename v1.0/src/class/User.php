@@ -4,9 +4,6 @@ class User extends ApiObject {
 
     /* -------- TABLES (T) AND VIEWS (V) -------- */
     private $t_main = "user";
-    private $t_detail = "user_detail";
-    private $t_aim = "user_aim";
-    private $v_info = "v_user_info";
 
     /* ----------- PUBLIC PARAMS ---------- */
     protected $keys = [
@@ -24,45 +21,26 @@ class User extends ApiObject {
     public $aim_date;
 
     /* ----------------- METHODS ---------------- */
-    public function create() {
-
-        $unique = uniqid('', true);
-        $time = date('Y_m_d_H_i_s', time());
-        $id = hash('ripemd160', $time.':'.$unique);
+    public function create($firstname, $lastname) {
 
         $vals = [
-            'id' => $id,
-            'mail' => $this->user->mail, 
-            'level' => $this->user->level,
+            'account_id' => $this->account->id, 
+            'firstname' => $firstname,
+            'lastname' => $lastname
         ];
+        
         $result = $this->db->makeInsert($this->t_main, $vals);
-
+        
         if ($result !== 1) throw new ApiException(500, 'user_create_error', get_class($this));
         
-        $this->user->id = $id;
-
-        $vals = Core::mergeAssign([
-            'user_id' => $this->user->id, 
-            'firstname' => null,
-            'lastname' => null
-        ], (array) $this->getObject());
-        $result = $this->db->makeInsert($this->t_detail, $vals);
-        
-        if ($result !== 1) throw new ApiException(500, 'detail_create_error', get_class($this));
-        
-        $vals = ['user_id' => $this->user->id];
-        $result = $this->db->makeInsert($this->t_aim, $vals);
-        
-        if ($result !== 1) throw new ApiException(500, 'aim_create_error', get_class($this));
-
         return $this;
 
     }
 
     public function read($id = false) {
 
-        $where = ['id' => ($id ?: $this->user->id)];
-        $result = $this->db->makeSelect($this->v_info, $where);
+        $where = ['account_id' => ($id ?: $this->account->id)];
+        $result = $this->db->makeSelect($this->t_main, $where);
 
         if (count($result) !== 1) throw new ApiException(404, 'item_not_found', get_class($this));
 
@@ -73,7 +51,7 @@ class User extends ApiObject {
 
     public function edit() {
 
-        $where = ['user_id' => $this->user->id];
+        $where = ['account_id' => $this->account->id];
 
         $params = Core::mergeAssign([ 
             'firstname' => null,
@@ -97,7 +75,7 @@ class User extends ApiObject {
         return $this;
 
     }
-
+    
     public function getObject($obj = false) {
 
         if (!$obj) $obj = $this;

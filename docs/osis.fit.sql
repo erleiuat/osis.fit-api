@@ -1,60 +1,87 @@
 
+-- ------------------------------------------------------------------------------------
+-- ACCOUNT
 
-DROP TABLE IF EXISTS `user`;
-CREATE TABLE `user` (
+DROP TABLE IF EXISTS `account`;
+CREATE TABLE `account` (
     id                  VARCHAR(40) NOT NULL,
     mail                VARCHAR(89) NOT NULL,
-    level               ENUM('user', 'moderator', 'admin') NOT NULL DEFAULT 'user',
 
-    UNIQUE INDEX unique_id (id),
     UNIQUE INDEX unique_mail (mail),
 
     PRIMARY KEY (id)
 );
 
+
+
+-- ------------------------------------------------------------------------------------
+-- AUTH
+
 DROP TABLE IF EXISTS `auth`;
 CREATE TABLE `auth` (
+    account_id          VARCHAR(40) NOT NULL,
+
     id                  INT NOT NULL AUTO_INCREMENT,
-    user_id             VARCHAR(40) NOT NULL,
-
+    level               ENUM('user', 'moderator', 'admin') NOT NULL DEFAULT 'user',
     status              ENUM('unverified', 'verified', 'locked', 'deleted') NOT NULL DEFAULT 'unverified',
-    password            VARCHAR(255) NOT NULL,
-    auth_stamp          TIMESTAMP,
-    auth_total          INT DEFAULT 0,
+    subscription        VARCHAR(255),
 
-    password_stamp      TIMESTAMP,
-    verify_stamp        TIMESTAMP,
-    password_code_stamp VARCHAR(255),
-
-    password_code       VARCHAR(255),
-    verify_code         VARCHAR(255),
-
+    login_stamp         TIMESTAMP,
+    login_total         INT DEFAULT 0,
+    
     PRIMARY KEY (id),
-    FOREIGN KEY (user_id) REFERENCES user(id)
+    FOREIGN KEY (account_id) REFERENCES account(id)
 
+);
+
+DROP TABLE IF EXISTS `auth_pass`;
+CREATE TABLE `auth_pass` (
+    auth_id             INT NOT NULL,
+
+    password            VARCHAR(255) NOT NULL,
+
+    update_stamp        TIMESTAMP,
+    reset_code          VARCHAR(255),
+    reset_code_stamp    VARCHAR(255),
+    
+    FOREIGN KEY (auth_id) REFERENCES auth(id)
+);
+
+DROP TABLE IF EXISTS `auth_verify`;
+CREATE TABLE `auth_verify` (
+    auth_id             INT NOT NULL,
+
+    stamp               TIMESTAMP,
+    code                VARCHAR(255),
+    
+    FOREIGN KEY (auth_id) REFERENCES auth(id)
 );
 
 DROP TABLE IF EXISTS `auth_refresh`;
 CREATE TABLE `auth_refresh` (
     auth_id             INT NOT NULL,
 
-    updated_total       INT DEFAULT 0,
-    updated_stamp       TIMESTAMP,
+    jti                 VARCHAR(255) NOT NULL,
+    phrase              VARCHAR(255) NOT NULL,
 
-    refresh_jti         VARCHAR(255) NOT NULL,
-    created_stamp       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    refresh_phrase      VARCHAR(255) NOT NULL,
+    update_stamp        TIMESTAMP,
+    update_total        INT DEFAULT 0,
 
-    PRIMARY KEY (auth_id, refresh_jti),
+    PRIMARY KEY (auth_id, jti),
     FOREIGN KEY (auth_id) REFERENCES auth(id)
 );
+
+
+
+-- ------------------------------------------------------------------------------------
+-- GENERAL
 
 DROP TABLE IF EXISTS `log`;
 CREATE TABLE `log` (
     id                  INT NOT NULL AUTO_INCREMENT,
     level               ENUM('trace','debug','info', 'warn', 'error', 'fatal') NOT NULL DEFAULT 'trace',
 
-    user_id             INT,
+    account_id          VARCHAR(255),
     identity            VARCHAR(255),
     process             VARCHAR(50) NOT NULL,
     information         TEXT,
@@ -65,51 +92,12 @@ CREATE TABLE `log` (
 );
 
 -- ------------------------------------------------------------------------------------
-
-DROP TABLE IF EXISTS `user_subscription`;
-CREATE TABLE `user_subscription` (
-    user_id             VARCHAR(40) NOT NULL,
-
-    subscription_id     VARCHAR(255) NOT NULL,
-    plan_id             VARCHAR(255) NOT NULL,
-    active              BOOLEAN NOT NULL DEFAULT 0,
-
-    UNIQUE INDEX unique_subscription (subscription_id),
-
-    PRIMARY KEY (user_id),
-    FOREIGN KEY (user_id) REFERENCES user(id)
-);
-
-DROP TABLE IF EXISTS `user_detail`;
-CREATE TABLE `user_detail` (
-    user_id             VARCHAR(40) NOT NULL,
-    
-    firstname           VARCHAR(150) NOT NULL,
-    lastname            VARCHAR(150) NOT NULL,
-    gender              ENUM('male','female'),
-    height              DOUBLE,
-    birthdate           DATE,
-
-    PRIMARY KEY (user_id),
-    FOREIGN KEY (user_id) REFERENCES user(id)
-);
-
-DROP TABLE IF EXISTS `user_aim`;
-CREATE TABLE `user_aim` (
-    user_id             VARCHAR(40) NOT NULL,
-
-    weight              DOUBLE,
-    bmi                 DOUBLE,
-    date                DATE,
-
-    PRIMARY KEY (user_id),
-    FOREIGN KEY (user_id) REFERENCES user(id)
-);
+-- IMAGE
 
 DROP TABLE IF EXISTS `image`;
 CREATE TABLE `image` (
     id                  INT NOT NULL AUTO_INCREMENT,
-    user_id             VARCHAR(40) NOT NULL,
+    account_id          VARCHAR(40) NOT NULL,
 
     name                VARCHAR(255),
     mime                VARCHAR(20),
@@ -117,8 +105,8 @@ CREATE TABLE `image` (
     access_stamp        TIMESTAMP,
     upload_stamp        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    PRIMARY KEY (id, user_id),
-    FOREIGN KEY (user_id) REFERENCES user(id)
+    PRIMARY KEY (id, account_id),
+    FOREIGN KEY (account_id) REFERENCES account(id)
 );
 
 DROP TABLE IF EXISTS `image_sizes`;
@@ -136,25 +124,47 @@ CREATE TABLE `image_sizes` (
     FOREIGN KEY (image_id) REFERENCES image(id)
 );
 
+-- ------------------------------------------------------------------------------------
+-- USER
+
+DROP TABLE IF EXISTS `user`;
+CREATE TABLE `user` (
+    account_id          VARCHAR(40) NOT NULL,
+    
+    firstname           VARCHAR(150) NOT NULL,
+    lastname            VARCHAR(150) NOT NULL,
+    gender              ENUM('male','female'),
+    height              DOUBLE,
+    birthdate           DATE,
+
+    aim_weight          DOUBLE,
+    aim_date            DATE,
+
+    PRIMARY KEY (account_id),
+    FOREIGN KEY (account_id) REFERENCES account(id)
+);
+
 DROP TABLE IF EXISTS `user_food`;
 CREATE TABLE `user_food` (
-    id                  INT NOT NULL AUTO_INCREMENT,
-    user_id             VARCHAR(40) NOT NULL,
+    account_id          VARCHAR(40) NOT NULL,
     image_id            INT,
+
+    id                  INT NOT NULL AUTO_INCREMENT,
 
     title               VARCHAR(150) NOT NULL,
     amount              DOUBLE,
     calories_per_100    DOUBLE,
 
-    PRIMARY KEY (id, user_id),
+    PRIMARY KEY (id, account_id),
     FOREIGN KEY (image_id) REFERENCES image(id),
-    FOREIGN KEY (user_id) REFERENCES user(id)
+    FOREIGN KEY (account_id) REFERENCES account(id)
 );
 
 DROP TABLE IF EXISTS `user_food_favorite`;
 CREATE TABLE `user_food_favorite` (
+    account_id          VARCHAR(40) NOT NULL,
+
     id                  INT NOT NULL AUTO_INCREMENT,
-    user_id             VARCHAR(40) NOT NULL,
 
     title               VARCHAR(60) NOT NULL,
     amount              DOUBLE,
@@ -166,99 +176,99 @@ CREATE TABLE `user_food_favorite` (
     img_lazy            VARCHAR(255),
     img_phrase          VARCHAR(255),
 
-    PRIMARY KEY (id, user_id),
-    FOREIGN KEY (user_id) REFERENCES user(id)
+    PRIMARY KEY (id, account_id),
+    FOREIGN KEY (account_id) REFERENCES account(id)
 );
 
-DROP TABLE IF EXISTS `user_weight`;
-CREATE TABLE `user_weight` (
+DROP TABLE IF EXISTS `ulog_weight`;
+CREATE TABLE `ulog_weight` (
+    account_id          VARCHAR(40) NOT NULL,
+
     id                  INT NOT NULL AUTO_INCREMENT,
-    user_id             VARCHAR(40) NOT NULL,
 
     weight              DOUBLE NOT NULL,
     stamp               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    PRIMARY KEY (id, user_id),
-    FOREIGN KEY (user_id) REFERENCES user(id)
+    PRIMARY KEY (id, account_id),
+    FOREIGN KEY (account_id) REFERENCES account(id)
 );
 
-DROP TABLE IF EXISTS `user_calories`;
-CREATE TABLE `user_calories` (
+DROP TABLE IF EXISTS `ulog_calories`;
+CREATE TABLE `ulog_calories` (
+    account_id          VARCHAR(40) NOT NULL,
+
     id                  INT NOT NULL AUTO_INCREMENT,
-    user_id             VARCHAR(40) NOT NULL,
 
     title               VARCHAR(150),
     calories            DOUBLE NOT NULL,
     stamp               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    PRIMARY KEY (id, user_id),
-    FOREIGN KEY (user_id) REFERENCES user(id)
+    PRIMARY KEY (id, account_id),
+    FOREIGN KEY (account_id) REFERENCES account(id)
 );
 
-DROP TABLE IF EXISTS `user_activity`;
-CREATE TABLE `user_activity` (
+DROP TABLE IF EXISTS `ulog_activity`;
+CREATE TABLE `ulog_activity` (
+    account_id          VARCHAR(40) NOT NULL,
+
     id                  INT NOT NULL AUTO_INCREMENT,
-    user_id             VARCHAR(40) NOT NULL,
 
     title               VARCHAR(150),
     duration            TIME,
     calories            DOUBLE,
     stamp               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    PRIMARY KEY (id, user_id),
-    FOREIGN KEY (user_id) REFERENCES user(id)
+    PRIMARY KEY (id, account_id),
+    FOREIGN KEY (account_id) REFERENCES account(id)
 );
 
 -- ------------------------------------------------------------------------------------
+-- VIEWS
 
-DROP VIEW IF EXISTS `v_auth`;
-CREATE VIEW `v_auth` AS
-
-    SELECT
-
-        au.id AS 'id',
-        au.status AS 'status',
-        au.password_stamp AS 'password_stamp',
-        us.id AS 'user_id',
-        us.mail AS 'user_mail',
-        us.level AS 'user_level',
-        su.subscription_id AS 'subscription',
-        su.active AS 'active'
-
-    FROM user AS us
-    LEFT JOIN auth AS au ON au.user_id = us.id
-    LEFT JOIN user_subscription AS su ON su.user_id = us.id;
-
-
-DROP VIEW IF EXISTS `v_user_info`;
-CREATE VIEW `v_user_info` AS
+DROP VIEW IF EXISTS `v_auth_check`;
+CREATE VIEW `v_auth_check` AS
 
     SELECT
 
-        us.id AS 'id',
-        us.mail AS 'mail',
-        us.level AS 'level',
-        de.firstname AS 'firstname',
-        de.lastname AS 'lastname',
-        de.birthdate AS 'birthdate',
-        de.height AS 'height',
-        de.gender AS 'gender',
-        ai.weight AS 'aim_weight',
-        ai.bmi AS 'aim_bmi',
-        ai.date AS 'aim_date'
+        acc.mail AS 'account_mail',
+        acc.id AS 'account_id',
 
-    FROM user AS us
-    LEFT JOIN user_detail AS de ON de.user_id = us.id
-    LEFT JOIN user_aim AS ai ON ai.user_id = us.id;
+        auth.id AS 'auth_id',
+        auth.status AS 'auth_status',
+        auth.subscription AS 'auth_subscription',
+        auth.level AS 'auth_level',
+
+        pass.update_stamp AS 'pass_update_stamp'
+
+    FROM account AS acc
+    LEFT JOIN auth AS auth ON auth.account_id = acc.id
+    LEFT JOIN auth_pass AS pass ON pass.auth_id = auth.id;
 
 
-DROP VIEW IF EXISTS `v_image_info`;
-CREATE VIEW `v_image_info` AS
+DROP VIEW IF EXISTS `v_user`;
+CREATE VIEW `v_user` AS
+
+    SELECT
+
+        us.firstname AS 'firstname',
+        us.lastname AS 'lastname',
+        us.birthdate AS 'birthdate',
+        us.height AS 'height',
+        us.gender AS 'gender',
+        us.aim_weight AS 'aim_weight',
+        us.aim_date AS 'aim_date'
+
+    FROM account AS acc
+    LEFT JOIN user AS us ON us.account_id = acc.id;
+
+
+DROP VIEW IF EXISTS `v_image`;
+CREATE VIEW `v_image` AS
 
     SELECT
 
         img.id AS 'id',
-        img.user_id AS 'user_id',
+        img.account_id AS 'account_id',
         img.name AS 'name',
         img.mime AS 'mime',
         sz.full AS 'full',

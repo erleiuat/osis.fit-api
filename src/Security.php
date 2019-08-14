@@ -7,4 +7,4 @@ require ROOT . 'libs/php-jwt-master/src/ExpiredException.php';
 require ROOT . 'libs/php-jwt-master/src/SignatureInvalidException.php';
 require ROOT . 'libs/php-jwt-master/src/JWT.php';
 
-require ROOT . 'api/sec/Sec.php';
+require ROOT . 'api/sec/Security.php';

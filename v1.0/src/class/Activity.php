@@ -3,7 +3,7 @@
 class Activity extends ApiObject {
 
     /* -------- TABLES (T) AND VIEWS (V) -------- */
-    private $t_main = "user_activity";
+    private $t_main = "ulog_activity";
 
     /* ----------- BASIC PARAMS ---------- */
     protected $keys = ['id', 'title', 'duration', 'calories', 'stamp', 'date', 'time'];
@@ -22,7 +22,7 @@ class Activity extends ApiObject {
         if(!$this->stamp) $this->stamp = date('Y-m-d H:i:s', strtotime($this->date." ".$this->time));
 
         $vals = Core::mergeAssign([
-            'user_id' => $this->user->id, 
+            'account_id' => $this->account->id, 
             'title' => null,
             'duration' => null,
             'calories' => null,
@@ -37,7 +37,7 @@ class Activity extends ApiObject {
 
     public function read($id = false) {
         
-        $where = ['user_id' => $this->user->id, 'id' => ($id ?: $this->id)];
+        $where = ['account_id' => $this->account->id, 'id' => ($id ?: $this->id)];
         $result = $this->db->makeSelect($this->t_main, $where);
 
         if (count($result) !== 1) throw new ApiException(404, 'item_not_found', get_class($this));
@@ -55,14 +55,14 @@ class Activity extends ApiObject {
         // TODO ? makeSelect with "between"
         $stmt = $this->db->prepare("
             SELECT * FROM ".$this->t_main . " WHERE 
-            user_id = :user_id AND
+            account_id = :account_id AND
             stamp >= CONCAT(:from, ' 00:00:00') AND 
             stamp <= CONCAT(:to, ' 23:59:59')
         ");
 
         $this->db->bind($stmt, 
-            ['user_id', 'from', 'to'],
-            [$this->user->id, $from, $to]
+            ['account_id', 'from', 'to'],
+            [$this->account->id, $from, $to]
         )->execute($stmt);
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -73,7 +73,7 @@ class Activity extends ApiObject {
 
     public function delete($id = false) {
 
-        $where = ['user_id' => $this->user->id, 'id' => ($id ?: $this->id)];
+        $where = ['account_id' => $this->account->id, 'id' => ($id ?: $this->id)];
         $changed = $this->db->makeDelete($this->t_main, $where);
 
         if ($changed < 1) throw new ApiException(404, 'item_not_found', get_class($this));

@@ -18,23 +18,19 @@ try {
     ])->token, Env_sec::t_refresh_secret);
     
     require_once ROOT . 'Authentication.php';
-    $Auth = new Auth($_DBC, ["mail"=>$token->data->mail]);
+    $Auth = new Auth($_DBC);
 
-    if ($Auth->check()->status === "verified") {
+    if ($Auth->check($token->data->mail)->status === "verified") {
         
-        $Auth->refresh_jti = $token->jti;
-        if (!$Auth->verifyRefresh($token->data->phrase)) throw new ApiException(403, "token_invalid", "phrase_error");
-        if ($Auth->password_stamp !== $token->data->password_stamp) throw new ApiException(403, "token_invalid", "password_stamp_error");
-        
-        require_once ROOT . 'Billing.php';
-        $Billing = new Billing($_DBC, $Auth->user);
-        $Auth->premium = $Billing->hasPremium();
+        $jti = $token->jti;
+        $phrase = $token->data->phrase;
+        if (!$Auth->verifyRefresh($jti, $phrase)) throw new ApiException(403, "token_invalid", "phrase_error");
+    
+        $phrase = Core::randomString(20);
+        $Auth->refresh($jti, $phrase);
 
-        $Auth->refresh_jti = Core::randomString(20);
-        $Auth->refresh_phrase = Core::randomString(20);
-        $Auth->setRefreshAuth($token->jti);
-
-        $_REP->addData(Sec::getAuth($Auth), "tokens");
+        $token_data = $Auth->token();
+        $_REP->addData(Sec::placeAuth($token_data), "tokens");
 
     } else {
         if ($Auth->status === "locked") throw new ApiException(403, "account_locked");

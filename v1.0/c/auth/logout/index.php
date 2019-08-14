@@ -18,12 +18,11 @@ try {
     ])->token, Env_sec::t_refresh_secret);
 
     require_once ROOT . 'Authentication.php';
-    $Auth = new Auth($_DBC, ["mail" => $token->data->mail]);
+    $Auth = new Auth($_DBC);
     
-    if ($Auth->check()->status === "verified") {
+    if ($Auth->check($token->data->mail)->status === "verified") {
 
-        $Auth->refresh_jti = $token->jti;
-        $Auth->removeRefresh();
+        $Auth->removeRefresh($token->jti);
         Sec::removeAuth();
 
     } else {

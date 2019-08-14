@@ -19,20 +19,18 @@ try {
     ]);
 
     require_once ROOT . 'Authentication.php';
-    $Auth = new Auth($_DBC, ["mail" => $data->mail]);
+    $Auth = new Auth($_DBC);
 
-    if ($Auth->check()->status === "verified") {
+    if ($Auth->check($data->mail)->status === "verified") {
 
-        if(!$Auth->passwordLogin($data->password)) throw new ApiException(403, "password_wrong");
+        if (!$Auth->pass($data->password)) throw new ApiException(403, "password_wrong");
 
-        require_once ROOT . 'Billing.php';
-        $Billing = new Billing($_DBC, $Auth->user);
-        $Auth->premium = $Billing->hasPremium();
+        $jti = Core::randomString(20);
+        $phrase = Core::randomString(20);
+        $Auth->initRefresh($jti, $phrase);
 
-        $Auth->refresh_jti = Core::randomString(20);
-        $Auth->setRefreshAuth();
-        
-        $_REP->addData(Sec::getAuth($Auth), "tokens");
+        $token_data = $Auth->token();        
+        $_REP->addData(Sec::placeAuth($token_data), "tokens");
 
     } else if ($Auth->status === "locked") {
         throw new ApiException(403, "account_locked");

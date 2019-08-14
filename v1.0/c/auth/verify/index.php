@@ -19,11 +19,16 @@ try {
     ]);
 
     require_once ROOT . 'Authentication.php';
-    $Auth = new Auth($_DBC, ["mail" => $data->mail]);
+    $Auth = new Auth($_DBC);
     
-    if ($Auth->check()->status === "unverified") {
-        
-        if (!$Auth->verifyMail($data->code)) throw new ApiException(500, "code_wrong");
+    if ($Auth->check($data->mail)->status === "unverified") {
+
+        require_once ROOT . 'AccountPortal.php';
+        $Account = new AccountPortal($_DBC, $Auth->getAccount());
+
+        if (!$Account->verify($Auth->id, $data->code)) {
+            throw new ApiException(500, "code_wrong");
+        }
 
     } else {
         if ($Auth->status === "locked") throw new ApiException(403, "account_locked");

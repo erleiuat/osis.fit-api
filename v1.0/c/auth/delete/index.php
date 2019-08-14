@@ -20,13 +20,18 @@ try {
     ]);
         
     if ($sec->mail !== $data->mail) throw new Exception("mail_wrong", 403);
+
     require_once ROOT . 'Authentication.php';
-    $Auth = new Auth($_DBC, $sec);
+    $Auth = new Auth($_DBC);
 
-    if ($Auth->check()->status === "verified") {
+    if ($Auth->check($sec->mail)->status === "verified") {
 
-        if (!$Auth->passwordLogin($data->password)) throw new ApiException(403, "password_wrong");
-        $Auth->disable();
+        if (!$Auth->pass($data->password)) throw new ApiException(403, "password_wrong");
+
+        require_once ROOT . 'AccountPortal.php';
+        $Account = new AccountPortal($_DBC, $Auth->getAccount());
+        $Account->disable($Auth->id);
+        
         Sec::removeAuth();
 
     } else {

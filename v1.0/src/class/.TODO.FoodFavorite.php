@@ -12,7 +12,7 @@ class FoodFavorite {
 
     /* ----------- PUBLIC BASIC PARAMS ---------- */
     public $id;
-    public $user_id;
+    public $account_id;
     
     public $title;
     public $amount;
@@ -36,10 +36,10 @@ class FoodFavorite {
 
         $stmt = $this->db->conn->prepare("
             SELECT * FROM ".$this->t_main . " 
-            WHERE `user_id` = :user_id
+            WHERE `account_id` = :account_id
         ");
 
-        $this->db->bind($stmt, ['user_id'], [$this->user_id]);
+        $this->db->bind($stmt, ['account_id'], [$this->account_id]);
         $this->db->execute($stmt);
 
         $entries = [];
@@ -55,13 +55,13 @@ class FoodFavorite {
 
         $stmt = $this->db->conn->prepare("
             SELECT * FROM ".$this->t_main . " WHERE 
-            `user_id` = :user_id AND
+            `account_id` = :account_id AND
             `id` = :id
         ");
 
         $this->db->bind($stmt, 
-            ['user_id', 'id'], 
-            [$this->user_id, $this->id]
+            ['account_id', 'id'], 
+            [$this->account_id, $this->id]
         );
         $this->db->execute($stmt);
 
@@ -69,13 +69,13 @@ class FoodFavorite {
 
             $stmt = $this->db->conn->prepare("
                 DELETE FROM ".$this->t_main . " WHERE 
-                `user_id` = :user_id AND
+                `account_id` = :account_id AND
                 `id` = :id
             ");
 
             $this->db->bind($stmt, 
-                ['user_id', 'id'], 
-                [$this->user_id, $this->id]
+                ['account_id', 'id'], 
+                [$this->account_id, $this->id]
             );
             $this->db->execute($stmt);
 
@@ -89,13 +89,13 @@ class FoodFavorite {
 
             $stmt = $this->db->conn->prepare("
                 INSERT INTO ".$this->t_main." 
-                (`id`, `user_id`, `title`, `amount`, `calories_per_100`, `information`, `source`, `img_url`, `img_lazy`, `img_phrase`) VALUES 
-                (:id, :user_id, :title, :amount, :calories_per_100, :information, :source, :img_url, :img_lazy, :img_phrase);
+                (`id`, `account_id`, `title`, `amount`, `calories_per_100`, `information`, `source`, `img_url`, `img_lazy`, `img_phrase`) VALUES 
+                (:id, :account_id, :title, :amount, :calories_per_100, :information, :source, :img_url, :img_lazy, :img_phrase);
             ");
 
             $this->db->bind($stmt, 
-                ['id', 'user_id', 'title', 'amount', 'calories_per_100', 'information', 'source', 'img_url', 'img_lazy', 'img_phrase'], 
-                [$this->id, $this->user_id, $this->title, $this->amount, $this->calories_per_100, $this->information, $this->source, $this->img_url, $this->img_lazy, $this->img_phrase]
+                ['id', 'account_id', 'title', 'amount', 'calories_per_100', 'information', 'source', 'img_url', 'img_lazy', 'img_phrase'], 
+                [$this->id, $this->account_id, $this->title, $this->amount, $this->calories_per_100, $this->information, $this->source, $this->img_url, $this->img_lazy, $this->img_phrase]
             );
 
             $this->db->execute($stmt);

@@ -21,38 +21,34 @@ try {
         'language' => ['string', false, ['max' => 5]]
     ]);
 
+
     require_once ROOT . 'Authentication.php';
-    $Auth = new Auth($_DBC, ["mail" => $data->mail]);
-    
-    if($Auth->check()->status) throw new ApiException(403, "mail_in_use", ["entity"=>"mail"]);
+    $Auth = new Auth($_DBC);
+    if ($Auth->check($data->mail)->status) {
+        throw new ApiException(403, "mail_in_use", ["entity"=>"mail"]);
+    }
 
-    require_once REC . 'User.php';
-    $User = new User($_DBC, [
-        "mail" => $data->mail,
-        "level" => "user"
-    ]);
-    
-    $User->set([
-        "firstname" => $data->firstname,
-        "lastname" => $data->lastname
-    ])->create();
+    $verify_code = Core::randomString(10);
 
-    $_LOG->addInfo("User created");
-    
-    $Auth->setUser([
-        "id" => $User->user->id,
-        "mail" => $data->mail,
-        "level" => "user"
-    ])->set([
-        "verify_code" => Core::randomString(10),
-        "password" => $data->password
-    ])->register();
-    
-    $_LOG->addInfo("User registered");
-
+    require_once ROOT . 'AccountPortal.php';
     require_once ROOT . 'Mail.php';
+    require_once REC . 'User.php';
+
+
+    $Account = new AccountPortal($_DBC);
+    $Account->createAccount($data->mail);
+    $_LOG->addInfo("Account created");
+    $Account->createAuth($data->password, $verify_code);
+    $_LOG->addInfo("Auth created");
+    
+
+    $User = new User($_DBC, $Account->getAccount());
+    $User->create($data->firstname, $data->lastname);
+    $_LOG->addInfo("User created");
+
+
     $Mailer = new Mailer(new defaultMail());
-    $Mailer->addReceiver($User->user->mail, $User->firstname, $User->lastname);
+    $Mailer->addReceiver($data->mail, $data->firstname, $data->lastname);
 
     if ($data->language === "de") require_once 'mail/content_de.php';
     else require_once 'mail/content_en.php';
@@ -63,7 +59,7 @@ try {
         $_LOG->addInfo('Verification-Mail sent');
     } else {
         //echo $Mailer->getHTML(); die();
-        $_REP->addData($Auth->verify_code, "code");
+        $_REP->addData($verify_code, "code");
         $_REP->addData($Mailer->getHTML(), "html");
     }
 
