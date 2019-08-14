@@ -151,7 +151,7 @@ class AccountPortal extends ApiObject {
 
         $where = ['id' => $this->account->id];
         $res = $this->db->makeUpdate($this->t_account, [
-            "mail" => 'DELETED:'.$this->account->mail
+            "mail" => 'DELETED:'.$this->account->mail.'|'.$this->account->id
         ], $where);
         if ($res !== 1) throw new ApiException(500, 'verify_change_failed', get_class($this));
 
