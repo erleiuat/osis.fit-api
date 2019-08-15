@@ -13,8 +13,8 @@ $Mailer->body = [
             </td></tr>
         </table><br/><br/>
         Or use this link: <br/>
-        <a href="https://app.osis.fit/auth/forgotten?mail='.$Auth->user->mail . '&code=' . $Auth->password_code . '">
-            app.osis.fit/auth/forgotten?mail='.$Auth->user->mail . '&code=' . $Auth->password_code . '
+        <a href="'.Env_mail::app_url.'/auth/forgotten?mail='.$Auth->account->mail . '&code=' . $code . '">
+            '.Env_mail::app_url.'/auth/forgotten?mail='.$Auth->account->mail . '&code=' . $code . '
         </a>
     ',
     "header.heading" => "Forgot something?",
@@ -24,8 +24,8 @@ $Mailer->body = [
         We just received a request to reset your password.
         Have you remembered your password in the meantime? Then you can ignore this message 
         and your password stays the same. If you have not requested a password reset, 
-        <a href='https://app.osis.fit/help/contact'>let us know</a>. <br/><br/>
+        <a href='".Env_mail::app_url."/help/contact'>let us know</a>. <br/><br/>
     ",
     "button.inner" => "Change password &rarr;",
-    "button.href" => "https://app.osis.fit/auth/forgotten?mail=" . $Auth->user->mail . "&code=" . $Auth->password_code
+    "button.href" => Env_mail::app_url."/auth/forgotten?mail=" . $Auth->account->mail . "&code=" . $code
 ];

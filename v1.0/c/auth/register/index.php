@@ -57,7 +57,11 @@ try {
     if (Env_api::env === "prod") {
         $Mailer->send();
         $_LOG->addInfo('Verification-Mail sent');
-    } else {
+    } else if (Env_api::env === "test") {
+        $Mailer->send();
+        $_REP->addData($verify_code, "code");
+        $_LOG->addInfo('Verification-Mail sent');
+    } else if (Env_api::env === "local") {
         //echo $Mailer->getHTML(); die();
         $_REP->addData($verify_code, "code");
         $_REP->addData($Mailer->getHTML(), "html");

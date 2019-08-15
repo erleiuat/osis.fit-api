@@ -24,8 +24,13 @@ try {
 
     if ($Auth->check($sec->mail)->status === "verified") {
         
-        if (!$Auth->passwordLogin($data->current)) throw new ApiException(403, "password_wrong");
-        $Auth->passwordChange($data->new);
+        if (!$Auth->pass($data->current)) throw new ApiException(403, "password_wrong");
+
+        require_once ROOT . 'AccountPortal.php';
+        $Account = new AccountPortal($_DBC, $Auth->getAccount());
+        $Account->passChange($Auth->id, $data->new);
+
+        $Auth->removeRefresh();
 
     } else {
         if ($Auth->status === "locked") throw new ApiException(403, "account_locked");

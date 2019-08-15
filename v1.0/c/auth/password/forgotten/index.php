@@ -25,16 +25,19 @@ try {
     require_once ROOT . 'Authentication.php';
     $Auth = new Auth($_DBC);
 
-    if ($Auth->check($sec->mail)->status === "verified") {
+    if ($Auth->check($data->mail)->status === "verified") {
+
+        require_once ROOT . 'AccountPortal.php';
+        $Account = new AccountPortal($_DBC, $Auth->getAccount());
 
         if ($data->mail && !$data->code && !$data->password) {
 
-            $Auth->password_code = Core::randomString(20);
-            $Auth->passwordForgotten();
+            $code = Core::randomString(20);
+            $Account->passReset($Auth->id, $code);
             $_LOG->addInfo("Code created");
             
             require_once REC . 'User.php';
-            $User = new User($_DBC, $Auth->user);
+            $User = new User($_DBC, $Auth->account);
             $User->read();
             
             require_once ROOT . 'Mail.php';
@@ -48,14 +51,21 @@ try {
             if (Env_api::env === "prod") {
                 $Mailer->send();
                 $_LOG->addInfo('Verification-Mail sent');
-            } else {
+            } else if (Env_api::env === "test") {
+                $Mailer->send();
+                $_REP->addData($code, "code");
+                $_LOG->addInfo('Verification-Mail sent');
+            } else if (Env_api::env === "local") {
                 //echo $Mailer->getHTML(); die();
-                $_REP->addData($Auth->password_code, "code");
+                $_REP->addData($code, "code");
                 $_REP->addData($Mailer->getHTML(), "html");
             }
 
         } else if ($data->mail && $data->code && $data->password) {
-            $Auth->passwordForgotten($data->code)->passwordChange($data->password);
+
+            $Account->passResetVerify($Auth->id, $data->code)->passChange($Auth->id, $data->password);
+            $Auth->removeRefresh();
+
         }
 
     } else {

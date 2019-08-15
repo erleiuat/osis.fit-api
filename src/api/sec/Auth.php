@@ -46,7 +46,7 @@ class Auth extends ApiObject {
         $sub = false;
 
         if ($subID) {
-            ChargeBee_Environment::configure(Env_auth::sub_site, Env_auth::sub_tkn);
+            ChargeBee_Environment::configure(Env_sec::sub_site, Env_sec::sub_tkn);
             $result = ChargeBee_Subscription::retrieve($subID);
             $sub = $result->subscription();
         }
@@ -120,7 +120,8 @@ class Auth extends ApiObject {
         
         $where = ['auth_id' => $this->id, 'jti' => $jti];
         $res = $this->db->makeUpdate($this->t_refresh, [
-            "phrase" => password_hash($phrase, Env_auth::pw_crypt)
+            "phrase" => password_hash($phrase, Env_sec::pw_encryption),
+            "update_total" => "`update_total`+1"
         ], $where);
         
         if ($res !== 1) throw new ApiException(500, 'refresh_error', get_class($this));
@@ -137,7 +138,7 @@ class Auth extends ApiObject {
         $res = $this->db->makeInsert($this->t_refresh, [
             "auth_id" => $this->id,
             "jti" => $jti,
-            "phrase" => password_hash($phrase, Env_auth::pw_crypt)
+            "phrase" => password_hash($phrase, Env_sec::pw_encryption)
         ]);
 
         if ($res !== 1) throw new ApiException(500, 'refresh_init_error', get_class($this));
@@ -162,13 +163,16 @@ class Auth extends ApiObject {
 
     }
 
-    public function removeRefresh($jti) {
+    public function removeRefresh($jti = false) {
 
-        $result = $this->db->makeDelete($this->t_refresh, [
-            'auth_id' => $this->id, 'jti' => $jti
-        ]);
+        $where = ['auth_id' => $this->id];
 
-        if ($result !== 1) throw new ApiException(404, 'refresh_remove_error', get_class($this));;
+        if($jti) array_push($where, ['jti' => $jti]);
+
+        $result = $this->db->makeDelete($this->t_refresh, $where);
+
+        if ($jti && $result !== 1) throw new ApiException(404, 'refresh_remove_error', get_class($this));
+        else if($result < 1) throw new ApiException(404, 'refresh_remove_error', get_class($this));
 
         return true;
 

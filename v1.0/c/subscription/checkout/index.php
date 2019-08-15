@@ -24,11 +24,11 @@ try {
     $User = new User($_DBC, $sec);
     $obj = $User->read()->getObject();
 
-    ChargeBee_Environment::configure(Env_auth::sub_site, Env_auth::sub_tkn);
+    ChargeBee_Environment::configure(Env_sec::sub_site, Env_sec::sub_tkn);
 
     $result = ChargeBee_HostedPage::checkoutNew([
         "subscription" => [
-            "planId" => Env_auth::sub_plan
+            "planId" => Env_sec::sub_plan
         ], 
         "customer" => [
             "email" => $sec->mail, 

@@ -1,6 +1,6 @@
 <?php
 
-require ROOT . ENVPATH . 'Security.php';
+require_once ROOT . ENVPATH . 'Security.php';
 
 require ROOT . 'libs/php-jwt-master/src/BeforeValidException.php';
 require ROOT . 'libs/php-jwt-master/src/ExpiredException.php';

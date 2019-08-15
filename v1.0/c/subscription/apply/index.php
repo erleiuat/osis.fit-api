@@ -23,7 +23,7 @@ try {
 
     if ($Auth->check($sec->mail)->status !== "verified") throw new ApiException(403, 'not_verified');
 
-    ChargeBee_Environment::configure(Env_auth::sub_site, Env_auth::sub_tkn);
+    ChargeBee_Environment::configure(Env_sec::sub_site, Env_sec::sub_tkn);
     $result = ChargeBee_HostedPage::retrieve($data->token);
     $hostedPage = $result->hostedPage()->getValues();
     $output = (object) $hostedPage['content']['subscription'];

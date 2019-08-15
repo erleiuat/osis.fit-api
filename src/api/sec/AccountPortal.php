@@ -46,7 +46,7 @@ class AccountPortal extends ApiObject {
 
         $res = $this->db->makeInsert($this->t_auth_pass, [
             "auth_id" => $authID,
-            "password" => password_hash($password, Env_auth::pw_crypt),
+            "password" => password_hash($password, Env_sec::pw_encryption),
             "update_stamp" => date('Y-m-d H:i:s', time())
         ]);
         if ($res !== 1) throw new ApiException(500, 'auth_pass_create_error', get_class($this));
@@ -54,7 +54,7 @@ class AccountPortal extends ApiObject {
 
         $res = $this->db->makeInsert($this->t_auth_verify, [
             "auth_id" => $authID,
-            "code" => password_hash($verify_code, Env_auth::pw_crypt)
+            "code" => password_hash($verify_code, Env_sec::pw_encryption)
         ]);
         if ($res !== 1) throw new ApiException(500, 'auth_pass_create_error', get_class($this));
 
@@ -87,55 +87,53 @@ class AccountPortal extends ApiObject {
 
     }
 
-    public function passwordForgotten($code = false) {
+    public function passReset($authID, $code) {
 
-        $password_stamp = date("Y-m-d H:i:s");
-        $password_code = password_hash($this->password_code, Env_auth::pw_crypt);
+        $where = ['auth_id' => $authID];
+        $res = $this->db->makeUpdate($this->t_auth_pass, [
+            'reset_code_stamp' => date('Y-m-d H:i:s', time()),
+            'reset_code' => password_hash($code, Env_sec::pw_encryption)
+        ], $where);
 
-        if ($code) {
-            $stmt = $this->db->prepare("
-                SELECT * FROM ".$this->t_main . " 
-                WHERE account_id = :account_id
-            ");
-            $this->db->bind($stmt, ['account_id'], [$this->account->id])->execute($stmt);
-            
-            if ($stmt->rowCount() === 1 && password_verify($code, ($stmt->fetch(PDO::FETCH_ASSOC))["password_code"])) {
-                $password_code = null;
-                $password_stamp = null;
-            } else {
-                $this->account->mail = null;
-                $this->account->id = null;
-                throw new Exception('code_validation_error', 403);
-            }
-        }
-
-        $stmt = $this->db->prepare("
-            UPDATE ".$this->t_main . " SET 
-            `password_code` = :password_code, 
-            `password_stamp` = :password_stamp 
-            WHERE `account_id` = :account_id
-        ");
-        $this->db->bind($stmt, 
-            ['account_id', 'password_stamp', 'password_code'], 
-            [$this->account->id, $password_stamp, $password_code]
-        )->execute($stmt);
+        if ($res !== 1) throw new ApiException(500, 'verify_change_failed', get_class($this));
 
         return $this;
 
     }
 
-    public function passwordChange($pw) {
+    public function passResetVerify($authID, $code) {
 
-        $stmt = $this->db->prepare("
-            UPDATE ".$this->t_main . " SET 
-            `password` = :password,
-            `password_stamp` = now()  
-            WHERE `id` = :account_id
-        ");
-        $this->db->bind($stmt,
-            ['account_id', 'password'], 
-            [$this->account->id, password_hash($pw, Env_auth::pw_crypt)]
-        )->execute($stmt);
+        $where = ['auth_id' => $authID];
+        $res = $this->db->makeSelect($this->t_auth_pass, $where);
+
+        if (count($res) !== 1) throw new ApiException(404, 'reset_not_found', get_class($this));
+
+        if (!password_verify($code, $res[0]["reset_code"])) throw new ApiException(401, 'code_invalid', get_class($this));
+        else {
+
+            $res = $this->db->makeUpdate($this->t_auth_pass, [
+                'reset_code' => null
+            ], $where);
+    
+            if ($res !== 1) throw new ApiException(500, 'verify_change_failed', get_class($this));
+
+            return $this;
+
+        }
+
+        return false;
+
+    }
+
+    public function passChange($authID, $pw) {
+
+        $where = ['auth_id' => $authID];
+        $res = $this->db->makeUpdate($this->t_auth_pass, [
+            'update_stamp' => date('Y-m-d H:i:s', time()),
+            'password' => password_hash($pw, Env_sec::pw_encryption)
+        ], $where);
+
+        if ($res !== 1) throw new ApiException(500, 'verify_change_failed', get_class($this));
 
     }
 

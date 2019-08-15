@@ -13,7 +13,7 @@ $Mailer->body = [
             </td></tr>
         </table><br/><br/>
         Oder nutze diesen Code auf 
-        <a href="https://app.osis.fit/auth/verify?mail='.$data->mail . '">app.osis.fit/auth/verify</a>: 
+        <a href="'.Env_mail::app_url.'/auth/verify?mail='.$data->mail . '">app.osis.fit/auth/verify</a>: 
         <br/><br/>
         <strong>'.$verify_code . '</strong>
     ',
@@ -26,7 +26,7 @@ $Mailer->body = [
         Andernfalls kannst du dieses E-Mail einfach ignorieren.
     ",
     "button.inner" => "Konto bestätigen &rarr;",
-    "button.href" => "https://app.osis.fit/auth/verify?mail=" . $data->mail . "&code=" . $verify_code
+    "button.href" => Env_mail::app_url."/auth/verify?mail=" . $data->mail . "&code=" . $verify_code
 ];
 
 $Mailer->body["footer.inner"] = Env_mail::page_name . " - " . Env_mail::slogan_de . " <br/> <i>" . Env_mail::creator_de . "</i>";
