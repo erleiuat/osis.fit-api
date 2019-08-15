@@ -164,17 +164,13 @@ DROP TABLE IF EXISTS `user_food_favorite`;
 CREATE TABLE `user_food_favorite` (
     account_id          VARCHAR(40) NOT NULL,
 
-    id                  INT NOT NULL AUTO_INCREMENT,
+    id                  VARCHAR(255),
+    image               VARCHAR(255),
+    title               VARCHAR(255) NOT NULL,
 
-    title               VARCHAR(60) NOT NULL,
     amount              DOUBLE,
     calories_per_100    DOUBLE,
-    information         TEXT,
-    source              VARCHAR(60),
-
-    img_url             VARCHAR(255),
-    img_lazy            VARCHAR(255),
-    img_phrase          VARCHAR(255),
+    total               DOUBLE,
 
     PRIMARY KEY (id, account_id),
     FOREIGN KEY (account_id) REFERENCES account(id)

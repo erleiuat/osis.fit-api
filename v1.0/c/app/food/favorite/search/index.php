@@ -18,8 +18,9 @@ try {
 
     if(!$sec->premium) throw new ApiException(401, 'premium_required');
 
-    $search = $data->query;
+    $search = urlencode($data->query);
     $url = "https://world.openfoodfacts.org/cgi/search.pl?search_terms=".$search."&search_simple=1&action=process&json=1";
+
     $response = file_get_contents($url);
 
     $response = json_decode($response);
@@ -37,7 +38,9 @@ try {
             $energy = null;
             $energy_serving = null;
 
-            if (isset($product->serving_size)) $serving_size = intval($product->serving_size);
+            if (isset($product->serving_size)) {
+                if ($product->serving_size > 0) $serving_size = intval($product->serving_size);
+            }
             if (isset($nut->energy_unit)) $energy_unit = $nut->energy_unit;
 
             if (isset($nut->energy_100g)) $energy_100g = $nut->energy_100g;
@@ -47,14 +50,16 @@ try {
                 $energy_100g = round($energy_100g / 4.184, 2);
             }
 
-            $caloriesPer100 = $energy_100g;
+            $caloriesPer100 = ($energy_100g > 0 ? $energy_100g : null);
             $amount = $serving_size;
             $calories = round($serving_size * ($energy_100g/100), 2);
+
+            if ($calories <= 0) $calories = null;
 
             $tmp = [
                 "id" => $product->code,
                 "title" => $product->product_name,
-                "image" => $product->image_url,
+                "image" => (isset($product->image_url) ? $product->image_url : null),
                 "caloriesPer100" => $caloriesPer100,
                 "amount" => $amount,
                 "total" => $calories
