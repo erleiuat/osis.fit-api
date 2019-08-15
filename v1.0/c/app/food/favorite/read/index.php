@@ -14,6 +14,8 @@ require_once ROOT . 'Security.php'; /* Load Security-Methods */
 try {
 
     $sec = Sec::auth($_LOG);
+
+    if(!$sec->premium) throw new ApiException(401, 'premium_required');
     
     require_once REC . 'FoodFavorite.php';
     $FoodFavorite = new FoodFavorite($_DBC, $sec);

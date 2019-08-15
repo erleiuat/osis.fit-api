@@ -14,6 +14,9 @@ require_once ROOT . 'Security.php'; /* Load Security-Methods */
 try {
 
     $sec = Sec::auth($_LOG);
+
+    if(!$sec->premium) throw new ApiException(401, 'premium_required');
+
     $data = Core::getBody([
         'id' => ['number', true],
         'image' => ['string', false],
