@@ -32,6 +32,7 @@ class Sec {
         if ($sub->id && !$sub->deleted) {
             if ($sub->status === 'active') $premium = true;
             else if ($sub->status === 'non_renewing') $premium = true;
+            else if ($sub->status === 'in_trial') $premium = true;
         }
 
         $sec = (object) [
