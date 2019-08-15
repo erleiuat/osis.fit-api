@@ -52,12 +52,12 @@ try {
             $calories = round($serving_size * ($energy_100g/100), 2);
 
             $tmp = [
-                "code" => $product->code,
+                "id" => $product->code,
                 "title" => $product->product_name,
                 "image" => $product->image_url,
                 "caloriesPer100" => $caloriesPer100,
                 "amount" => $amount,
-                "calories" => $calories
+                "total" => $calories
             ];
 
             array_push($arr, $tmp);
