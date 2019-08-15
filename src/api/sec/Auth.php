@@ -167,7 +167,7 @@ class Auth extends ApiObject {
 
         $where = ['auth_id' => $this->id];
 
-        if($jti) array_push($where, ['jti' => $jti]);
+        if($jti) $where['jti'] = $jti;
 
         $result = $this->db->makeDelete($this->t_refresh, $where);
 
