@@ -59,17 +59,11 @@ class User extends ApiObject {
             'gender' => null,
             'height' => null,
             'birthdate' => null,
+            'aim_weight' => $this->aim_weight,
+            'aim_date' => $this->aim_date
         ], (array) $this->getObject());
-        $changed = $this->db->makeUpdate($this->t_detail, $params, $where);
+        $changed = $this->db->makeUpdate($this->t_main, $params, $where);
 
-        if ($changed > 1) throw new ApiException(500, 'too_many_changed', get_class($this));
-
-        $params = [ 
-            'weight' => $this->aim_weight,
-            'date' => $this->aim_date
-        ];
-        $changed = $this->db->makeUpdate($this->t_aim, $params, $where);
-        
         if ($changed > 1) throw new ApiException(500, 'too_many_changed', get_class($this));
 
         return $this;

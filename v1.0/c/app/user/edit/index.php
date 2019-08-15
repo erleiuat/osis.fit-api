@@ -32,7 +32,7 @@ try {
     require_once REC . 'User.php';
     $User = new User($_DBC, $sec);
     
-    $obj = $User->set($data)->edit()->getObject();
+    $obj = $User->read()->set($data)->edit()->getObject();
     $_REP->addData($obj, "item");
     
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
