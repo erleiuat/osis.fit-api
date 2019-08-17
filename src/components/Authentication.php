@@ -1,6 +1,7 @@
 <?php
 
-require_once ROOT . ENVPATH . 'Security.php';
+use_env('Security');
 
-require ROOT . 'libs/chargebee-php/lib/ChargeBee.php';
-require ROOT . 'api/sec/Auth.php';
+import('@/libraries/chargebee-php/lib/ChargeBee.php');
+import('@/plugins/main/ApiObject');
+import('@/plugins/sec/Auth');

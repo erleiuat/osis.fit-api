@@ -3,34 +3,48 @@
 class Database {
     
     private static $db;
-    private $conn;
+    private static $conn;
     
     public function __construct() {
 
         try {
 
-            $this->conn = new PDO(
+            self::$conn = new PDO(
                 "mysql:host=" . ENV_db::host . ";" .
                 "dbname=" . ENV_db::database, 
                 ENV_db::user, 
                 ENV_db::password
             );
 
-            $this->conn->exec("SET NAMES utf8");
+            self::$conn->exec("SET NAMES utf8");
 
-            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            self::$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         } catch (PDOException $e) {
 
-            throw new ApiException(500, "db_connect_error", $e->getMessage());
+            throw new AsapiException(500, true, "db_connect_error", $e->getMessage());
 
         }
 
     }
 
-    public static function select ($table, $whr) {
+    public static function insert($table, $par) {
 
-        if (self::$db == null) self::$db = new Database();
+        $par = self::formParams($par);
+
+        $stmt = self::prepare("
+            INSERT INTO ".$table." 
+            (".implode(",", $par->e).") VALUES 
+            (".implode(",", $par->k).");
+        ");
+
+        self::bind($stmt, $par->k, $par->v);
+        self::execute($stmt);
+        return $stmt->rowCount();
+
+    }
+
+    public static function select ($table, $whr) {
 
         $whr = self::formParams($whr);
 
@@ -40,7 +54,8 @@ class Database {
         ));
 
         $stmt = self::prepare("SELECT * FROM ".$table.$where);
-        self::bind($stmt, $whr->k, $whr->v)->execute($stmt);
+        self::bind($stmt, $whr->k, $whr->v);
+        self::execute($stmt);
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -153,30 +168,31 @@ class Database {
 
     }
 
-    public function prepare($query) {
+    public static function prepare($query) {
+
+        if (self::$db == null) self::$db = new Database();
+
         try {
-            return $this->conn->prepare($query);
+            return self::$conn->prepare($query);
         } catch (PDOException $e) {
-            throw new ApiException(500, "db_prepare_error", $e->getMessage());
+            throw new AsapiException(500, true, "db_prepare_error", $e->getMessage());
         }
     }
 
-    public function bind($stmt, $params, $values) {
+    public static function bind($stmt, $params, $values) {
         try {
             $num = count($params);
             for ($i = 0; $i < $num; $i++) $stmt->bindParam($params[$i], $values[$i]);
-            return $this;
         } catch (PDOException $e) {
-            throw new ApiException(500, "db_bind_error", $e->getMessage());
+            throw new AsapiException(500, true, "db_bind_error", $e->getMessage());
         }
     }
 
-    public function execute($stmt) {
+    public static function execute($stmt) {
         try {
             $stmt->execute();
-            return $this;
         } catch (PDOException $e) {
-            throw new ApiException(500, "db_execute_error", $e->getMessage());
+            throw new AsapiException(500, true, "db_execute_error", $e->getMessage());
         }
     }
 

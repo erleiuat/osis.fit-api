@@ -8,8 +8,7 @@ class ApiObject {
     public $account;
 
     /* ------------------ INIT ------------------ */
-    public function __construct($db, $account = false) {
-        $this->db = $db;
+    public function __construct($account = false) {
         if ($account) $this->setAccount($account);
         else $this->setAccount();
     }

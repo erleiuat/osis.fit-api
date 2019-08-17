@@ -3,38 +3,36 @@
 class Log {
 
     /* ------------- PRIVATE PARAMS ------------- */
-    private $db;
     private $level_options = [
         'trace', 'degub', 'info', 
         'warn', 'error', 'fatal'
     ];
 
     /* -------- TABLES (T) AND VIEWS (V) -------- */
-    private $t_main = "log";
+    private static $t_main = "log";
 
     /* ----------- PUBLIC BASIC PARAMS ---------- */
-    public $id;
-    public $user;
-    public $level = "trace";
-    public $process;
-    public $information = "";
-    public $identity;
-    public $trace;
-    public $stamp;
+    private static $trace;
+    private static $level = "trace";
+    private static $write = true;
+    
+    private static $start_stamp;
+    private static $end_stamp;
+    private static $process = "not set";
 
-    /* ------------------ INIT ------------------ */
-    public function __construct($db, $process) { 
+    private static $account_id;
+    private static $identifier;
 
-        $this->db = $db;
-        $this->process = $process;
-        $this->stamp = date('Y-m-d G:i:s');
-        $this->account = (object) [
-            "id" => null,
-            "mail" => null,
-            "level" => null
-        ];
+    private static $information = "";
 
-        $this->trace = (
+
+    /* ----------------- METHODS ---------------- */
+
+    public static function start() {
+
+        self::$start_stamp = date('Y-m-d G:i:s');
+
+        self::$trace = (
             "USER_AGENT|" . $_SERVER['HTTP_USER_AGENT'] . "|;" .
             "REMOTE_ADDRESS|" . $_SERVER['REMOTE_ADDR'] . "|;" .
             "REMOTE_PORT|" . $_SERVER['REMOTE_PORT'] . "|;" .
@@ -42,46 +40,62 @@ class Log {
         );
 
         if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $this->trace .= "X_FORWARDED_FOR|" . $_SERVER['HTTP_X_FORWARDED_FOR'] . "|;";
+            self::$trace .= "X_FORWARDED_FOR|" . $_SERVER['HTTP_X_FORWARDED_FOR'] . "|;";
         }
 
         if (isset($_SERVER['HTTP_REFERER'])) {
-            $this->trace .= "REFERER|" . $_SERVER['HTTP_REFERER'] . "|;";
+            self::$trace .= "REFERER|" . $_SERVER['HTTP_REFERER'] . "|;";
         }
-        
+
     }
 
-    /* ----------------- METHODS ---------------- */
+    public static function setProcess($name) {
 
-    public function setUser($obj) {
-        $keys = ['id', 'mail', 'level'];
-        if(!is_object($obj)) $obj = (object) $obj;
-        foreach ($keys as $key) $this->account->$key = (isset($obj->$key) ? $obj->$key : null);
-        return $this;
+        self::$process = $name;
+
+    }
+
+    public static function setAccount($account_id) {
+
+        self::$account_id = $account_id;
+
+    }
+
+    public static function setIdentifier($value) {
+
+        self::$identifier = $value;
+
     }
     
-    public function setStatus($level, $info) {
-        $this->level = $level;
-        $this->addInfo($info);
+    public static function setLevel($level) {
+
+        self::$level = $level;
+
     }
 
-    public function addInfo($info) {
-        $this->information .= $info . "; ";
+    public static function addInfo($info) {
+
+        self::$information .= $info . "; ";
+
     }
 
-    public function write() {
+    public static function disable() {
+        self::$write = false;
+    }
 
-        $stmt = $this->db->conn->prepare("
-            INSERT INTO ".$this->t_main . " 
-            (`account_id`, `level`, `process`, `information`, `identity`, `trace`, `stamp`) VALUES 
-            (:account_id, :level, :process, :information, :identity, :trace, :stamp);
-        ");
-        $this->db->bind($stmt, 
-            ['account_id', 'level', 'process', 'information', 'identity', 'trace', 'stamp'], 
-            [$this->account->id, $this->level, $this->process, $this->information, $this->identity, $this->trace, $this->stamp]
-        );
+    public static function end() {
 
-        $this->db->execute($stmt);
+        self::$end_stamp = date('Y-m-d G:i:s');
+
+        Database::insert(self::$t_main, [
+            "account_id" => self::$account_id,
+            "level" => self::$level,
+            "process" => self::$process,
+            "information" => self::$information,
+            "identity" => self::$identifier,
+            "trace" => self::$trace,
+            "stamp" => self::$end_stamp
+        ]);
 
     }
     

@@ -16,6 +16,8 @@ class Asapi {
 
                 include ENVPATH . "/" .$name. ".php";
 
+                array_push(self::$registered_envs, $name);
+
             } catch (ErrorException $ex) {
 
                 throw new AsapiException(500, true, 'Import failed', 'import_failed', [

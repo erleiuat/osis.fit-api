@@ -1,20 +1,8 @@
 <?php
 
+import('@/plugins/Validate');
+
 class Core {
-
-    public static function startAsync() {
-        ignore_user_abort(true);
-        set_time_limit(0);
-        ob_start();
-    }
-
-    public static function endAsync($reply = false) {
-        if ($reply) $reply->send();
-        header('Content-Length: ' . ob_get_length());
-        ob_end_flush();
-        ob_flush();
-        flush();
-    }
 
     public static function mergeAssign($arr1, $arr2){
         return array_intersect_key($arr2, $arr1) + $arr1;
@@ -62,17 +50,6 @@ class Core {
         }
         return $randomString;
     }
-
-    public static function processException($rep, $log, $e) {
-        if (get_class($e) === 'ApiException') {
-            $rep->setStatus((($e->getCode()) ? $e->getCode() : 500), $e->getMessage(), $e->getDetail());
-            $log->setStatus('error', "(" . (($e->getCode()) ? $e->getCode() : 500) . ") Catched: | " . $e->getMessage() . " | ");
-        } else {
-            $rep->setStatus((($e->getCode()) ? $e->getCode() : 500), $e->getMessage());
-            $log->setStatus('fatal', "(" . (($e->getCode()) ? $e->getCode() : 500) . ") Catched: | " . $e->getMessage() . " | ");
-        }
-    }
-
 
     public static function getBody($pattern) {
         $data = json_decode(file_get_contents("php://input"));
@@ -152,10 +129,6 @@ class Core {
             array_push($all, $val);
         }
         return $all;
-    }
-
-    public static function getData() {
-        throw new Exception("getData() no longer supported", 400);
     }
 
 }

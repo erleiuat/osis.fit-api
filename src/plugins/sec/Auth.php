@@ -63,7 +63,7 @@ class Auth extends ApiObject {
 
     public function check($mail) {
 
-        $result = $this->db->makeSelect($this->v_check, [
+        $result = Database::select($this->v_check, [
             'account_mail' => $mail
         ]);
 
@@ -87,7 +87,7 @@ class Auth extends ApiObject {
 
     public function pass($pw) {
 
-        $result = $this->db->makeSelect($this->t_pass, [
+        $result = Database::select($this->t_pass, [
             'auth_id' => $this->id
         ]);
 
@@ -135,7 +135,7 @@ class Auth extends ApiObject {
 
     public function initRefresh($jti, $phrase) {
 
-        $res = $this->db->makeInsert($this->t_refresh, [
+        $res = Database::insert($this->t_refresh, [
             "auth_id" => $this->id,
             "jti" => $jti,
             "phrase" => password_hash($phrase, Env_sec::pw_encryption)

@@ -1,5 +1,10 @@
 <?php
 
-define('PROCESS', "TEST"); /* Name of this Process */
+process_start("Test"); /* Name of this Process */
 
-echo "Hello";
+
+Reply::addData('Sauhund');
+
+strpos();
+
+process_end();
