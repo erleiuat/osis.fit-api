@@ -27,7 +27,7 @@ try {
         $Account = new AccountPortal($_DBC, $Auth->getAccount());
 
         if (!$Account->verify($Auth->id, $data->code)) {
-            throw new AsapiException(500, true, "code_wrong");
+            throw new ApiException(500, "code_wrong");
         }
 
     } else {

@@ -1,44 +1,56 @@
 <?php
 
-process_start("Auth/Login");
+define('PROCESS', "Auth/Login"); /* Name of this Process */
+
+import('@/components/Engine'); /* Load API-Engine */
+
+
+Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
 import('@/components/Security'); /* Load Security-Methods */
-import('@/plugins/Core');
-
 
 // ------------------ SCRIPT -----------------
+try {
+    
+    $data = Core::getBody([
+        'mail' => ['mail', true, ['min' => 1, 'max' => 90]],
+        'password' => ['string', true]
+    ]);
 
-$data = Core::getBody([
-    'mail' => ['mail', true, ['min' => 1, 'max' => 90]],
-    'password' => ['string', true]
-]);
+    require_once ROOT . 'Authentication.php';
+    $Auth = new Auth($_DBC);
 
-Log::setIdentifier($data->mail);
+    $_LOG->addInfo($data->mail);
+    if ($Auth->check($data->mail)->status === "verified") {
 
-import('@/components/Authentication');
-$Auth = new Auth();
+        if (!$Auth->pass($data->password)) throw new ApiException(403, "password_wrong");
 
-if ($Auth->check($data->mail)->status === "verified") {
+        $jti = Core::randomString(20);
+        $phrase = Core::randomString(20);
+        $Auth->initRefresh($jti, $phrase);
 
-    if (!$Auth->pass($data->password)) throw new ApiException(403, "password_wrong");
+        $token_data = $Auth->token();        
+        $_REP->addData(Sec::placeAuth($token_data), "tokens");
 
-    $jti = Core::randomString(20);
-    $phrase = Core::randomString(20);
-    $Auth->initRefresh($jti, $phrase);
+    } else if ($Auth->status === "locked") {
+        throw new ApiException(403, "account_locked");
+    } else if ($Auth->status === "unverified") {
+        throw new ApiException(403, "account_not_verified");
+    } else {
+        throw new ApiException(401, "account_not_found");
+    }
 
-    $token_data = $Auth->token();       
+} catch (\Exception $e) {
 
-    Reply::addData(Sec::placeAuth($token_data), "tokens");
-
-} else if ($Auth->status === "locked") {
-    throw new ApiException(403, "account_locked");
-} else if ($Auth->status === "unverified") {
-    throw new ApiException(403, "account_not_verified");
-} else {
-    throw new ApiException(401, "account_not_found");
+    Core::processException($_REP, $_LOG, $e);
+    
 }
-
 // -------------------------------------------
 
-process_end();
+
+// -------------- ASYNC RESPONSE -------------
+Core::endAsync($_REP);
+
+// -------------- AFTER RESPONSE -------------
+$_LOG->write();

@@ -76,7 +76,7 @@ class Core {
 
     public static function getBody($pattern) {
         $data = json_decode(file_get_contents("php://input"));
-        if (json_last_error() !== 0) throw new AsapiException(400, true, "invalid_json");
+        if (json_last_error() !== 0) throw new ApiException(400, "invalid_json");
         return Core::processGet($pattern, $data, 'raw');
     }
 
@@ -96,22 +96,22 @@ class Core {
 
         $numReq = (count($pl));
         $numRec = (count((array) $rec));
-        if ($numRec > $numReq) throw new AsapiException(400, true, "too_many_entities", ["entity" => $lstr, "received" => $numRec, "required" => $numReq, "syntax" => Core::formatPattern($pattern)]);
+        if ($numRec > $numReq) throw new ApiException(400, "too_many_entities", ["entity" => $lstr, "received" => $numRec, "required" => $numReq, "syntax" => Core::formatPattern($pattern)]);
         else if (strlen($lstr) > 0) $lstr .= ".";
 
         $data = new stdClass();
         foreach ($pl as $key => $unit) {
 
-            if (!array_key_exists($key, $rec)) throw new AsapiException(400, true, "missing_entity", ["entity" => $lstr . $key, "syntax" => Core::formatPattern($pattern), "requestType"=> $type]);
+            if (!array_key_exists($key, $rec)) throw new ApiException(400, "missing_entity", ["entity" => $lstr . $key, "syntax" => Core::formatPattern($pattern), "requestType"=> $type]);
             else if (gettype(array_values($unit)[0]) === "array") $data->$key = Core::processGet($pattern, $rec->$key, $type, array_merge($level, [$key]));
-            else if (strlen(trim($rec->$key)) <= 0 && $unit[0] !== "bool" && $unit[1]) throw new AsapiException(400, true, "empty_value", ["entity" => $lstr . $key, "syntax" => Core::formatPattern($pattern), "requestType"=> $type]);
+            else if (strlen(trim($rec->$key)) <= 0 && $unit[0] !== "bool" && $unit[1]) throw new ApiException(400, "empty_value", ["entity" => $lstr . $key, "syntax" => Core::formatPattern($pattern), "requestType"=> $type]);
             else if (strlen(trim($rec->$key)) <= 0 && $unit[0] !== "bool" && !$unit[1]) $data->$key = NULL;
             else if (strlen(trim($rec->$key)) > 0 || $unit[0] === "bool") try {
                 $data->$key = Core::validateVar($rec->$key, $unit[0], (isset($unit[2]) ? $unit[2] : []));
             } catch (Exception $e) { 
                 throw new ApiException($e->getCode(), "value_invalid", ["entity" => $lstr . $key, "error"=>$e->getMessage(), "syntax" => Core::formatPattern($pattern), "requestType"=> $type]);
             }
-            else throw new AsapiException(500, true, "entity_processing_error", ["entity" => $lstr . $key]);
+            else throw new ApiException(500, "entity_processing_error", ["entity" => $lstr . $key]);
         }
         
         return $data;

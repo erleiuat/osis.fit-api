@@ -15,7 +15,7 @@ class AsapiException extends Exception {
             $this->dev_info = $dev_info;
         }
 
-        parent::__construct($message, $code);
+        parent::__construct($info, $code);
 
     }
 
