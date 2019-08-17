@@ -5,6 +5,7 @@ class Training extends ApiObject {
     /* -------- TABLES (T) AND VIEWS (V) -------- */
     private $t_main = "training";
     private $t_uses_e = "training_uses_exercise";
+    private $v_search = "v_training_search";
 
     /* ----------- BASIC PARAMS ---------- */
     protected $keys = ['id', 'public', 'title', 'description'];
@@ -62,6 +63,38 @@ class Training extends ApiObject {
         $this->exercises = $arr;
 
         return $this;
+
+    }
+
+    public function find($query, $account_id, $public) {
+
+        if (!$public) {
+            $where = ' WHERE 
+            `account_id` = :account_id AND
+            `search` LIKE :query
+            ';
+        } else {
+            $where = ' WHERE 
+            `public` IS TRUE AND
+            `account_id` != :account_id AND
+            `search` LIKE :query
+            ';
+        }
+
+        $stmt = $this->db->prepare("
+            SELECT id, title, description, user FROM 
+        ".$this->v_search.$where);
+
+        $this->db->bind($stmt, 
+            [':account_id', ':query'], 
+            [$account_id, "%".$query."%"]
+        );
+        
+        $this->db->execute($stmt);
+
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return $result;
 
     }
 

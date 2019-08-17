@@ -344,3 +344,20 @@ CREATE VIEW `v_image` AS
 
     FROM image AS img
     LEFT JOIN image_sizes AS sz ON sz.image_id = img.id;
+
+
+DROP VIEW IF EXISTS `v_training_search`;
+CREATE VIEW `v_training_search` AS
+
+    SELECT
+
+        CONCAT(tr.title, '', us.firstname, '', us.lastname) AS 'search',
+        tr.id AS 'id',
+        tr.public AS 'public',
+        tr.title AS 'title',
+        tr.description AS 'description',
+        us.account_id AS 'account_id',
+        CONCAT(us.firstname, ' ', us.lastname) AS 'user'
+
+    FROM training AS tr
+    LEFT JOIN user AS us ON tr.account_id = us.account_id;
