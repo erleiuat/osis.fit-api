@@ -210,13 +210,82 @@ CREATE TABLE `ulog_activity` (
     id                  INT NOT NULL AUTO_INCREMENT,
 
     title               VARCHAR(150),
-    duration            TIME,
+    duration            TIME, -- TODO: REMOVE THIS ATTR.
     calories            DOUBLE,
     stamp               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (id, account_id),
     FOREIGN KEY (account_id) REFERENCES account(id)
 );
+
+-- ------------------------------------------------------------------------------------
+-- TRAININGS
+
+DROP TABLE IF EXISTS `exercise`;
+CREATE TABLE `exercise` (
+    account_id          VARCHAR(40) NOT NULL,
+
+    id                  INT NOT NULL AUTO_INCREMENT,
+    public              BOOLEAN NOT NULL DEFAULT 0,
+
+    title               VARCHAR(150) NOT NULL,
+    description         TEXT,
+    type                ENUM('strength','stamina','fitness','flexibility','coordination') NOT NULL,
+    calories            DOUBLE,
+    repetitions         DOUBLE,
+
+    PRIMARY KEY (id, account_id),
+    FOREIGN KEY (account_id) REFERENCES account(id)
+);
+
+DROP TABLE IF EXISTS `exercise_muscle`;
+CREATE TABLE `exercise_muscle` (
+    id                  INT NOT NULL AUTO_INCREMENT,
+
+    title               VARCHAR(150) NOT NULL,
+    translation_key     VARCHAR(50) NOT NULL,
+
+    PRIMARY KEY (id)
+);
+
+DROP TABLE IF EXISTS `exercise_uses_muscles`;
+CREATE TABLE `exercise_uses_muscles` (
+
+    exercise_id         INT NOT NULL,
+    exercise_muscle_id  INT NOT NULL,
+
+    PRIMARY KEY (exercise_id, exercise_muscle_id),
+    FOREIGN KEY (exercise_id) REFERENCES exercise(id),
+    FOREIGN KEY (exercise_muscle_id) REFERENCES exercise_muscle(id)
+);
+
+DROP TABLE IF EXISTS `training`;
+CREATE TABLE `training` (
+    account_id          VARCHAR(40) NOT NULL,
+
+    id                  INT NOT NULL AUTO_INCREMENT,
+    public              BOOLEAN NOT NULL DEFAULT 0,
+
+    title               VARCHAR(150) NOT NULL,
+    description         TEXT,
+
+    PRIMARY KEY (id, account_id),
+    FOREIGN KEY (account_id) REFERENCES account(id)
+);
+
+DROP TABLE IF EXISTS `training_uses_exercise`;
+CREATE TABLE `training_uses_exercise` (
+    id                  INT NOT NULL AUTO_INCREMENT,
+    training_id         INT NOT NULL,
+    exercise_id         INT NOT NULL,
+
+    repetitions         DOUBLE,
+
+    PRIMARY KEY (id, training_id, exercise_id),
+    FOREIGN KEY (training_id) REFERENCES training(id),
+    FOREIGN KEY (exercise_id) REFERENCES exercise(id)
+);
+
 
 -- ------------------------------------------------------------------------------------
 -- VIEWS

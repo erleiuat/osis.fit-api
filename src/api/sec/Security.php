@@ -129,7 +129,7 @@ class Sec {
 
     public static function permit($userLevel, $allowedLevels) {
         $found = array_search($userLevel, $allowedLevels, TRUE);
-        if ($found === FALSE) throw new Exception('insufficient_permission', 403);
+        if ($found === FALSE) return false;
         else return true;
     }
 

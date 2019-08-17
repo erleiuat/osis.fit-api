@@ -103,7 +103,7 @@ class Core {
         foreach ($pl as $key => $unit) {
 
             if (!array_key_exists($key, $rec)) throw new ApiException(400, "missing_entity", ["entity" => $lstr . $key, "syntax" => Core::formatPattern($pattern), "requestType"=> $type]);
-            else if (gettype(array_values($unit)[0]) === "array") $data->$key = Core::processGet($pattern, $rec->$key, $type, array_merge($level, [$key]));
+            else if ($unit[0] === "array") $data->$key = $rec->$key;
             else if (strlen(trim($rec->$key)) <= 0 && $unit[0] !== "bool" && $unit[1]) throw new ApiException(400, "empty_value", ["entity" => $lstr . $key, "syntax" => Core::formatPattern($pattern), "requestType"=> $type]);
             else if (strlen(trim($rec->$key)) <= 0 && $unit[0] !== "bool" && !$unit[1]) $data->$key = NULL;
             else if (strlen(trim($rec->$key)) > 0 || $unit[0] === "bool") try {
