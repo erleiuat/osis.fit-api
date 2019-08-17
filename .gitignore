@@ -1,3 +1,4 @@
 # Files
 *.mwb.bak
 env/*
+env.php

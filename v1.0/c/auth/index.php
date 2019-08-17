@@ -1,14 +1,14 @@
 <?php
 
 define('PROCESS', "Auth/Login"); /* Name of this Process */
+define('ROOT', "../../../src/"); /* Path to root */      
+define('REC', "../../src/class/"); /* Path to classes of current version */ /* Path to root */        
 
-import('@/components/Engine'); /* Load API-Engine */
-
-
+require_once ROOT . 'Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
-import('@/components/Security'); /* Load Security-Methods */
+require_once ROOT . 'Security.php'; /* Load Security-Methods */
 
 // ------------------ SCRIPT -----------------
 try {
@@ -42,9 +42,7 @@ try {
     }
 
 } catch (\Exception $e) {
-
     Core::processException($_REP, $_LOG, $e);
-    
 }
 // -------------------------------------------
 

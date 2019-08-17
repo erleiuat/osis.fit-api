@@ -2,51 +2,39 @@
 
 class Database {
     
-    private static $db;
-    private $conn;
+    private $host;
+    private $db_name;
+    private $username;
+    private $password;
+    
+    public $conn;
+    public $stmt;
     
     public function __construct() {
+
+        $this->conn = null;
+        $this->host = Env_db::host;
+        $this->db_name = Env_db::database;
+        $this->username = Env_db::user;
+        $this->password = Env_db::password;
 
         try {
 
             $this->conn = new PDO(
-                "mysql:host=" . ENV_db::host . ";" .
-                "dbname=" . ENV_db::database, 
-                ENV_db::user, 
-                ENV_db::password
+                "mysql:host=" . $this->host . ";" .
+                "dbname=" . $this->db_name, 
+                $this->username, $this->password
             );
-
             $this->conn->exec("SET NAMES utf8");
-
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        } catch (PDOException $e) {
-
+        } catch (PDOException $exception) {
             throw new ApiException(500, "db_connect_error", $e->getMessage());
-
         }
 
     }
 
-    public static function select ($table, $whr) {
-
-        if (self::$db == null) self::$db = new Database();
-
-        $whr = self::formParams($whr);
-
-        $where = " WHERE " .join(' AND ', array_map(
-            function ($v1, $v2) { return $v1." = ".$v2; },
-            $whr->e, $whr->k
-        ));
-
-        $stmt = self::prepare("SELECT * FROM ".$table.$where);
-        self::bind($stmt, $whr->k, $whr->v)->execute($stmt);
-
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    }
-
-    public static function formParams($arr){
+    public function formParams($arr){
 
         $entys = [];
         $keys = [];
