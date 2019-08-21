@@ -1,6 +1,6 @@
 <?php
 
-class Env_db {
+class ENV_db {
 
     const host = "localhost";                        
     const database = "app.osis.fit";                        

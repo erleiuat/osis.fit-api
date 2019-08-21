@@ -1,11 +1,11 @@
 <?php
 
-class Env_img {
+class ENV_img {
 
+    const path = "../../osis.io-static/usercontent";
     const url = "http://localhost/osis.io-static/usercontent";
-    const path = "../../../osis.io-static/usercontent";
-    const folder = "osis_fit";
     const size = ["min" => 50, "max" => 15 * 1000000];
+    const folder = "osis_fit_l";
 
     const full = ["name" => "full", "w" => 2500, "h" => 2500, "q" => 100];
     const large = ["name" => "large", "w" => 2200, "h" => 2200, "q" => 95];
