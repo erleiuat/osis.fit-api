@@ -17,15 +17,20 @@ try {
         'firstname' => ['string', true, ['min' => 1, 'max' => 150]],
         'lastname' => ['string', true, ['min' => 1, 'max' => 150]],
         'mail' => ['mail', true, ['min' => 1, 'max' => 90]],
+        'username' => ['username', true],
         'password' => ['password', true, ['min' => 8, 'max' => 255]],
         'language' => ['string', false, ['max' => 5]]
     ]);
 
-
     require_once ROOT . 'Authentication.php';
     $Auth = new Auth($_DBC);
+
     if ($Auth->check($data->mail)->status) {
         throw new ApiException(403, "mail_in_use", ["entity"=>"mail"]);
+    }
+
+    if ($Auth->check($data->username)->status) {
+        throw new ApiException(403, "username_in_use", ["entity"=>"username"]);
     }
 
     $verify_code = Core::randomString(10);
@@ -34,18 +39,15 @@ try {
     require_once ROOT . 'Mail.php';
     require_once REC . 'User.php';
 
-
     $Account = new AccountPortal($_DBC);
-    $Account->createAccount($data->mail);
+    $Account->createAccount($data->mail, $data->username);
     $_LOG->addInfo("Account created");
     $Account->createAuth($data->password, $verify_code);
     $_LOG->addInfo("Auth created");
     
-
     $User = new User($_DBC, $Account->getAccount());
     $User->create($data->firstname, $data->lastname);
     $_LOG->addInfo("User created");
-
 
     $Mailer = new Mailer(new defaultMail());
     $Mailer->addReceiver($data->mail, $data->firstname, $data->lastname);

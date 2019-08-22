@@ -38,6 +38,7 @@ class Sec {
         $sec = (object) [
             "id" => $access->data->account->id,
             "mail" => $access->data->account->mail,
+            "username" => $access->data->account->username,
             "level" => $access->data->level,
             "premium" => $premium,
         ];
@@ -73,7 +74,8 @@ class Sec {
                 "level" => $data->level,
                 "account" => [
                     "id" => $data->account->id,
-                    "mail" => $data->account->mail
+                    "mail" => $data->account->mail,
+                    "username" => $data->account->username
                 ],
                 "subscription" => [
                     "id" => $data->subscription->id,

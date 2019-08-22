@@ -12,7 +12,7 @@ class AccountPortal extends ApiObject {
     private $t_auth_verify = "auth_verify";
 
     /* ----------------- METHODS ---------------- */
-    public function createAccount($mail) {
+    public function createAccount($mail, $username) {
 
         $unique = uniqid('', true);
         $time = date('Y_m_d_H_i_s', time());
@@ -21,6 +21,7 @@ class AccountPortal extends ApiObject {
         $vals = [
             'id' => $id,
             'mail' => $mail,
+            'username' => $username
         ];
         $result = $this->db->makeInsert($this->t_account, $vals);
 
@@ -146,11 +147,12 @@ class AccountPortal extends ApiObject {
         ], $where);
         if ($res !== 1) throw new ApiException(500, 'verify_change_failed', get_class($this));
 
-
         $where = ['id' => $this->account->id];
         $res = $this->db->makeUpdate($this->t_account, [
-            "mail" => 'DELETED:'.$this->account->mail.'|'.$this->account->id
+            "mail" => 'DELETED:'.$this->account->mail.'|'.$this->account->id,
+            "username" => 'DELETED:'.$this->account->username.'|'.$this->account->id
         ], $where);
+
         if ($res !== 1) throw new ApiException(500, 'verify_change_failed', get_class($this));
 
         return $this;

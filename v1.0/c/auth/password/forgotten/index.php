@@ -16,7 +16,7 @@ $Auth = new Auth($_DBC);
 try {
 
     $data = Core::getBody([
-        'mail' => ['string', false],
+        'identifier' => ['string', false],
         'language' => ['string', false],
         'code' => ['string', false],
         'password' => ['password', false]
@@ -25,12 +25,12 @@ try {
     require_once ROOT . 'Authentication.php';
     $Auth = new Auth($_DBC);
 
-    if ($Auth->check($data->mail)->status === "verified") {
+    if ($Auth->check($data->identifier)->status === "verified") {
 
         require_once ROOT . 'AccountPortal.php';
         $Account = new AccountPortal($_DBC, $Auth->getAccount());
 
-        if ($data->mail && !$data->code && !$data->password) {
+        if ($data->identifier && !$data->code && !$data->password) {
 
             $code = Core::randomString(20);
             $Account->passReset($Auth->id, $code);
@@ -42,7 +42,7 @@ try {
             
             require_once ROOT . 'Mail.php';
             $Mailer = new Mailer(new defaultMail());
-            $Mailer->addReceiver($data->mail, $User->firstname, $User->lastname);
+            $Mailer->addReceiver($Auth->account->mail, $User->firstname, $User->lastname);
 
             if ($data->language === "de") require_once 'mail/content_de.php';
             else require_once 'mail/content_en.php';
@@ -61,7 +61,7 @@ try {
                 $_REP->addData($Mailer->getHTML(), "html");
             }
 
-        } else if ($data->mail && $data->code && $data->password) {
+        } else if ($data->identifier && $data->code && $data->password) {
 
             $Account->passResetVerify($Auth->id, $data->code)->passChange($Auth->id, $data->password);
             $Auth->removeRefresh();

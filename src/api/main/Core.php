@@ -124,6 +124,8 @@ class Core {
         switch ($type) {
             case "string":
                 return Validate::string($value, $reqs);
+            case "username":
+                return Validate::username($value, $reqs);
             case "number":
                 return Validate::number($value, $reqs);
             case "bool":

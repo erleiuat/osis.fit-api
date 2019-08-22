@@ -61,25 +61,41 @@ class Auth extends ApiObject {
 
     }
 
-    public function check($mail) {
+    public function check($identifier) {
 
-        $result = $this->db->makeSelect($this->v_check, [
-            'account_mail' => $mail
-        ]);
+        if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
+            $result = $this->db->makeSelect($this->v_check, [
+                'account_mail' => $identifier
+            ]);
+        } else {
+            $result = $this->db->makeSelect($this->v_check, [
+                'account_username' => $identifier
+            ]);
+        };
 
-        if (count($result) !== 1) return $this;
-
-        $this->id = $result[0]['auth_id'];
-        $this->status = $result[0]['auth_status'];
-        $this->level = $result[0]['auth_level'];
-
-        $this->pass_stamp = $result[0]['pass_update_stamp'];
-
-        $this->setSubscription($result[0]['auth_subscription']);
-        $this->setAccount([
-            "id" => $result[0]['account_id'],
-            "mail" => $mail,
-        ]);
+        if (count($result) !== 1) {
+            $this->id = null;
+            $this->status = null;
+            $this->level = null;
+            $this->pass_stamp = null;
+            $this->setSubscription(null);
+            $this->setAccount([
+                "id" => null,
+                "mail" => null,
+                "username" => null
+            ]);
+        } else {
+            $this->id = $result[0]['auth_id'];
+            $this->status = $result[0]['auth_status'];
+            $this->level = $result[0]['auth_level'];
+            $this->pass_stamp = $result[0]['pass_update_stamp'];
+            $this->setSubscription($result[0]['auth_subscription']);
+            $this->setAccount([
+                "id" => $result[0]['account_id'],
+                "mail" => $result[0]['account_mail'],
+                "username" => $result[0]['account_username']
+            ]);
+        }
 
         return $this;
         
@@ -104,7 +120,8 @@ class Auth extends ApiObject {
             "level" => $this->level,
             "account" => (object) [
                 "id" => $this->account->id,
-                "mail" => $this->account->mail
+                "mail" => $this->account->mail,
+                "username" => $this->account->username
             ],
             "subscription" => $this->subscription,
             "refresh" => (object) [
@@ -167,17 +184,14 @@ class Auth extends ApiObject {
 
         $where = ['auth_id' => $this->id];
 
-        if($jti) $where['jti'] = $jti;
+        if ($jti) $where['jti'] = $jti;
 
         $result = $this->db->makeDelete($this->t_refresh, $where);
 
         if ($jti && $result !== 1) throw new ApiException(404, 'refresh_remove_error', get_class($this));
-        else if($result < 1) throw new ApiException(404, 'refresh_remove_error', get_class($this));
 
         return true;
 
     }
-    
-    
-    
+           
 }

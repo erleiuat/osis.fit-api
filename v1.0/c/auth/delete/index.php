@@ -15,17 +15,17 @@ try {
 
     $sec = Sec::auth($_LOG);
     $data = Core::getBody([
-        'mail' => ['mail', true],
+        'username' => ['username', true],
         'password' => ['string', true]
     ]);
-        
-    if ($sec->mail !== $data->mail) throw new Exception("mail_wrong", 403);
+    
+    if ($sec->username !== $data->username) throw new Exception("username_wrong", 403);
 
     require_once ROOT . 'Authentication.php';
     $Auth = new Auth($_DBC);
-
+    
     if ($Auth->check($sec->mail)->status === "verified") {
-
+        
         if (!$Auth->pass($data->password)) throw new ApiException(403, "password_wrong");
 
         require_once ROOT . 'AccountPortal.php';

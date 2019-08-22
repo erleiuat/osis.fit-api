@@ -2,6 +2,16 @@
 
 class Validate {
 
+    public static function username($val, $options) {
+        $c = array_merge(["min"=>false, "max"=>250], $options);
+        $val = trim($val);
+
+        if ($c['max'] && strlen($val) > $c['max']) throw new Exception("lenght_max:" . $c['max'], 422);
+        if (preg_match("/\s/", $val)) throw new Exception("invalid_whitespace", 422);
+        return $val;
+        
+    }
+
     public static function string($val, $options) {
         $c = array_merge(["min"=>false, "max"=>false, "encode_entities"=>false], $options);
         $val = trim($val);

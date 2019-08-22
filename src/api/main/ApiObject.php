@@ -19,14 +19,16 @@ class ApiObject {
         if(!is_object($obj)) $obj = (object) $obj;
         $this->account = (object) [
             "id" => (isset($obj->id) ? $obj->id : null),
-            "mail" => (isset($obj->mail) ? $obj->mail : null)
+            "mail" => (isset($obj->mail) ? $obj->mail : null),
+            "username" => (isset($obj->username) ? $obj->username : null)
         ];
     }
     
     public function getAccount(){
         return [
             "id" => $this->account->id,
-            "mail" => $this->account->mail
+            "mail" => $this->account->mail,
+            "username" => $this->account->username
         ];
     }
 

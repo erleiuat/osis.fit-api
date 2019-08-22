@@ -14,15 +14,16 @@ require_once ROOT . 'Security.php'; /* Load Security-Methods */
 try {
     
     $data = Core::getBody([
-        'mail' => ['mail', true, ['min' => 1, 'max' => 90]],
+        'identifier' => ['string', true, ['min' => 1, 'max' => 250]],
         'password' => ['string', true]
     ]);
 
     require_once ROOT . 'Authentication.php';
     $Auth = new Auth($_DBC);
 
-    $_LOG->addInfo($data->mail);
-    if ($Auth->check($data->mail)->status === "verified") {
+    $_LOG->addInfo($data->identifier);
+
+    if ($Auth->check($data->identifier)->status === "verified") {
 
         if (!$Auth->pass($data->password)) throw new ApiException(403, "password_wrong");
 
@@ -30,8 +31,9 @@ try {
         $phrase = Core::randomString(20);
         $Auth->initRefresh($jti, $phrase);
 
-        $token_data = $Auth->token();        
-        $_REP->addData(Sec::placeAuth($token_data), "tokens");
+        $token_data = $Auth->token();
+        $sec = Sec::placeAuth($token_data);
+        $_REP->addData($sec, "tokens");
 
     } else if ($Auth->status === "locked") {
         throw new ApiException(403, "account_locked");

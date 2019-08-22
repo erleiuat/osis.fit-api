@@ -6,8 +6,10 @@ DROP TABLE IF EXISTS `account`;
 CREATE TABLE `account` (
     id                  VARCHAR(40) NOT NULL,
     mail                VARCHAR(89) NOT NULL,
+    username            VARCHAR(255) NOT NULL,
 
     UNIQUE INDEX unique_mail (mail),
+    UNIQUE INDEX unique_username (username),
 
     PRIMARY KEY (id)
 );
@@ -131,6 +133,7 @@ DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
     account_id          VARCHAR(40) NOT NULL,
     
+    image               VARCHAR(255),
     firstname           VARCHAR(150) NOT NULL,
     lastname            VARCHAR(150) NOT NULL,
     gender              ENUM('male','female'),
@@ -296,6 +299,7 @@ CREATE VIEW `v_auth_check` AS
     SELECT
 
         acc.mail AS 'account_mail',
+        acc.username AS 'account_username',
         acc.id AS 'account_id',
 
         auth.id AS 'auth_id',
