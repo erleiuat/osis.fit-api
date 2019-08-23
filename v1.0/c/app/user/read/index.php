@@ -20,9 +20,11 @@ try {
 
     $obj = $User->read()->getObject();
 
-    require_once ROOT . 'Image.php';
-    $Image = new Image($_DBC, $sec);
-    if($obj->image && $sec->premium) $obj->image = $Image->read($obj->image)->getObject();
+    if($obj->image && $sec->premium) {
+        require_once ROOT . 'Image.php';
+        $Image = new Image($_DBC, $sec);
+        $obj->image = $Image->read($obj->image)->getObject();
+    }
     else $obj->image = false;
 
     $_REP->addData($obj, "item");
