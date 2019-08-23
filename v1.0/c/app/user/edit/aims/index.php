@@ -1,8 +1,8 @@
 <?php
 
-define('PROCESS', "App/User/Read"); /* Name of this Process */
-define('ROOT', "../../../../../src/"); /* Path to root */      
-define('REC', "../../../../src/"); /* Path to classes of current version */ /* Path to root */           
+define('PROCESS', "App/User/Edit/Aims"); /* Name of this Process */
+define('ROOT', "../../../../../../src/"); /* Path to root */      
+define('REC', "../../../../../src/"); /* Path to classes of current version */ /* Path to root */           
 
 require_once ROOT . 'Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */
@@ -14,17 +14,18 @@ require_once ROOT . 'Security.php'; /* Load Security-Methods */
 try {
     
     $sec = Sec::auth($_LOG);
+    $data = Core::getBody([
+        'weight' => ['number', false],
+        'date' => ['date', false]      
+    ]);
     
+    $data->aim_weight = $data->weight;
+    $data->aim_date = $data->date;
+
     require_once REC . 'User.php';
     $User = new User($_DBC, $sec);
-
-    $obj = $User->read()->getObject();
-
-    require_once ROOT . 'Image.php';
-    $Image = new Image($_DBC, $sec);
-    if($obj->image && $sec->premium) $obj->image = $Image->read($obj->image)->getObject();
-    else $obj->image = false;
-
+    
+    $obj = $User->read()->set($data)->editAims()->read()->getObject();
     $_REP->addData($obj, "item");
     
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }

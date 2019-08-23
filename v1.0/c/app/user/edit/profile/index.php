@@ -17,22 +17,20 @@ try {
     $data = Core::getBody([
         'firstname' => ['string', false, ['max' => 150]],
         'lastname' => ['string', false, ['max' => 150]],
-        'birthdate' => ['date', false],
-        'height' => ['number', false],
-        'gender' => ['string', false],
-        'aims' => [
-            'weight' => ['number', false],
-            'date' => ['date', false]
-        ]
+        'imageID' => ['number', false]
     ]);
-    
-    $data->aim_weight = $data->aims->weight;
-    $data->aim_date = $data->aims->date;
+
+    if($data->imageID && $sec->premium) {
+        require_once ROOT . 'Image.php';
+        $Image = new Image($_DBC, $sec);
+        $data->image = $Image->set(['id'=>$data->imageID])->read()->getObject();
+    }
 
     require_once REC . 'User.php';
     $User = new User($_DBC, $sec);
     
-    $obj = $User->read()->set($data)->edit()->getObject();
+    $obj = $User->read()->set($data)->editProfile()->getObject();
+
     $_REP->addData($obj, "item");
     
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }

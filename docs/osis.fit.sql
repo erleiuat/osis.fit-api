@@ -133,11 +133,13 @@ DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
     account_id          VARCHAR(40) NOT NULL,
     
-    image               VARCHAR(255),
+    image_id            INT,
     firstname           VARCHAR(150) NOT NULL,
     lastname            VARCHAR(150) NOT NULL,
 
     PRIMARY KEY (account_id),
+    
+    FOREIGN KEY (image_id) REFERENCES image(id),
     FOREIGN KEY (account_id) REFERENCES account(id)
 );
 
@@ -329,6 +331,8 @@ CREATE VIEW `v_user` AS
 
     SELECT
 
+        acc.id AS 'account_id',
+        us.image_id AS 'image_id',
         us.firstname AS 'firstname',
         us.lastname AS 'lastname',
         de.birthdate AS 'birthdate',
