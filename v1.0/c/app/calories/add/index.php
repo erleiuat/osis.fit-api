@@ -2,7 +2,7 @@
 
 define('PROCESS', "App/Calories/Add"); /* Name of this Process */
 define('ROOT', "../../../../../src/"); /* Path to root */      
-define('REC', "../../../../src/class/"); /* Path to classes of current version */
+define('REC', "../../../../src/"); /* Path to classes of current version */
 
 require_once ROOT . 'Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */

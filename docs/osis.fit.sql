@@ -136,9 +136,19 @@ CREATE TABLE `user` (
     image               VARCHAR(255),
     firstname           VARCHAR(150) NOT NULL,
     lastname            VARCHAR(150) NOT NULL,
+
+    PRIMARY KEY (account_id),
+    FOREIGN KEY (account_id) REFERENCES account(id)
+);
+
+DROP TABLE IF EXISTS `user_detail`;
+CREATE TABLE `user_detail` (
+    account_id          VARCHAR(40) NOT NULL,
+
     gender              ENUM('male','female'),
     height              DOUBLE,
     birthdate           DATE,
+    pal                 ENUM('0.95', '1.2', '1.45', '1.65', '1.85', '2.2'),
 
     aim_weight          DOUBLE,
     aim_date            DATE,
@@ -321,14 +331,16 @@ CREATE VIEW `v_user` AS
 
         us.firstname AS 'firstname',
         us.lastname AS 'lastname',
-        us.birthdate AS 'birthdate',
-        us.height AS 'height',
-        us.gender AS 'gender',
-        us.aim_weight AS 'aim_weight',
-        us.aim_date AS 'aim_date'
+        de.birthdate AS 'birthdate',
+        de.height AS 'height',
+        de.gender AS 'gender',
+        de.pal AS 'pal',
+        de.aim_weight AS 'aim_weight',
+        de.aim_date AS 'aim_date'
 
     FROM account AS acc
-    LEFT JOIN user AS us ON us.account_id = acc.id;
+    LEFT JOIN user AS us ON us.account_id = acc.id
+    LEFT JOIN user_detail AS de ON de.account_id = acc.id;
 
 
 DROP VIEW IF EXISTS `v_image`;
