@@ -134,7 +134,7 @@ class User extends ApiObject {
             "birthdate" => $obj->birthdate,
             "height" => ($obj->height ? (double) $obj->height : null),
             "gender" => $obj->gender,
-            "pal" => $obj->pal,
+            "pal" => (double) $obj->pal,
             "aims" => [
                 "weight" => ($obj->aim_weight ? (double) $obj->aim_weight : null),
                 "date" => $obj->aim_date,
