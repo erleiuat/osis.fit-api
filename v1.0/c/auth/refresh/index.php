@@ -30,7 +30,31 @@ try {
         $Auth->refresh($jti, $phrase);
 
         $token_data = $Auth->token();
-        $_REP->addData(Sec::placeAuth($token_data), "tokens");
+        $sec = Sec::placeAuth($token_data);
+        $_REP->addData($sec, "tokens");
+
+        require_once REC . 'User.php';
+        $User = new User($_DBC, $token_data->account);
+        $obj = $User->read()->getObject();
+
+        $premium = false;
+        $sub = $token_data->subscription;
+        if ($sub->id && !$sub->deleted) {
+            if ($sub->status === 'active') $premium = true;
+            else if ($sub->status === 'non_renewing') $premium = true;
+            else if ($sub->status === 'in_trial') $premium = true;
+        }
+
+        if($obj->image && $premium) {
+            require_once ROOT . 'Image.php';
+            $Image = new Image($_DBC, $token_data->account);
+            $obj->image = $Image->read($obj->image)->getObject();
+        }
+        else $obj->image = false;
+    
+        $_REP->addData($obj, "user");
+
+
 
     } else {
         if ($Auth->status === "locked") throw new ApiException(403, "account_locked");
