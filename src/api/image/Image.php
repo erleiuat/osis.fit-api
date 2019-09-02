@@ -46,7 +46,7 @@ class Image extends ApiObject {
         $where = ['image_id' => $this->id];
         $changed = $this->db->makeUpdate($this->t_sizes, $sizes, $where);
 
-        if ($changed !== 1) throw new ApiException(500, 'sizes_saving_error', get_class($this));
+        if ($changed !== 1) throw new ApiException(500, 'sizes_set_error', get_class($this));
         
         foreach($sizes as $key => $size){
             $this->$key = $size;
@@ -79,7 +79,7 @@ class Image extends ApiObject {
         $params = ["access_stamp" => $stamp];
         $changed = $this->db->makeUpdate($this->t_main, $params, $where);
 
-        if ($changed !== 1) throw new ApiException(500, 'sizes_saving_error', get_class($this));
+        if ($changed !== 1) throw new ApiException(500, 'img_acc_stamp_error', get_class($this));
     
     }
 
