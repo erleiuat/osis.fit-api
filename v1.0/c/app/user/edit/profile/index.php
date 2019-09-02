@@ -9,6 +9,7 @@ Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
 require_once ROOT . 'Security.php'; /* Load Security-Methods */
+require_once ROOT . 'Image.php';
 
 // ------------------ SCRIPT -----------------
 try {
@@ -20,8 +21,7 @@ try {
         'imageID' => ['number', false]
     ]);
 
-    if($data->imageID && $sec->premium) {
-        require_once ROOT . 'Image.php';
+    if ($data->imageID && $sec->premium) {
         $Image = new Image($_DBC, $sec);
         $data->image = $Image->set(['id'=>$data->imageID])->read()->getObject();
     }
@@ -30,6 +30,10 @@ try {
     $User = new User($_DBC, $sec);
     
     $obj = $User->read()->set($data)->editProfile()->getObject();
+
+    if ($obj->image && $sec->premium) {
+        $obj->image = $Image->read($obj->image)->getObject();
+    } else $obj->image = false;
 
     $_REP->addData($obj, "item");
     

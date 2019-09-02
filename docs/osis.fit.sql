@@ -148,11 +148,11 @@ CREATE TABLE `user_detail` (
     account_id          VARCHAR(40) NOT NULL,
 
     gender              ENUM('male','female'),
-    height              DOUBLE,
+    height              FLOAT,
     birthdate           DATE,
-    pal                 ENUM('0.95', '1.2', '1.45', '1.65', '1.85', '2.2'),
+    pal                 FLOAT,
 
-    aim_weight          DOUBLE,
+    aim_weight          FLOAT,
     aim_date            DATE,
 
     PRIMARY KEY (account_id),
@@ -167,8 +167,8 @@ CREATE TABLE `user_food` (
     id                  INT NOT NULL AUTO_INCREMENT,
 
     title               VARCHAR(150) NOT NULL,
-    amount              DOUBLE,
-    calories_per_100    DOUBLE,
+    amount              FLOAT,
+    calories_per_100    FLOAT,
 
     PRIMARY KEY (id, account_id),
     FOREIGN KEY (image_id) REFERENCES image(id),
@@ -183,9 +183,9 @@ CREATE TABLE `user_food_favorite` (
     image               VARCHAR(255),
     title               VARCHAR(255) NOT NULL,
 
-    amount              DOUBLE,
-    calories_per_100    DOUBLE,
-    total               DOUBLE,
+    amount              FLOAT,
+    calories_per_100    FLOAT,
+    total               FLOAT,
 
     PRIMARY KEY (id, account_id),
     FOREIGN KEY (account_id) REFERENCES account(id)
@@ -197,7 +197,7 @@ CREATE TABLE `ulog_weight` (
 
     id                  INT NOT NULL AUTO_INCREMENT,
 
-    weight              DOUBLE NOT NULL,
+    weight              FLOAT NOT NULL,
     stamp               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (id, account_id),
@@ -211,7 +211,7 @@ CREATE TABLE `ulog_calories` (
     id                  INT NOT NULL AUTO_INCREMENT,
 
     title               VARCHAR(150),
-    calories            DOUBLE NOT NULL,
+    calories            FLOAT NOT NULL,
     stamp               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (id, account_id),
@@ -226,7 +226,7 @@ CREATE TABLE `ulog_activity` (
 
     title               VARCHAR(150),
     duration            TIME, -- TODO: REMOVE THIS ATTR.
-    calories            DOUBLE,
+    calories            FLOAT,
     stamp               TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (id, account_id),
@@ -246,8 +246,8 @@ CREATE TABLE `exercise` (
     title               VARCHAR(150) NOT NULL,
     description         TEXT,
     type                ENUM('strength','stamina','fitness','flexibility','coordination') NOT NULL,
-    calories            DOUBLE,
-    repetitions         DOUBLE,
+    calories            FLOAT,
+    repetitions         FLOAT,
 
     PRIMARY KEY (id, account_id),
     FOREIGN KEY (account_id) REFERENCES account(id)
@@ -294,7 +294,7 @@ CREATE TABLE `training_uses_exercise` (
     training_id         INT NOT NULL,
     exercise_id         INT NOT NULL,
 
-    repetitions         DOUBLE,
+    repetitions         FLOAT,
 
     PRIMARY KEY (id, training_id, exercise_id),
     FOREIGN KEY (training_id) REFERENCES training(id),

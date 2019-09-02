@@ -26,6 +26,14 @@ try {
     $User = new User($_DBC, $sec);
     
     $obj = $User->read()->set($data)->editAims()->read()->getObject();
+
+    if($obj->image && $sec->premium) {
+        require_once ROOT . 'Image.php';
+        $Image = new Image($_DBC, $sec);
+        $obj->image = $Image->read($obj->image)->getObject();
+    }
+    else $obj->image = false;
+
     $_REP->addData($obj, "item");
     
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }

@@ -34,7 +34,9 @@ class ApiObject {
 
     public function set($obj) {
         if(!is_object($obj)) $obj = (object) $obj;
-        foreach ($this->keys as $key) $this->$key = (isset($obj->$key) ? $obj->$key : null);
+        foreach ($this->keys as $key) {
+            if (isset($obj->$key)) $this->$key = $obj->$key;
+        };
         return $this;
     }
 
