@@ -23,7 +23,8 @@ try {
         'description' => ['string', false],
         'type' => ['string', true],
         'calories' => ['number', false],
-        'repetitions' => ['number', false]
+        'repetitions' => ['number', false],
+        'bodyparts' => ['array', false]
     ]);
 
     if (!Sec::permit($sec->level, ['moderator', 'admin'])) $data->public = false;
