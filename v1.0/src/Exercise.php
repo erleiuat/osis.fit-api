@@ -143,6 +143,35 @@ class Exercise extends ApiObject {
 
     }
 
+    public function getSearchObject($obj, $own = true, $Image = false) {
+        
+        if (!$obj) $obj = $this;
+        else if (is_object($obj)) $obj = (array) $obj;
+
+        $img = false;
+        if ($obj['account_image_name'] && $Image) {
+            $img = $Image->getObject([
+                "id" => $obj['account_image_id'],
+                "name" => $obj['account_image_name'],
+                "mime" => $obj['account_image_mime'],
+                "full" => $obj['account_image_full'],
+                "small" => $obj['account_image_small'],
+                "lazy" => $obj['account_image_lazy'],
+                "large" => null,
+                "medium" => null
+            ]);
+        }
+
+        return [
+            "id" => $obj['id'],
+            "title" => $obj['title'],
+            "description" => $obj['description'],
+            "user" => $obj['user'],
+            "image" => $img
+        ];
+        
+    }
+
     public function getObject($obj = false) {
         
         if (!$obj) $obj = $this;
