@@ -37,38 +37,73 @@ class Exercise extends ApiObject {
             'repetitions' => null
         ], (array) $this->getObject());
         $this->db->makeInsert($this->t_main, $vals);
-
         $this->id = $this->db->conn->lastInsertId();      
         
         if(count($this->bodyparts) > 0){
 
+            $sql = "
+            INSERT INTO ".$this->t_use_bodypart." 
+            (`exercise_id`, `bodypart_id`) VALUES 
+            ";
+            
             $i = 0;
             $values = [];
-
-            $sql = "
-                INSERT INTO ".$this->t_use_bodypart." 
-                (`exercise_id`, `bodypart_id`) VALUES 
-            ";
-
             foreach ($this->bodyparts as $bodypart) {
-
                 array_push($values, $this->id, $bodypart);
                 if ($i > 0) $sql .= ", ";
                 $sql .= "(?, ?)";
                 $i++;
-
             }
-            $sql .= ";";
             
             $stmt = $this->db->prepare($sql);
-            for ($x = 0; $x < $i*2; $x++) {
-                $stmt->bindValue($x+1, $values[$x]);
-            }
-
+            for ($x = 0; $x < $i*2; $x++) $stmt->bindValue($x+1, $values[$x]);
             $this->db->execute($stmt);
             
         }
         
+        return $this;
+
+    }
+
+    public function edit($id = false) {
+
+        $where = ['account_id' => $this->account->id, 'id' => ($id ?: $this->id)];
+        $vals = Core::mergeAssign([
+            'title' => null,
+            'description' => null,
+            'type' => null,
+            'calories' => null,
+            'repetitions' => null
+        ], (array) $this->getObject());
+        
+        $changed = $this->db->makeUpdate($this->t_main, $vals, $where);
+        if ($changed > 1) throw new ApiException(500, 'too_many_changed', get_class($this));
+        
+        $where = ['exercise_id' => $this->id];
+        $changed = $this->db->makeDelete($this->t_use_bodypart, $where);
+
+        if (count($this->bodyparts) > 0){
+
+            $sql = "
+            REPLACE INTO ".$this->t_use_bodypart." 
+            (`exercise_id`, `bodypart_id`) VALUES 
+            ";
+            
+            $i = 0;
+            $values = [];
+            foreach ($this->bodyparts as $bodypart) {
+                array_push($values, $this->id, $bodypart);
+                if ($i > 0) $sql .= ", ";
+                $sql .= "(?, ?)";
+                $i++;
+            }
+            
+            $stmt = $this->db->prepare($sql);
+            for ($x = 0; $x < $i*2; $x++) $stmt->bindValue($x+1, $values[$x]);
+            $this->db->execute($stmt);
+            
+        }
+
         return $this;
 
     }
@@ -88,16 +123,17 @@ class Exercise extends ApiObject {
 
         $where = ['exercise_id' => ($id ?: $this->id)];
         $result = $this->db->makeSelect($this->v_use_bodypart, $where);
+        
         $bodyparts = [];
-
         foreach ($result as $val) {
-            array_push($bodyparts, (object) $val);
+            array_push($bodyparts, (object) [
+                "id" => $val['bodypart_id'],
+                "type" => $val['type'],
+                "translationKey" => $val['translation_key']
+            ]);
         }
 
-        $this->set([
-            "bodyparts" => $bodyparts
-        ]);
-
+        $this->set(["bodyparts" => $bodyparts]);
         return $this;
 
     }
