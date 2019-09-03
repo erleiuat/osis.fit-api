@@ -126,11 +126,7 @@ class Exercise extends ApiObject {
         
         $bodyparts = [];
         foreach ($result as $val) {
-            array_push($bodyparts, (object) [
-                "id" => $val['bodypart_id'],
-                "type" => $val['type'],
-                "translationKey" => $val['translation_key']
-            ]);
+            array_push($bodyparts, (int) $val['bodypart_id']);
         }
 
         $this->set(["bodyparts" => $bodyparts]);

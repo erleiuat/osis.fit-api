@@ -18,6 +18,7 @@ try {
     $sec = Sec::auth($_LOG);
     if(!$sec->premium) throw new ApiException(401, 'premium_required');
 
+    $Image = new Image($_DBC, $sec);
     $img = new Bulletproof\Image($_FILES);
     if(!$img["image"]) throw new ApiException(403, 'img_upload_image_missing');
     
@@ -51,8 +52,6 @@ try {
     $full = Img::generate($original, Env_img::full, $mime);
     Img::generate($full, Env_img::lazy);
 
-    
-    $Image = new Image($_DBC, $sec);
     $Image->set([
         'name' => $dir,
         'mime' => $mime
