@@ -19,7 +19,7 @@ class Image extends ApiObject {
 
     public $full;
     public $large;
-    public $mediun;
+    public $medium;
     public $small;
     public $lazy;
 
