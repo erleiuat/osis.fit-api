@@ -31,7 +31,7 @@ try {
     $FoodFavorite = new FoodFavorite($_DBC, $sec);
     
     $obj = $FoodFavorite->set($data)->create()->getObject();
-    $obj = Core::formResponse($obj);
+    $obj = (object) Core::formResponse($obj);
 
     $_REP->addData($obj->id, "id");
     $_REP->addData($obj, "item");

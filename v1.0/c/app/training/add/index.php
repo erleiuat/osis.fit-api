@@ -36,7 +36,7 @@ try {
     }
 
     $obj = $Training->read()->getObject();
-    $obj = Core::formResponse($obj);
+    $obj = (object) Core::formResponse($obj);
 
     $obj->exercises = [];
 

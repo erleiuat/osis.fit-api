@@ -84,17 +84,20 @@ class Database {
 
     }
 
-    public function makeSelect ($table, $whr) {
+    public function makeSelect ($table, $whr = true) {
 
-        $whr = $this->formParams($whr);
-
-        $where = " WHERE " .join(' AND ', array_map(
-            function ($v1, $v2) { return $v1." = ".$v2; },
-            $whr->e, $whr->k
-        ));
-
-        $stmt = $this->prepare("SELECT * FROM ".$table.$where);
-        $this->bind($stmt, $whr->k, $whr->v)->execute($stmt);
+        if ($whr) {
+            $whr = $this->formParams($whr);
+            $where = " WHERE " .join(' AND ', array_map(
+                function ($v1, $v2) { return $v1." = ".$v2; },
+                $whr->e, $whr->k
+            ));
+            $stmt = $this->prepare("SELECT * FROM ".$table.$where);
+            $this->bind($stmt, $whr->k, $whr->v)->execute($stmt);
+        } else {
+            $stmt = $this->prepare("SELECT * FROM ".$table);
+            $this->execute($stmt);
+        }
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
 

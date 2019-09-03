@@ -1,8 +1,8 @@
 <?php
 
-define('PROCESS', "App/Training/Exercise/Read"); /* Name of this Process */
-define('ROOT', "../../../../../../src/"); /* Path to root */      
-define('REC', "../../../../../src/"); /* Path to classes of current version */ /* Path to root */        
+define('PROCESS', "App/Exercise/Read"); /* Name of this Process */
+define('ROOT', "../../../../../src/"); /* Path to root */      
+define('REC', "../../../../src/"); /* Path to classes of current version */ /* Path to root */        
 
 require_once ROOT . 'Engine.php'; /* Load API-Engine */
 Core::startAsync(); /* Start Async-Request */
@@ -25,9 +25,7 @@ try {
     $Exercise = new Exercise($_DBC, $sec);
     
     $obj = $Exercise->read($data->id)->getObject();
-    $tmp = $obj->bodyparts;
-    $obj = Core::formResponse($obj);
-    $obj->bodyparts = $tmp;
+    $obj = (object) Core::formResponse($obj);
 
     $_REP->addData($obj, "item");
 

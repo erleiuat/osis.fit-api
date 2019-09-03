@@ -25,7 +25,7 @@ try {
 
     foreach ($entries as $entry) {
         $obj = $FoodFavorite->getObject($entry);
-        $obj = Core::formResponse($obj);
+        $obj = (object) Core::formResponse($obj);
         array_push($arr, $obj);
     }
 

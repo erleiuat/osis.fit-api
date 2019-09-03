@@ -33,7 +33,7 @@ try {
     
     $data->calories_per_100 = $data->caloriesPer100;
     $obj = $Food->set($data)->edit()->getObject();
-    $obj = Core::formResponse($obj);
+    $obj = (object) Core::formResponse($obj);
 
     $_REP->addData((int) $obj->id, "id");
     $_REP->addData($obj, "item");

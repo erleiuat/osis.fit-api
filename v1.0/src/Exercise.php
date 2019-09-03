@@ -175,6 +175,14 @@ class Exercise extends ApiObject {
 
     }
 
+    public function bodyparts() {
+        
+        $result = $this->db->makeSelect($this->t_bodypart, false);
+        if (count($result) <= 0) throw new ApiException(500, 'no_bodyparts', get_class($this));
+        return (array) $result;
+
+    }
+
     public function getSearchObject($obj, $own = true, $Image = false) {
         
         if (!$obj) $obj = $this;

@@ -26,7 +26,7 @@ try {
         $obj = $Food->read($data->id)->getObject();
         if ($obj->image && $sec->premium) $obj->image = $Image->read($obj->image)->getObject();
         else $obj->image = false;
-        $obj = Core::formResponse($obj);
+        $obj = (object) Core::formResponse($obj);
 
         $_REP->addData(1, "total");
         $_REP->addData($obj, "item");
@@ -41,7 +41,7 @@ try {
             $obj = $Food->getObject($entry);
             if($obj->image && $sec->premium) $obj->image = $Image->read($obj->image)->getObject();
             else $obj->image = false;
-            $obj = Core::formResponse($obj);
+            $obj = (object) Core::formResponse($obj);
             array_push($arr, $obj);
         }
 

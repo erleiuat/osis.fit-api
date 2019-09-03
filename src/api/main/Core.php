@@ -43,7 +43,7 @@ class Core {
             $response[$key] = $value;
         }
 
-        return (object) $response;
+        return $response;
 
     }
 
