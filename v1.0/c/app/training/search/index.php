@@ -28,7 +28,7 @@ try {
     $own = $Training->find($data->query, $sec->id, false);
 
     $public = [];
-    if($data->public) {
+    if ($data->public) {
         $public = $Training->find($data->query, $sec->id, true);
     }
 

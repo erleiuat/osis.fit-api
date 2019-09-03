@@ -94,14 +94,23 @@ class Image extends ApiObject {
 
     }
 
+    public function getAccountPath($account_id = false) {
+
+        if(!$account_id) $account_id = $this->account->id;
+
+        $url = Env_img::url."/".Env_img::folder;
+        $folder = hash('ripemd160', $account_id);
+        $path = $url."/".$folder."/";
+        return $path;
+
+    }
+
     public function getObject($obj = false) {
         
         if (!$obj) $obj = (array) $this;
         else if (is_object($obj)) $obj = (array) $obj;
 
-        $url = Env_img::url."/".Env_img::folder;
-        $folder = hash('ripemd160', $this->account->id);
-        $path = $url."/".$folder."/".$obj['name'];
+        $path = $this->getAccountPath().$obj['name'];
 
         $files = [
             "full" => null,

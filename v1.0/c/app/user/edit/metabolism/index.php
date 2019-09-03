@@ -30,8 +30,7 @@ try {
         require_once ROOT . 'Image.php';
         $Image = new Image($_DBC, $sec);
         $obj->image = $Image->read($obj->image)->getObject();
-    }
-    else $obj->image = false;
+    } else $obj->image = false;
 
     $_REP->addData($obj, "item");
     

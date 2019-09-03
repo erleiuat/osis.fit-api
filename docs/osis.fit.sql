@@ -367,18 +367,70 @@ CREATE VIEW `v_image` AS
     LEFT JOIN image_sizes AS sz ON sz.image_id = img.id;
 
 
+DROP VIEW IF EXISTS `v_exercise_bodypart`;
+CREATE VIEW `v_exercise_bodypart` AS
+
+    SELECT
+
+        eub.exercise_id AS 'exercise_id',
+        eub.bodypart_id AS 'bodypart_id',
+        bo.translation_key AS 'translation_key',
+        bo.type AS 'type'
+
+    FROM exercise_uses_bodypart AS eub
+    LEFT JOIN bodypart AS bo ON eub.bodypart_id = bo.id;
+
+
 DROP VIEW IF EXISTS `v_training_search`;
 CREATE VIEW `v_training_search` AS
 
     SELECT
 
-        CONCAT(tr.title, '', us.firstname, '', us.lastname) AS 'search',
+        CONCAT(tr.title, '', us.firstname, '', us.lastname) AS 'query',
         tr.id AS 'id',
         tr.public AS 'public',
         tr.title AS 'title',
         tr.description AS 'description',
+        CONCAT(us.firstname, ' ', us.lastname) AS 'user',
         us.account_id AS 'account_id',
-        CONCAT(us.firstname, ' ', us.lastname) AS 'user'
+        img.id AS 'account_image_id',
+        img.name AS 'account_image_name',
+        img.mime AS 'account_image_mime',
+        sz.full AS 'account_image_full',
+        sz.small AS 'account_image_small',
+        sz.lazy AS 'account_image_lazy'
 
     FROM training AS tr
-    LEFT JOIN user AS us ON tr.account_id = us.account_id;
+    LEFT JOIN user AS us ON tr.account_id = us.account_id
+    LEFT JOIN image AS img ON img.id = us.image_id
+    LEFT JOIN image_sizes AS sz ON sz.image_id = img.id;
+
+
+DROP VIEW IF EXISTS `v_exercise_search`;
+CREATE VIEW `v_exercise_search` AS
+
+    SELECT
+
+        CONCAT(ex.title, '', us.firstname, '', us.lastname) AS 'query',
+        (
+            SELECT GROUP_CONCAT(bodypart_id) FROM `v_exercise_bodypart`
+            WHERE exercise_id = ex.id
+            GROUP BY exercise_id
+        ) AS 'bodyparts',
+        ex.id AS 'id',
+        ex.public AS 'public',
+        ex.title AS 'title',
+        ex.description AS 'description',
+        CONCAT(us.firstname, ' ', us.lastname) AS 'user',
+        us.account_id AS 'account_id',
+        img.id AS 'account_image_id',
+        img.name AS 'account_image_name',
+        img.mime AS 'account_image_mime',
+        sz.full AS 'account_image_full',
+        sz.small AS 'account_image_small',
+        sz.lazy AS 'account_image_lazy'
+
+    FROM exercise AS ex
+    LEFT JOIN user AS us ON ex.account_id = us.account_id
+    LEFT JOIN image AS img ON img.id = us.image_id
+    LEFT JOIN image_sizes AS sz ON sz.image_id = img.id;

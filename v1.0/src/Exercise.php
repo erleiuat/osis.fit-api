@@ -4,9 +4,16 @@ class Exercise extends ApiObject {
 
     /* -------- TABLES (T) AND VIEWS (V) -------- */
     private $t_main = "exercise";
+    private $t_bodypart = "bodypart";
+    private $t_use_bodypart = "exercise_uses_bodypart";
+    private $v_use_bodypart = "v_exercise_bodypart";
+    private $v_search = "v_exercise_search";
 
     /* ----------- BASIC PARAMS ---------- */
-    protected $keys = ['id', 'public', 'title', 'description', 'type', 'calories', 'repetitions'];
+    protected $keys = [
+        'id', 'public', 'title', 'description', 
+        'type', 'calories', 'repetitions', 'bodyparts'
+    ];
 
     public $id;
     public $public;
@@ -16,6 +23,7 @@ class Exercise extends ApiObject {
     public $type;
     public $calories;
     public $repetitions;
+    public $bodyparts;
 
     /* ----------------- METHODS ---------------- */
     public function create() {
@@ -30,7 +38,37 @@ class Exercise extends ApiObject {
         ], (array) $this->getObject());
         $this->db->makeInsert($this->t_main, $vals);
 
-        $this->id = $this->db->conn->lastInsertId();        
+        $this->id = $this->db->conn->lastInsertId();      
+        
+        if(count($this->bodyparts) > 0){
+
+            $i = 0;
+            $values = [];
+
+            $sql = "
+                INSERT INTO ".$this->t_use_bodypart." 
+                (`exercise_id`, `bodypart_id`) VALUES 
+            ";
+
+            foreach ($this->bodyparts as $bodypart) {
+
+                array_push($values, $this->id, $bodypart);
+                if ($i > 0) $sql .= ", ";
+                $sql .= "(?, ?)";
+                $i++;
+
+            }
+            $sql .= ";";
+            
+            $stmt = $this->db->prepare($sql);
+            for ($x = 0; $x < $i*2; $x++) {
+                $stmt->bindValue($x+1, $values[$x]);
+            }
+
+            $this->db->execute($stmt);
+            
+        }
+        
         return $this;
 
     }
@@ -47,30 +85,49 @@ class Exercise extends ApiObject {
         }
 
         $this->set($result[0]);
+
+        $where = ['exercise_id' => ($id ?: $this->id)];
+        $result = $this->db->makeSelect($this->v_use_bodypart, $where);
+        $bodyparts = [];
+
+        foreach ($result as $val) {
+            array_push($bodyparts, (object) $val);
+        }
+
+        $this->set([
+            "bodyparts" => $bodyparts
+        ]);
+
         return $this;
 
     }
 
-    public function readByDate($from = false, $to = false) {
+    public function find($query, $bodyparts, $account_id, $public) {
 
-        if(!$from) $from = '1990-01-01';
-        if(!$to) $to = date('Y-m-d', time());
+        $where = '
+        `account_id` = :account_id AND
+        `query` LIKE :query
+        ';
 
-        // TODO ? makeSelect with "between"
+        if ($public) $where .= ' AND `public` IS TRUE';
+
         $stmt = $this->db->prepare("
-            SELECT * FROM ".$this->t_main . " WHERE 
-            account_id = :account_id AND
-            stamp >= CONCAT(:from, ' 00:00:00') AND 
-            stamp <= CONCAT(:to, ' 23:59:59')
-        ");
+            SELECT 
+            id, title, description, user, account_id, 
+            account_image_id, account_image_name, account_image_mime, 
+            account_image_full, account_image_small, account_image_lazy 
+            FROM 
+        ".$this->v_search." WHERE ".$where);
 
         $this->db->bind($stmt, 
-            ['account_id', 'from', 'to'],
-            [$this->account->id, $from, $to]
-        )->execute($stmt);
+            [':account_id', ':query'], 
+            [$account_id, "%".$query."%"]
+        );
+        
+        $this->db->execute($stmt);
+
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        if (count($result) < 1) throw new ApiException(204, 'no_items_found', get_class($this));
         return $result;
 
     }
@@ -98,7 +155,8 @@ class Exercise extends ApiObject {
             "description" => $obj->description,
             "type" => $obj->type,
             "calories" => (double) $obj->calories,
-            "repetitions" => (double) $obj->repetitions
+            "repetitions" => (double) $obj->repetitions,
+            "bodyparts" => $obj->bodyparts,
         ];
         
     }

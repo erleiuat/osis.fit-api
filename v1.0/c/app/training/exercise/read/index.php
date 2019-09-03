@@ -27,6 +27,8 @@ try {
     $obj = $Exercise->read($data->id)->getObject();
     $obj = Core::formResponse($obj);
 
+    $obj->bodyparts = (array) $obj->bodyparts;
+
     $_REP->addData($obj, "item");
 
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }

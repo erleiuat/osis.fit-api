@@ -23,7 +23,8 @@ try {
 
     if ($data->imageID && $sec->premium) {
         $Image = new Image($_DBC, $sec);
-        $data->image = $Image->set(['id'=>$data->imageID])->read()->getObject();
+        //$data->image = $Image->set(['id'=>$data->imageID])->read()->getObject();
+        $data->image = (object) ["id" => $data->imageID];
     }
 
     require_once REC . 'User.php';
@@ -32,7 +33,7 @@ try {
     $obj = $User->read()->set($data)->editProfile()->getObject();
 
     if ($obj->image && $sec->premium) {
-        $obj->image = $Image->read($obj->image)->getObject();
+        $obj->image = $Image->read($obj->image->id)->getObject();
     } else $obj->image = false;
 
     $_REP->addData($obj, "item");

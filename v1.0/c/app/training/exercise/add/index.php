@@ -35,6 +35,8 @@ try {
     $obj = $Exercise->set($data)->create()->getObject();
     $obj = Core::formResponse($obj);
 
+    $obj->bodyparts = (array) $obj->bodyparts;
+
     $_REP->addData($obj->id, "id");
     $_REP->addData($obj, "item");
 
