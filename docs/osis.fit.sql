@@ -253,25 +253,26 @@ CREATE TABLE `exercise` (
     FOREIGN KEY (account_id) REFERENCES account(id)
 );
 
-DROP TABLE IF EXISTS `exercise_muscle`;
-CREATE TABLE `exercise_muscle` (
+DROP TABLE IF EXISTS `bodypart`;
+CREATE TABLE `bodypart` (
     id                  INT NOT NULL AUTO_INCREMENT,
 
     title               VARCHAR(150) NOT NULL,
     translation_key     VARCHAR(50) NOT NULL,
+    type                ENUM('muscle','tissue','other') NOT NULL,
 
     PRIMARY KEY (id)
 );
 
-DROP TABLE IF EXISTS `exercise_uses_muscles`;
-CREATE TABLE `exercise_uses_muscles` (
+DROP TABLE IF EXISTS `exercise_uses_bodypart`;
+CREATE TABLE `exercise_uses_bodypart` (
 
     exercise_id         INT NOT NULL,
-    exercise_muscle_id  INT NOT NULL,
+    bodypart_id         INT NOT NULL,
 
-    PRIMARY KEY (exercise_id, exercise_muscle_id),
+    PRIMARY KEY (exercise_id, bodypart_id),
     FOREIGN KEY (exercise_id) REFERENCES exercise(id),
-    FOREIGN KEY (exercise_muscle_id) REFERENCES exercise_muscle(id)
+    FOREIGN KEY (bodypart_id) REFERENCES bodypart(id)
 );
 
 DROP TABLE IF EXISTS `training`;
