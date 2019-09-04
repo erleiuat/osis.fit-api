@@ -225,8 +225,8 @@ class Exercise extends ApiObject {
             "title" => $obj->title,
             "description" => $obj->description,
             "type" => ($obj->type? $obj->type:'other'),
-            "calories" => (double) $obj->calories,
-            "repetitions" => (double) $obj->repetitions,
+            "calories" => (double) $obj->calories || null, // TODO 
+            "repetitions" => (double) $obj->repetitions || null,
             "bodyparts" => $obj->bodyparts,
         ];
         

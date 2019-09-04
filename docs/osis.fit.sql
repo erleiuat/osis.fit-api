@@ -305,6 +305,27 @@ CREATE TABLE `training_uses_exercise` (
 -- ------------------------------------------------------------------------------------
 -- VIEWS
 
+DROP VIEW IF EXISTS `v_log_detailed`;
+CREATE VIEW `v_log_detailed` AS
+
+    SELECT
+
+        lo.id AS 'id',
+        CONCAT(us.firstname, ' ', us.lastname) AS 'user',
+        lo.level AS 'level',
+        lo.process AS 'process',
+        lo.information AS 'information',
+        acc.mail AS 'mail',
+        acc.username AS 'username',
+        lo.stamp AS 'stamp',
+        lo.identity AS 'identity',
+        lo.trace AS 'trace'
+
+    FROM log AS lo
+    LEFT JOIN account AS acc ON lo.account_id = acc.id
+    LEFT JOIN user AS us ON us.account_id = acc.id;
+
+
 DROP VIEW IF EXISTS `v_auth_check`;
 CREATE VIEW `v_auth_check` AS
 
