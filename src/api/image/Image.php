@@ -78,8 +78,6 @@ class Image extends ApiObject {
         $where = ['id' => $this->id];
         $params = ["access_stamp" => $stamp];
         $changed = $this->db->makeUpdate($this->t_main, $params, $where);
-
-        if ($changed !== 1) throw new ApiException(500, 'img_acc_stamp_error', get_class($this));
     
     }
 

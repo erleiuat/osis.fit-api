@@ -35,10 +35,6 @@ try {
         $sec = Sec::placeAuth($token_data);
         $_REP->addData($sec, "tokens");
 
-        require_once REC . 'User.php';
-        $User = new User($_DBC, $token_data->account);
-        $obj = $User->read()->getObject();
-
         $premium = false;
         $sub = $token_data->subscription;
         if ($sub->id && !$sub->deleted) {
@@ -47,14 +43,40 @@ try {
             else if ($sub->status === 'in_trial') $premium = true;
         }
 
-        if($obj->image && $premium) {
+
+
+        $actArr = [];
+        require_once REC . 'Activity.php';
+        $Activity = new Activity($_DBC, $token_data->account);
+        $entries = $Activity->readByDate();
+        foreach ($entries as $entry) array_push($actArr, $Activity->getObject($entry));
+        $_REP->addData($actArr, "activity");
+
+        $calArr = [];
+        require_once REC . 'Calories.php';
+        $Calories = new Calories($_DBC, $token_data->account);
+        $entries = $Calories->readByDate();
+        foreach ($entries as $entry) array_push($calArr, $Calories->getObject($entry));
+        $_REP->addData($calArr, "calories");
+
+        $weiArr = [];
+        require_once REC . 'Weight.php';
+        $Weight = new Weight($_DBC, $token_data->account);
+        $entries = $Weight->readByDate();
+        foreach ($entries as $entry) array_push($weiArr, $Weight->getObject($entry));
+        $_REP->addData($weiArr, "weight");
+
+        require_once REC . 'User.php';
+        $User = new User($_DBC, $token_data->account);
+        $usr = $User->read()->getObject();
+        if ($usr->image && $premium) {
             require_once ROOT . 'Image.php';
             $Image = new Image($_DBC, $token_data->account);
-            $obj->image = $Image->read($obj->image)->getObject();
-        }
-        else $obj->image = false;
-    
-        $_REP->addData($obj, "user");
+            $usr->image = $Image->read($usr->image)->getObject();
+        } else $usr->image = false;
+        $_REP->addData($usr, "user");
+
+
 
     } else if ($Auth->status === "locked") {
         throw new ApiException(403, "account_locked");

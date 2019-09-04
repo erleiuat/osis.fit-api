@@ -139,11 +139,11 @@ class Exercise extends ApiObject {
     public function find($query, $bodyparts, $account_id, $public) {
 
         $where = '
-        `account_id` = :account_id AND
         `query` LIKE :query
         ';
 
-        if ($public) $where .= ' AND `public` IS TRUE';
+        if ($public) $where .= ' AND `account_id` != :account_id AND `public` IS TRUE';
+        else $where .= ' AND `account_id` = :account_id AND `public` IS TRUE';
 
         $stmt = $this->db->prepare("
             SELECT 
