@@ -31,6 +31,7 @@ class Exercise extends ApiObject {
         $vals = Core::mergeAssign([
             'account_id' => $this->account->id, 
             'title' => null,
+            'public' => null,
             'description' => null,
             'type' => null,
             'calories' => null,
@@ -70,6 +71,7 @@ class Exercise extends ApiObject {
         $where = ['account_id' => $this->account->id, 'id' => ($id ?: $this->id)];
         $vals = Core::mergeAssign([
             'title' => null,
+            'public' => null,
             'description' => null,
             'type' => null,
             'calories' => null,
@@ -145,7 +147,7 @@ class Exercise extends ApiObject {
 
         $stmt = $this->db->prepare("
             SELECT 
-            id, title, description, user, account_id, 
+            id, bodyparts, title, description, user, account_id, 
             account_image_id, account_image_name, account_image_mime, 
             account_image_full, account_image_small, account_image_lazy 
             FROM 
@@ -200,11 +202,12 @@ class Exercise extends ApiObject {
             ]);
         }
 
-        return [
+        return (object) [
             "id" => $obj['id'],
             "title" => $obj['title'],
             "description" => $obj['description'],
             "user" => $obj['user'],
+            "bodyparts" => $obj['bodyparts'],
             "image" => $img
         ];
         
@@ -217,7 +220,7 @@ class Exercise extends ApiObject {
 
         return (object) [
             "id" => (int) $obj->id,
-            "public" => (int) $obj->public,
+            "public" => (boolean) $obj->public,
             "title" => $obj->title,
             "description" => $obj->description,
             "type" => ($obj->type? $obj->type:'other'),

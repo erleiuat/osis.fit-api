@@ -27,7 +27,7 @@ try {
     $Exercise = new Exercise($_DBC, $sec);
     $items = [];    
 
-    if ($data->public) {
+    if (!$data->public) {
 
         $items = $Exercise->find($data->query, $data->bodyparts, $sec->id, false);
         
@@ -41,11 +41,12 @@ try {
         require_once ROOT . 'Image.php';
         $Image = new Image($_DBC, $sec);
         foreach ($items as $key => $entry) {
+            $entry['bodyparts'] = explode(',', $entry['bodyparts']);
             $items[$key] = $Exercise->getSearchObject($entry, false, $Image);
         }
 
     }
-    
+
     $_REP->addData($items, "items");
 
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
