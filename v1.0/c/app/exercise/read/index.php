@@ -17,10 +17,7 @@ try {
 
     if(!$sec->premium) throw new ApiException(401, 'premium_required');
 
-    $data = Core::getBody([
-        'id' => ['number', true]
-    ]);
-
+    $data = Core::getBody(['id' => ['number', true]]);
     require_once REC . 'Exercise.php';
     $Exercise = new Exercise($_DBC, $sec);
     
