@@ -1,20 +1,21 @@
 
 -- Types: muscle, tissue, other
+-- id: VARCHAR(10)
 
-INSERT INTO `bodypart` (`id`,`type`,`translation_key`,`title`) VALUES
+INSERT INTO `bodypart` (`type`,`id`,`title`) VALUES
 
-(1,     'muscle',   'chest',            'Brustmuskulatur'),
-(2,     'muscle',   'bicep',            'Bizeps'),
-(3,     'muscle',   'tricep',           'Trizeps'),
-(4,     'muscle',   'frontShoulder',    'Vordere Schultermuskulatur'),
-(5,     'muscle',   'rearShoulder',     'Hintere Schultermuskulatur'),
-(6,     'muscle',   'middleShoulder',   'Mittlere Schultermuskulatur'),
-(7,     'muscle',   'latissimus',       'Latissimus'),
-(8,     'muscle',   'trapezoid',        'Trapezmuskel'),
-(9,     'muscle',   'crossLowerBack',   'Kreuz/Untere Rückenmuskulatur'),
-(10,    'muscle',   'legStretcher',     'Beinstrecker'),
-(11,    'muscle',   'legFlexor',        'Beinbeuger'),
-(12,    'muscle',   'neck',             'Nackenmuskulatur'),
-(13,    'muscle',   'lateralAbdominal', 'Seitliche Bauchmuskulatur'),
-(14,    'muscle',   'lowerAbdominal',   'Untere Bauchmuskulatur'),
-(15,    'muscle',   'upperAbdominal',   'Obere Bauchmuskulatur');
+('muscle',   'chest',            'Brustmuskulatur'),
+('muscle',   'bicep',            'Bizeps'),
+('muscle',   'tricep',           'Trizeps'),
+('muscle',   'fShoulder',    'Vordere Schultermuskulatur'),
+('muscle',   'rShoulder',     'Hintere Schultermuskulatur'),
+('muscle',   'mShoulder',   'Mittlere Schultermuskulatur'),
+('muscle',   'latissimus',       'Latissimus'),
+('muscle',   'trapezoid',        'Trapezmuskel'),
+('muscle',   'cLowerBack',   'Kreuz/Untere Rückenmuskulatur'),
+('muscle',   'lStretcher',     'Beinstrecker'),
+('muscle',   'lFlexor',        'Beinbeuger'),
+('muscle',   'neck',             'Nackenmuskulatur'),
+('muscle',   'laAbdomina', 'Seitliche Bauchmuskulatur'),
+('muscle',   'loAbdomina',   'Untere Bauchmuskulatur'),
+('muscle',   'upAbdomina',   'Obere Bauchmuskulatur');

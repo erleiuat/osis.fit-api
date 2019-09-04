@@ -126,7 +126,7 @@ class Exercise extends ApiObject {
         
         $bodyparts = [];
         foreach ($result as $val) {
-            array_push($bodyparts, (int) $val['bodypart_id']);
+            array_push($bodyparts, $val['bodypart_id']);
         }
 
         $this->set(["bodyparts" => $bodyparts]);
@@ -176,11 +176,9 @@ class Exercise extends ApiObject {
     }
 
     public function bodyparts() {
-        
         $result = $this->db->makeSelect($this->t_bodypart, false);
         if (count($result) <= 0) throw new ApiException(500, 'no_bodyparts', get_class($this));
         return (array) $result;
-
     }
 
     public function getSearchObject($obj, $own = true, $Image = false) {
@@ -222,7 +220,7 @@ class Exercise extends ApiObject {
             "public" => (int) $obj->public,
             "title" => $obj->title,
             "description" => $obj->description,
-            "type" => $obj->type,
+            "type" => ($obj->type? $obj->type:'other'),
             "calories" => (double) $obj->calories,
             "repetitions" => (double) $obj->repetitions,
             "bodyparts" => $obj->bodyparts,

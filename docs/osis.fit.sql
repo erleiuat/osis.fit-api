@@ -245,7 +245,7 @@ CREATE TABLE `exercise` (
 
     title               VARCHAR(150) NOT NULL,
     description         TEXT,
-    type                ENUM('strength','stamina','fitness','flexibility','coordination') NOT NULL,
+    type                ENUM('strength','stamina','fitness','flexibility','coordination','other') NOT NULL DEFAULT 'other',
     calories            FLOAT,
     repetitions         FLOAT,
 
@@ -255,10 +255,9 @@ CREATE TABLE `exercise` (
 
 DROP TABLE IF EXISTS `bodypart`;
 CREATE TABLE `bodypart` (
-    id                  INT NOT NULL AUTO_INCREMENT,
+    id                  VARCHAR(10) NOT NULL,
 
     title               VARCHAR(150) NOT NULL,
-    translation_key     VARCHAR(50) NOT NULL,
     type                ENUM('muscle','tissue','other') NOT NULL,
 
     PRIMARY KEY (id)
@@ -268,7 +267,7 @@ DROP TABLE IF EXISTS `exercise_uses_bodypart`;
 CREATE TABLE `exercise_uses_bodypart` (
 
     exercise_id         INT NOT NULL,
-    bodypart_id         INT NOT NULL,
+    bodypart_id         VARCHAR(10) NOT NULL,
 
     PRIMARY KEY (exercise_id, bodypart_id),
     FOREIGN KEY (exercise_id) REFERENCES exercise(id),
@@ -374,7 +373,6 @@ CREATE VIEW `v_exercise_bodypart` AS
 
         eub.exercise_id AS 'exercise_id',
         eub.bodypart_id AS 'bodypart_id',
-        bo.translation_key AS 'translation_key',
         bo.type AS 'type'
 
     FROM exercise_uses_bodypart AS eub
