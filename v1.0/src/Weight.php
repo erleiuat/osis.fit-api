@@ -73,7 +73,7 @@ class Weight extends ApiObject {
         )->execute($stmt);
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        if (count($result) < 1) throw new ApiException(204, 'no_items_found', get_class($this));
+        if (count($result) < 1) return [];
         return $result;
 
     }
