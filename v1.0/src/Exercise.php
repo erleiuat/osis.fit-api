@@ -143,7 +143,7 @@ class Exercise extends ApiObject {
         ';
 
         if ($public) $where .= ' AND `account_id` != :account_id AND `public` IS TRUE';
-        else $where .= ' AND `account_id` = :account_id AND `public` IS TRUE';
+        else $where .= ' AND `account_id` = :account_id';
 
         $stmt = $this->db->prepare("
             SELECT 
