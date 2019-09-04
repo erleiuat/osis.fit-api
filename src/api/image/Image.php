@@ -108,7 +108,11 @@ class Image extends ApiObject {
         if (!$obj) $obj = (array) $this;
         else if (is_object($obj)) $obj = (array) $obj;
 
-        $path = $this->getAccountPath().$obj['name'];
+        if(isset($obj["account_id"])) {
+            $path = $this->getAccountPath($obj["account_id"]).$obj['name'];
+        } else {
+            $path = $this->getAccountPath().$obj['name'];
+        }
 
         $files = [
             "full" => null,

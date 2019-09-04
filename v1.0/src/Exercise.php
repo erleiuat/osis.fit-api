@@ -191,6 +191,7 @@ class Exercise extends ApiObject {
         $img = false;
         if ($obj['account_image_name'] && $Image) {
             $img = $Image->getObject([
+                "account_id" => $obj['account_id'],
                 "id" => $obj['account_image_id'],
                 "name" => $obj['account_image_name'],
                 "mime" => $obj['account_image_mime'],
