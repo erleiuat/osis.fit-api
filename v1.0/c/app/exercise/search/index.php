@@ -25,32 +25,28 @@ try {
 
     require_once REC . 'Exercise.php';
     $Exercise = new Exercise($_DBC, $sec);
-    
-    $own = $Exercise->find($data->query, $data->bodyparts, $sec->id, false);
+    $items = [];    
 
-    foreach ($own as $key => $entry) {
-        $own[$key] = $Exercise->getSearchObject($entry);
-    }
-
-    $public = [];
     if ($data->public) {
 
-        $public = $Exercise->find($data->query, $data->bodyparts, $sec->id, true);
+        $items = $Exercise->find($data->query, $data->bodyparts, $sec->id, false);
+        
+        foreach ($items as $key => $entry) {
+            $items[$key] = $Exercise->getSearchObject($entry);
+        }
+        
+    } else if ($data->public) {
 
+        $items = $Exercise->find($data->query, $data->bodyparts, $sec->id, true);
         require_once ROOT . 'Image.php';
         $Image = new Image($_DBC, $sec);
-        foreach ($public as $key => $entry) {
-            $public[$key] = $Exercise->getSearchObject($entry, false, $Image);
+        foreach ($items as $key => $entry) {
+            $items[$key] = $Exercise->getSearchObject($entry, false, $Image);
         }
 
     }
-
-    $obj = (object) [
-        "own" => $own,
-        "public" => $public
-    ];
-
-    $_REP->addData($obj, "items");
+    
+    $_REP->addData($items, "items");
 
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------
