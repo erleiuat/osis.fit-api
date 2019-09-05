@@ -114,12 +114,33 @@ class Exercise extends ApiObject {
 
         $in  = str_repeat('?,', count($arr) - 1) . '?';
         $where = "id IN(".$in.")";
-        $stmt = $this->db->prepare("
-            SELECT * FROM 
-        ".$this->t_main." WHERE ".$where);
+        $stmt = $this->db->prepare("SELECT * FROM ".$this->t_main." WHERE ".$where);
 
         $stmt->execute($arr);
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (count($result) > 0) {
+
+            $in  = str_repeat('?,', count($arr) - 1) . '?';
+            $where = "exercise_id IN(".$in.")";
+            $stmt = $this->db->prepare("SELECT * FROM ".$this->v_use_bodypart." WHERE ".$where);
+
+            $stmt->execute($arr);
+            $bodyparts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($result as $eKey => $exe) {
+
+                $result[$eKey]['bodyparts'] = [];
+
+                foreach ($bodyparts as $key => $bp) {
+                    if ($bp['exercise_id'] === $exe['id']) {
+                        array_push($result[$eKey]['bodyparts'], $bp['bodypart_id']);
+                    }
+                }
+
+            }
+
+        }
         
         return $result;
 

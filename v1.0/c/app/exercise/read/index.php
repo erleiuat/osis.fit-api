@@ -25,7 +25,6 @@ try {
 
         $obj = $Exercise->read($data->id)->getObject();
         $obj = (object) Core::formResponse($obj);
-
         $_REP->addData($obj, "item");
 
     } else if (gettype($data->id) === 'array') {
@@ -35,8 +34,15 @@ try {
 
         $_REP->addData($obj, "items");
 
+    } else if (gettype($data->id) === 'string') {
+
+        $id = Validate::number($data->id);
+        $obj = $Exercise->read($id)->getObject();
+        $obj = (object) Core::formResponse($obj);
+        $_REP->addData($obj, "item");
+
     } else {
-        return false;
+        throw new ApiException(500, "entity_processing_error");
     }
 
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
