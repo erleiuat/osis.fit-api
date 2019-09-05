@@ -29,31 +29,8 @@ try {
     require_once REC . 'Training.php';
     $Training = new Training($_DBC, $sec);
     
-    $Training->set($data)->create();
-
-    foreach ($data->exercises as $exercise) {
-        $Training->addExercise($exercise->id, $exercise->repetitions);
-    }
-
-    $obj = $Training->read()->getObject();
+    $obj = $Training->set($data)->create()->read()->getObject();
     $obj = (object) Core::formResponse($obj);
-
-    $obj->exercises = [];
-
-    if ($Training->exercises) {
-
-        require_once REC . 'Exercise.php';
-        $Exercise = new Exercise($_DBC);
-
-        foreach ($Training->exercises as $exercise) {
-
-            $tmp = $Exercise->read($exercise['id'])->getObject();
-            $tmp->repetitions = $exercise['repetitions'];
-            array_push($obj->exercises, $tmp);
-
-        }
-
-    }
 
     $_REP->addData($obj->id, "id");
     $_REP->addData($obj, "item");

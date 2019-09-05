@@ -14,17 +14,30 @@ require_once ROOT . 'Security.php'; /* Load Security-Methods */
 try {
 
     $sec = Sec::auth($_LOG);
-
     if(!$sec->premium) throw new ApiException(401, 'premium_required');
 
-    $data = Core::getBody(['id' => ['number', true]]);
+    $data = Core::getBody(['id' => ['array', false]]);
+
     require_once REC . 'Exercise.php';
     $Exercise = new Exercise($_DBC, $sec);
-    
-    $obj = $Exercise->read($data->id)->getObject();
-    $obj = (object) Core::formResponse($obj);
 
-    $_REP->addData($obj, "item");
+    if (gettype($data->id) === 'integer') {
+
+        $obj = $Exercise->read($data->id)->getObject();
+        $obj = (object) Core::formResponse($obj);
+
+        $_REP->addData($obj, "item");
+
+    } else if (gettype($data->id) === 'array') {
+
+        $obj = $Exercise->readMultiple($data->id);
+        $obj = Core::formResponse($obj);
+
+        $_REP->addData($obj, "items");
+
+    } else {
+        return false;
+    }
 
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------

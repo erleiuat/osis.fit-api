@@ -110,6 +110,21 @@ class Exercise extends ApiObject {
 
     }
 
+    public function readMultiple($arr) {
+
+        $in  = str_repeat('?,', count($arr) - 1) . '?';
+        $where = "id IN(".$in.")";
+        $stmt = $this->db->prepare("
+            SELECT * FROM 
+        ".$this->t_main." WHERE ".$where);
+
+        $stmt->execute($arr);
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        return $result;
+
+    }
+
     public function read($id = false) {
         
         $where = ['id' => ($id ?: $this->id)];
@@ -138,10 +153,7 @@ class Exercise extends ApiObject {
 
     public function find($query, $bodyparts, $account_id, $public) {
 
-        $where = '
-        `query` LIKE :query
-        ';
-
+        $where = '`query` LIKE :query';
         if ($public) $where .= ' AND `account_id` != :account_id AND `public` IS TRUE';
         else $where .= ' AND `account_id` = :account_id';
 
