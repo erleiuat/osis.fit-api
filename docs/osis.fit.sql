@@ -440,6 +440,8 @@ CREATE VIEW `v_exercise_search` AS
         ex.public AS 'public',
         ex.title AS 'title',
         ex.description AS 'description',
+        ex.repetitions AS 'repetitions',
+        ex.calories AS 'calories',
         CONCAT(us.firstname, ' ', us.lastname) AS 'user',
         us.account_id AS 'account_id',
         img.id AS 'account_image_id',

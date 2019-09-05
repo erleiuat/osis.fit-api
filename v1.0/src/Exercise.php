@@ -147,7 +147,7 @@ class Exercise extends ApiObject {
 
         $stmt = $this->db->prepare("
             SELECT 
-            id, bodyparts, title, description, user, account_id, 
+            id, bodyparts, title, description, repetitions, calories, user, account_id, 
             account_image_id, account_image_name, account_image_mime, 
             account_image_full, account_image_small, account_image_lazy 
             FROM 
@@ -192,7 +192,7 @@ class Exercise extends ApiObject {
         if ($obj['account_image_name'] && $Image) {
             $img = $Image->getObject([
                 "account_id" => $obj['account_id'],
-                "id" => $obj['account_image_id'],
+                "id" => (int) $obj['account_image_id'],
                 "name" => $obj['account_image_name'],
                 "mime" => $obj['account_image_mime'],
                 "full" => $obj['account_image_full'],
@@ -204,11 +204,13 @@ class Exercise extends ApiObject {
         }
 
         return (object) [
-            "id" => $obj['id'],
+            "id" => (int) $obj['id'],
             "title" => $obj['title'],
             "description" => $obj['description'],
             "user" => $obj['user'],
             "bodyparts" => $obj['bodyparts'],
+            "repetitions" => (double) $obj['repetitions'],
+            "calories" => (double) $obj['calories'],
             "image" => $img
         ];
         
@@ -225,8 +227,8 @@ class Exercise extends ApiObject {
             "title" => $obj->title,
             "description" => $obj->description,
             "type" => ($obj->type? $obj->type:'other'),
-            "calories" => (double) $obj->calories || null, // TODO 
-            "repetitions" => (double) $obj->repetitions || null,
+            "calories" => (double) $obj->calories, // TODO 
+            "repetitions" => (double) $obj->repetitions,
             "bodyparts" => $obj->bodyparts,
         ];
         
