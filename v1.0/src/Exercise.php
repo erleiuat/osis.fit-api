@@ -6,6 +6,7 @@ class Exercise extends ApiObject {
     private $t_main = "exercise";
     private $t_bodypart = "bodypart";
     private $t_use_bodypart = "exercise_uses_bodypart";
+    private $t_training_use = "training_uses_exercise";
     private $v_use_bodypart = "v_exercise_bodypart";
     private $v_search = "v_exercise_search";
 
@@ -201,11 +202,21 @@ class Exercise extends ApiObject {
 
     public function delete($id = false) {
 
-        $where = ['account_id' => $this->account->id, 'id' => ($id ?: $this->id)];
+        $where = ['id' => $id, 'account_id' => $this->account->id];
+        $result = $this->db->makeSelect($this->t_main, $where);
+
+        if (count($result) !== 1) throw new ApiException(404, 'item_not_found', get_class($this));
+
+        $where = ['exercise_id' => $id];
+        $changed = $this->db->makeDelete($this->t_use_bodypart, $where);
+        $changed = $this->db->makeDelete($this->t_training_use, $where);
+
+        $where = ['id' => $id, 'account_id' => $this->account->id];
         $changed = $this->db->makeDelete($this->t_main, $where);
 
         if ($changed < 1) throw new ApiException(404, 'item_not_found', get_class($this));
         else if ($changed > 1) throw new ApiException(500, 'too_many_changed', get_class($this));
+
         return $this;
 
     }

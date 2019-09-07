@@ -5,7 +5,9 @@ class Training extends ApiObject {
     /* -------- TABLES (T) AND VIEWS (V) -------- */
     private $t_main = "training";
     private $t_uses_e = "training_uses_exercise";
+    private $t_favs = "training_favorite";
     private $v_search = "v_training_search";
+    private $v_favs = "v_training_favorites";
 
     /* ----------- BASIC PARAMS ---------- */
     protected $keys = ['id', 'public', 'title', 'description', 'exercises'];
@@ -142,7 +144,7 @@ class Training extends ApiObject {
 
         $stmt = $this->db->prepare("
             SELECT 
-            id, title, user, account_id, description,
+            id, title, user, account_id, CONCAT(SUBSTR(description, 1, 150), '...') AS description,
             account_image_id, account_image_name, account_image_mime, 
             account_image_full, account_image_small, account_image_lazy 
             FROM 
@@ -163,12 +165,66 @@ class Training extends ApiObject {
 
     public function delete($id = false) {
 
+        $where = ['id' => $id, 'account_id' => $this->account->id];
+        $result = $this->db->makeSelect($this->t_main, $where);
+
+        if (count($result) !== 1) throw new ApiException(404, 'item_not_found', get_class($this));
+        
+        $where = ['training_id' => $id];
+        $changed = $this->db->makeDelete($this->t_uses_e, $where);
+
         $where = ['account_id' => $this->account->id, 'id' => ($id ?: $this->id)];
         $changed = $this->db->makeDelete($this->t_main, $where);
-
+        
         if ($changed < 1) throw new ApiException(404, 'item_not_found', get_class($this));
         else if ($changed > 1) throw new ApiException(500, 'too_many_changed', get_class($this));
+
         return $this;
+
+    }
+
+    public function setFavorite($trainingID, $state = false) {
+
+        if ($state) {
+
+            $vals = [
+                'account_id' => $this->account->id,
+                'training_id' => $trainingID,
+            ];
+            $this->db->makeReplace($this->t_favs, $vals);
+
+        } else {
+
+            $where = ['account_id' => $this->account->id, 'training_id' => $trainingID];
+            $changed = $this->db->makeDelete($this->t_favs, $where);
+            if ($changed < 1) throw new ApiException(404, 'item_not_found', get_class($this));
+            else if ($changed > 1) throw new ApiException(500, 'too_many_changed', get_class($this));
+
+        }
+
+        return $this;
+        
+    }
+
+    public function getFavorite($id = false) {
+
+        if ($id) $where = [
+            'id' => $id,
+            'account_id' => $this->account->id
+        ];
+        else $where = [
+            'account_id' => $this->account->id
+        ];
+
+        $result = $this->db->makeSelect($this->v_favs, $where);
+        
+        if ($id) {
+            if (count($result) !== 1) throw new ApiException(404, 'item_not_found', get_class($this));
+            return $result[0];
+        } else {
+            if (count($result) < 1) throw new ApiException(204, 'no_items_found', get_class($this));
+            else return $result;
+        }
 
     }
 

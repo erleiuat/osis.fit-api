@@ -14,8 +14,6 @@ CREATE TABLE `account` (
     PRIMARY KEY (id)
 );
 
-
-
 -- ------------------------------------------------------------------------------------
 -- AUTH
 
@@ -301,6 +299,15 @@ CREATE TABLE `training_uses_exercise` (
     FOREIGN KEY (exercise_id) REFERENCES exercise(id)
 );
 
+DROP TABLE IF EXISTS `training_favorite`;
+CREATE TABLE `training_favorite` (
+    account_id          VARCHAR(40) NOT NULL,
+    training_id         INT NOT NULL,
+
+    PRIMARY KEY (account_id, training_id),
+    FOREIGN KEY (account_id) REFERENCES account(id),
+    FOREIGN KEY (training_id) REFERENCES training(id)
+);
 
 -- ------------------------------------------------------------------------------------
 -- VIEWS
@@ -400,31 +407,6 @@ CREATE VIEW `v_exercise_bodypart` AS
     LEFT JOIN bodypart AS bo ON eub.bodypart_id = bo.id;
 
 
-DROP VIEW IF EXISTS `v_training_search`;
-CREATE VIEW `v_training_search` AS
-
-    SELECT
-
-        CONCAT(tr.title, '', us.firstname, '', us.lastname) AS 'query',
-        tr.id AS 'id',
-        tr.public AS 'public',
-        tr.title AS 'title',
-        tr.description AS 'description',
-        CONCAT(us.firstname, ' ', us.lastname) AS 'user',
-        us.account_id AS 'account_id',
-        img.id AS 'account_image_id',
-        img.name AS 'account_image_name',
-        img.mime AS 'account_image_mime',
-        sz.full AS 'account_image_full',
-        sz.small AS 'account_image_small',
-        sz.lazy AS 'account_image_lazy'
-
-    FROM training AS tr
-    LEFT JOIN user AS us ON tr.account_id = us.account_id
-    LEFT JOIN image AS img ON img.id = us.image_id
-    LEFT JOIN image_sizes AS sz ON sz.image_id = img.id;
-
-
 DROP VIEW IF EXISTS `v_exercise_search`;
 CREATE VIEW `v_exercise_search` AS
 
@@ -455,3 +437,43 @@ CREATE VIEW `v_exercise_search` AS
     LEFT JOIN user AS us ON ex.account_id = us.account_id
     LEFT JOIN image AS img ON img.id = us.image_id
     LEFT JOIN image_sizes AS sz ON sz.image_id = img.id;
+    
+
+DROP VIEW IF EXISTS `v_training_search`;
+CREATE VIEW `v_training_search` AS
+
+    SELECT
+
+        CONCAT(tr.title, '', us.firstname, '', us.lastname) AS 'query',
+        tr.id AS 'id',
+        tr.public AS 'public',
+        tr.title AS 'title',
+        tr.description AS 'description',
+        CONCAT(us.firstname, ' ', us.lastname) AS 'user',
+        us.account_id AS 'account_id',
+        img.id AS 'account_image_id',
+        img.name AS 'account_image_name',
+        img.mime AS 'account_image_mime',
+        sz.full AS 'account_image_full',
+        sz.small AS 'account_image_small',
+        sz.lazy AS 'account_image_lazy'
+
+    FROM training AS tr
+    LEFT JOIN user AS us ON tr.account_id = us.account_id
+    LEFT JOIN image AS img ON img.id = us.image_id
+    LEFT JOIN image_sizes AS sz ON sz.image_id = img.id;
+
+
+DROP VIEW IF EXISTS `v_training_favorites`;
+CREATE VIEW `v_training_favorites` AS
+
+    SELECT
+
+        trfa.training_id AS 'id',
+        trfa.account_id AS 'account_id',
+        tr.title AS 'title',
+        tr.public AS 'public',
+        tr.description AS 'description'
+
+    FROM training_favorite AS trfa
+    LEFT JOIN training AS tr ON tr.id = trfa.training_id;
