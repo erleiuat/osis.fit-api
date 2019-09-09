@@ -43,8 +43,6 @@ try {
             else if ($sub->status === 'in_trial') $premium = true;
         }
 
-
-
         $actArr = [];
         require_once REC . 'Activity.php';
         $Activity = new Activity($_DBC, $token_data->account);
