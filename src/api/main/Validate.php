@@ -28,7 +28,10 @@ class Validate {
         $val = htmlspecialchars(trim($val));        
         $val = filter_var($val, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
 
-        if (!filter_var($val, FILTER_VALIDATE_FLOAT)) throw new Exception("wrong_format:(00.000)", 422);
+
+        if (!filter_var($val, FILTER_VALIDATE_FLOAT)) {
+            if ($min && $val < $min) throw new Exception("wrong_format:(00.000)", 422);
+        }
         if ($min && $val < $min) throw new Exception("size_min:" . $min, 422);
         if ($max && $val > $max) throw new Exception("size_max:" . $max, 422);
         

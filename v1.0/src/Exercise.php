@@ -12,7 +12,7 @@ class Exercise extends ApiObject {
 
     /* ----------- BASIC PARAMS ---------- */
     protected $keys = [
-        'id', 'public', 'title', 'description', 
+        'id', 'public', 'title', 'description', 'content',
         'type', 'calories', 'repetitions', 'bodyparts'
     ];
 
@@ -21,6 +21,7 @@ class Exercise extends ApiObject {
 
     public $title;
     public $description;
+    public $content;
     public $type;
     public $calories;
     public $repetitions;
@@ -34,6 +35,7 @@ class Exercise extends ApiObject {
             'title' => null,
             'public' => null,
             'description' => null,
+            'content' => null,
             'type' => null,
             'calories' => null,
             'repetitions' => null
@@ -74,6 +76,7 @@ class Exercise extends ApiObject {
             'title' => null,
             'public' => null,
             'description' => null,
+            'content' => null,
             'type' => null,
             'calories' => null,
             'repetitions' => null
@@ -253,8 +256,8 @@ class Exercise extends ApiObject {
             "description" => $obj['description'],
             "user" => $obj['user'],
             "bodyparts" => $obj['bodyparts'],
-            "repetitions" => (double) $obj['repetitions'],
-            "calories" => (double) $obj['calories'],
+            "repetitions" => ($obj["repetitions"] ? (double) $obj["repetitions"] : null),
+            "calories" => ($obj["calories"] ? (double) $obj["calories"] : null),
             "image" => $img
         ];
         
@@ -270,9 +273,10 @@ class Exercise extends ApiObject {
             "public" => (boolean) $obj->public,
             "title" => $obj->title,
             "description" => $obj->description,
+            "content" => $obj->content,
             "type" => ($obj->type? $obj->type:'other'),
-            "calories" => (double) $obj->calories, // TODO 
-            "repetitions" => (double) $obj->repetitions,
+            "calories" => ($obj->calories ? (double) $obj->calories : null),
+            "repetitions" => ($obj->repetitions ? (double) $obj->repetitions : null),
             "bodyparts" => $obj->bodyparts,
         ];
         

@@ -242,7 +242,8 @@ CREATE TABLE `exercise` (
     public              BOOLEAN NOT NULL DEFAULT 0,
 
     title               VARCHAR(150) NOT NULL,
-    description         TEXT,
+    description         TINYTEXT,
+    content             LONGTEXT,
     type                ENUM('strength','stamina','fitness','flexibility','coordination','other') NOT NULL DEFAULT 'other',
     calories            FLOAT,
     repetitions         FLOAT,

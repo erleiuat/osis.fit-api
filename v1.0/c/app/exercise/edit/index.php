@@ -22,6 +22,7 @@ try {
         'public' => ['boolean', false],
         'title' => ['string', true, ['max' => 150]],
         'description' => ['string', false],
+        'content' => ['string', false],
         'type' => ['string', true],
         'calories' => ['number', false],
         'repetitions' => ['number', false],

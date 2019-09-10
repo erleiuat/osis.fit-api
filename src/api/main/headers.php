@@ -10,8 +10,21 @@ set_error_handler(function($errno, $errstr, $errfile, $errline ){
 
 date_default_timezone_set(Env_api::timezone);
 
-header("Content-Type: " . (defined("CTYPE") ? CTYPE : "application/json; charset=UTF-8"));
+/* TODO
+if(isset($_SERVER['HTTP_REFERER'])){
+    print_r($_SERVER['HTTP_REFERER'].'<br/>');
+}
+if(isset($_SERVER['HTTP_HOST'])){
+    print_r($_SERVER['HTTP_HOST'].'<br/>');
+}
+if(isset($_SERVER['HTTP_ORIGIN'])){
+    print_r($_SERVER['HTTP_ORIGIN'].'<br/>');
+}
+die();
+*/
 header("Access-Control-Allow-Origin: " . Env_api::cors);
+
+header("Content-Type: " . (defined("CTYPE") ? CTYPE : "application/json; charset=UTF-8"));
 header("Access-Control-Allow-Methods: " . (defined("AMETHS") ? AMETHS : "POST, GET"));
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
