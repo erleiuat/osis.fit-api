@@ -19,64 +19,59 @@ try {
     if(!$sec->premium) throw new ApiException(401, 'premium_required');
 
     $url = "https://world.openfoodfacts.org/api/v0/product/".$data->code.".json";
-
     $response = file_get_contents($url);
-
     $response = json_decode($response);
+    $product = $response->product;
 
-    $_REP->addData($response->product->product_name, "content");
+    $item = [
+        "id" => null,
+        "title" => null,
+        "image" => null,
+        "caloriesPer100" => null,
+        "amount" => null,
+        "total" => null
+    ];
 
-    /*
-    $arr = [];
+    if(isset($product->nutriments)) {
 
-    foreach($response->products as $product){
-        if(isset($product->nutriments)) {
-            $nut = $product->nutriments;
+        $nut = $product->nutriments;
 
-            $serving_size = 100;
-            $energy_unit = null;
+        $serving_size = 100;
+        $energy_unit = null;
 
-            $energy_100g = null;
-            $energy = null;
-            $energy_serving = null;
+        $energy_100g = null;
+        $energy = null;
+        $energy_serving = null;
 
-            if (isset($product->serving_size)) {
-                if ($product->serving_size > 0) $serving_size = intval($product->serving_size);
-            }
-            if (isset($nut->energy_unit)) $energy_unit = $nut->energy_unit;
-
-            if (isset($nut->energy_100g)) $energy_100g = $nut->energy_100g;
-            else break;
-
-            if($energy_unit === "kJ") {
-                $energy_100g = round($energy_100g / 4.184, 2);
-            }
-
-            $caloriesPer100 = ($energy_100g > 0 ? $energy_100g : null);
-            $amount = $serving_size;
-            $calories = round($serving_size * ($energy_100g/100), 2);
-
-            if ($calories <= 0) $calories = null;
-
-            $tmp = [
-                "id" => $product->code,
-                "title" => $product->product_name,
-                "image" => (isset($product->image_url) ? $product->image_url : null),
-                "caloriesPer100" => $caloriesPer100,
-                "amount" => $amount,
-                "total" => $calories
-            ];
-
-            array_push($arr, $tmp);
-
+        if (isset($product->serving_size)) {
+            if ($product->serving_size > 0) $serving_size = intval($product->serving_size);
         }
+        if (isset($nut->energy_unit)) $energy_unit = $nut->energy_unit;
+
+        if (isset($nut->energy_100g)) $energy_100g = $nut->energy_100g;
+
+        if($energy_unit === "kJ") {
+            $energy_100g = round($energy_100g / 4.184, 2);
+        }
+
+        $caloriesPer100 = ($energy_100g > 0 ? $energy_100g : null);
+        $amount = $serving_size;
+        $calories = round($serving_size * ($energy_100g/100), 2);
+
+        if ($calories <= 0) $calories = null;
+
+        $item = [
+            "id" => $product->code,
+            "title" => $product->product_name,
+            "image" => (isset($product->image_url) ? $product->image_url : null),
+            "caloriesPer100" => $caloriesPer100,
+            "amount" => $amount,
+            "total" => $calories
+        ];
 
     }
 
-    $_REP->addData(count($arr), "total");
-    $_REP->addData($arr, "items");
-
-    */
+    $_REP->addData($item, "item");
 
 } catch (\Exception $e) { 
     Core::processException($_REP, $_LOG, $e); 
