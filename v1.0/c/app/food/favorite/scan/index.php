@@ -21,6 +21,11 @@ try {
     $url = "https://world.openfoodfacts.org/api/v0/product/".$data->code.".json";
     $response = file_get_contents($url);
     $response = json_decode($response);
+
+    if ($response->status === 0) {
+        throw new ApiException(404, 'code_not_found');
+    }
+
     $product = $response->product;
 
     $item = [
