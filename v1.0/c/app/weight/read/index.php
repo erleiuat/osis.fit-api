@@ -24,7 +24,9 @@ try {
 
     $arr = [];
     $entries = $Weight->readByDate($data->from, $data->to);
-    foreach ($entries as $entry) array_push($arr, $Weight->getObject($entry));
+    foreach ($entries as $entry) {
+        array_push($arr, $Weight->getObject($entry));
+    }
 
     $_REP->addData(count($arr), "total");
     $_REP->addData($arr, "items");
