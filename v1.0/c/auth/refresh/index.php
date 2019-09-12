@@ -16,7 +16,7 @@ try {
     $token = Sec::decode(Core::getBody([
         'token' => ['string', true, ['min' => 1]]
     ])->token, Env_sec::t_refresh_secret);
-    
+
     require_once ROOT . 'Authentication.php';
     $Auth = new Auth($_DBC);
 
