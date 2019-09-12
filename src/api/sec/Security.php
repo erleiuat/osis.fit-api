@@ -7,9 +7,9 @@ class Sec {
     public static function auth($LOG = false) {
 
         if (!isset(getallheaders()['Authorization'])) {
-            throw new ApiException(403, "token_missing", "app");
+            throw new ApiException(403, "token_missing_app", "app");
         } else if (!isset($_COOKIE[Env_sec::c_name])) {
-            throw new ApiException(403, "token_missing", "secure");
+            throw new ApiException(403, "token_missing_secure", "secure");
         }
 
         list($type, $data) = explode(" ", getallheaders()['Authorization'], 2);
