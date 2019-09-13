@@ -105,7 +105,7 @@ class Sec {
             Env_sec::c_name, 
             $c["data"], 
             $c["exp"], 
-            Env_sec::c_path, 
+            "/"
             //Env_sec::c_domain, TODO
             //Env_sec::c_secure, 
             //TRUE
