@@ -1,4 +1,7 @@
 <?php
+if (!isset($_COOKIE["iosCookieApprove"])) {
+    setcookie("iosCookieApprove", "yes");
+}
 
 error_reporting(Env_api::error_reports);
 
