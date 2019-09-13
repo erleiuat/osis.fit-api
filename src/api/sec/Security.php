@@ -111,7 +111,7 @@ class Sec {
             //TRUE
         );
 
-        if (isset($_COOKIE[Env_sec::c_name])) return (object) [
+        return (object) [
             "access" => $jwt_app,
             "refresh" => $jwt_refresh
         ];
