@@ -103,8 +103,8 @@ class Sec {
 
         setcookie(
             Env_sec::c_name, 
-            $c["data"], 
-            $c["exp"], 
+            "$jwt_sec", 
+            time()+28800, 
             "/"
             //Env_sec::c_domain, TODO
             //Env_sec::c_secure, 
