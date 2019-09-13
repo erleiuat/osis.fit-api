@@ -101,7 +101,7 @@ class Sec {
             "exp" => $now + Env_sec::t_access_lifetime
         ];
 
-        $cookie = setcookie(
+        setcookie(
             Env_sec::c_name, 
             $c["data"], 
             $c["exp"], 
@@ -111,7 +111,7 @@ class Sec {
             //TRUE
         );
 
-        if ($cookie) return (object) [
+        if (isset($_COOKIE[Env_sec::c_name])) return (object) [
             "access" => $jwt_app,
             "refresh" => $jwt_refresh
         ];
