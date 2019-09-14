@@ -9,8 +9,8 @@ class Sec {
         if (!isset(getallheaders()['Authorization'])) {
             throw new ApiException(403, "token_missing_app", "app");
         } else if (!isset($_COOKIE[Env_sec::c_name])) {
-            $LOG->addInfo("no_sec_cookie"); // APPLE WORKAROUND
-            // throw new ApiException(403, "token_missing_secure", "secure");
+            //$LOG->addInfo("no_sec_cookie"); // APPLE WORKAROUND
+            throw new ApiException(403, "token_missing_secure", "secure");
         }
 
         list($type, $data) = explode(" ", getallheaders()['Authorization'], 2);
@@ -19,14 +19,8 @@ class Sec {
         }
 
         $access = Sec::decode($data, Env_sec::t_access_secret);
-
-        if (isset($_COOKIE[Env_sec::c_name])) {
-            $secure = Sec::decode($_COOKIE[Env_sec::c_name], Env_sec::t_secure_secret);
-            $phrase = $secure->data->phrase2 . $access->data->phrase1;
-        } else {
-            $phrase = $access->data->phrase2 . $access->data->phrase1;
-        }
-        
+        $secure = Sec::decode($_COOKIE[Env_sec::c_name], Env_sec::t_secure_secret);
+        $phrase = $secure->data->phrase . $access->data->phrase;
 
         if (!password_verify(Env_sec::phrase . $access->data->account->mail, $phrase)) {
             throw new ApiException(403, "token_invalid", "phrase_wrong");
@@ -69,15 +63,14 @@ class Sec {
         $jwt_sec = JWT::encode($def + [
             "exp" => $now + Env_sec::t_secure_lifetime,
             "data" => [
-                "phrase2" => substr($phrase, 0, $half)
+                "phrase" => substr($phrase, 0, $half)
             ]
         ], Env_sec::t_secure_secret);
 
         $jwt_app = JWT::encode($def + [
             "exp" => $now + Env_sec::t_access_lifetime,
             "data" => [
-                "phrase1" => substr($phrase, $half),
-                "phrase2" => substr($phrase, 0, $half),
+                "phrase" => substr($phrase, $half),
                 "level" => $data->level,
                 "account" => [
                     "id" => $data->account->id,
@@ -108,21 +101,8 @@ class Sec {
             "exp" => $now + Env_sec::t_access_lifetime
         ];
 
-        /*
+        
         //setcookie("secureToken", $token, $expire, "/", $conf['domain'], $conf['secure'], true);
-
-        $cookieName = Env_sec::c_name;
-        $cookie = setcookie(    
-            Env_sec::c_name, 
-            $jwt_sec, 
-            time()+28800, 
-            "/"
-            //Env_sec::c_domain, TODO
-            //Env_sec::c_secure, 
-            //TRUE
-        );
-        */
-
         $cookie = setcookie(Env_sec::c_name, $c["data"], $c["exp"], Env_sec::c_path, Env_sec::c_domain, Env_sec::c_secure, true);
 
         if ($cookie) return (object) [
