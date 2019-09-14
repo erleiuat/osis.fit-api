@@ -318,7 +318,7 @@ CREATE VIEW `v_log_detailed` AS
 
     SELECT
 
-        lo.id AS 'id',
+        date(lo.stamp) AS 'date',
         CONCAT(us.firstname, ' ', us.lastname) AS 'user',
         lo.level AS 'level',
         lo.process AS 'process',
@@ -327,6 +327,7 @@ CREATE VIEW `v_log_detailed` AS
         acc.username AS 'username',
         lo.stamp AS 'stamp',
         lo.identity AS 'identity',
+        lo.id AS 'id',
         lo.trace AS 'trace'
 
     FROM log AS lo
@@ -374,6 +375,23 @@ CREATE VIEW `v_user` AS
     FROM account AS acc
     LEFT JOIN user AS us ON us.account_id = acc.id
     LEFT JOIN user_detail AS de ON de.account_id = acc.id;
+
+
+DROP VIEW IF EXISTS `v_user_detailed`;
+CREATE VIEW `v_user_detailed` AS
+
+    SELECT
+
+        CONCAT(us.firstname, ' ', us.lastname) AS 'name',
+        acc.mail AS 'mail',
+        au.status AS 'status',
+        au.subscription AS 'subscription',
+        au.login_stamp AS 'login',
+        acc.id AS 'id'
+
+    FROM account AS acc
+    LEFT JOIN user AS us ON us.account_id = acc.id
+    LEFT JOIN auth AS au ON au.account_id = acc.id;
 
 
 DROP VIEW IF EXISTS `v_image`;
