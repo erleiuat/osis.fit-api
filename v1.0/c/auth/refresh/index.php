@@ -16,6 +16,7 @@ try {
     $token = Sec::decode(Core::getBody([
         'token' => ['string', true, ['min' => 1]]
     ])->token, Env_sec::t_refresh_secret);
+    $_LOG->addInfo($token->data->mail);
 
     require_once ROOT . 'Authentication.php';
     $Auth = new Auth($_DBC);
@@ -30,6 +31,8 @@ try {
         $Auth->refresh($jti, $phrase);
 
         $token_data = $Auth->token();
+        $_LOG->setuser($token_data->account);
+
         $sec = Sec::placeAuth($token_data);
         $_REP->addData($sec, "tokens");
 
@@ -40,9 +43,6 @@ try {
             else if ($sub->status === 'non_renewing') $premium = true;
             else if ($sub->status === 'in_trial') $premium = true;
         }
-
-        
-
 
         $actArr = [];
         require_once REC . 'Activity.php';
@@ -74,8 +74,6 @@ try {
             $usr->image = $Image->read($usr->image)->getObject();
         } else $usr->image = false;
         $_REP->addData($usr, "user");
-
-
 
     } else {
         if ($Auth->status === "locked") throw new ApiException(403, "account_locked");

@@ -17,6 +17,7 @@ try {
         'mail' => ['mail', true, ['min' => 1, 'max' => 90]],
         'code' => ['string', true]
     ]);
+    $_LOG->addInfo($data->mail);
 
     require_once ROOT . 'Authentication.php';
     $Auth = new Auth($_DBC);

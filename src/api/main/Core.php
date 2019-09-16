@@ -66,7 +66,9 @@ class Core {
     public static function processException($rep, $log, $e) {
         if (get_class($e) === 'ApiException') {
             $rep->setStatus((($e->getCode()) ? $e->getCode() : 500), $e->getMessage(), $e->getDetail());
-            $log->setStatus('error', "(" . (($e->getCode()) ? $e->getCode() : 500) . ") APIEXCEPTION Catched: | " . $e->getMessage() . " | " . (($e->getDetail()) ? $e->getDetail() : null));
+            if ($e->getCode() === 204) $tLevel = 'trace';
+            else $tLevel = 'error';
+            $log->setStatus($tLevel, "(" . (($e->getCode()) ? $e->getCode() : 500) . ") APIEXCEPTION Catched: | " . $e->getMessage() . " | " . (($e->getDetail()) ? $e->getDetail() : null));
         } else {
             $rep->setStatus((($e->getCode()) ? $e->getCode() : 500), $e->getMessage());
             $log->setStatus('fatal', "(" . (($e->getCode()) ? $e->getCode() : 500) . ") Catched: | " . $e->getMessage() . " | ");

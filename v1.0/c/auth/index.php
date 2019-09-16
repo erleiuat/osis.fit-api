@@ -32,6 +32,7 @@ try {
         $Auth->initRefresh($jti, $phrase);
 
         $token_data = $Auth->token();
+        $_LOG->setuser($token_data->account);
         $sec = Sec::placeAuth($token_data);
         $_REP->addData($sec, "tokens");
 

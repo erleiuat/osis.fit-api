@@ -319,16 +319,16 @@ CREATE VIEW `v_log_detailed` AS
     SELECT
 
         date(lo.stamp) AS 'date',
+        TIME_FORMAT(lo.stamp, '%H:%i') AS 'time',
         CONCAT(us.firstname, ' ', us.lastname) AS 'user',
         lo.level AS 'level',
         lo.process AS 'process',
         lo.information AS 'information',
-        acc.mail AS 'mail',
-        acc.username AS 'username',
         lo.stamp AS 'stamp',
         lo.identity AS 'identity',
         lo.id AS 'id',
-        lo.trace AS 'trace'
+        lo.trace AS 'trace',
+        acc.id AS 'user_id'
 
     FROM log AS lo
     LEFT JOIN account AS acc ON lo.account_id = acc.id
