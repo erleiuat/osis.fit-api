@@ -28,6 +28,8 @@ try {
         
         if (!$Auth->pass($data->password)) throw new ApiException(403, "password_wrong");
 
+        if ($sec->premium) throw new ApiException(403, 'user_has_premium');
+
         require_once ROOT . 'AccountPortal.php';
         $Account = new AccountPortal($_DBC, $Auth->getAccount());
         $Account->disable($Auth->id);
