@@ -28,7 +28,7 @@ try {
 
         $obj = $Exercise->read($data->id)->getObject();
         if ($obj->image && $sec->premium) {
-            $obj->image = $Image->read($obj->image)->getObject();
+            $obj->image = $Image->read($obj->image, true)->getObject();
         } else $obj->image = false;
         $obj = (object) Core::formResponse($obj);
         $_REP->addData($obj, "item");
@@ -45,7 +45,7 @@ try {
         $id = Validate::number($data->id);
         $obj = $Exercise->read($id)->getObject();
         if ($obj->image && $sec->premium) {
-            $obj->image = $Image->read($obj->image)->getObject();
+            $obj->image = $Image->read($obj->image, true)->getObject();
         } else $obj->image = false;
         $obj = (object) Core::formResponse($obj);
         $_REP->addData($obj, "item");

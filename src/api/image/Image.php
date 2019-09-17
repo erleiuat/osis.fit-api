@@ -56,13 +56,19 @@ class Image extends ApiObject {
 
     }
 
-    public function read($id = false) {
+    public function read($id = false, $public = false) {
         if(!$id) $id = $this->id;
 
-        $where = ['account_id' => $this->account->id, 'id' => ($id ?: $this->id)];
+        $where = ['id' => ($id ?: $this->id)];
         $result = $this->db->makeSelect($this->v_info, $where);
 
         if (count($result) !== 1) throw new ApiException(404, 'item_not_found', get_class($this));
+
+        if ($public) {
+            $this->setAccount([
+                "id" => $result[0]['account_id']
+            ]);
+        }
 
         $this->set($result[0]);
         $this->stampAccess();
