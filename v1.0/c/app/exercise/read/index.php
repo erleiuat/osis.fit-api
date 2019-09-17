@@ -12,18 +12,24 @@ require_once ROOT . 'Security.php'; /* Load Security-Methods */
 
 // ------------------ SCRIPT -----------------
 try {
-
+    
     $sec = Sec::auth($_LOG);
     if(!$sec->premium) throw new ApiException(401, 'premium_required');
-
+    
     $data = Core::getBody(['id' => ['array', false]]);
-
+    
     require_once REC . 'Exercise.php';
     $Exercise = new Exercise($_DBC, $sec);
+    require_once ROOT . 'Image.php';
+    $Image = new Image($_DBC, $sec);
+
 
     if (gettype($data->id) === 'integer') {
 
         $obj = $Exercise->read($data->id)->getObject();
+        if ($obj->image && $sec->premium) {
+            $obj->image = $Image->read($obj->image)->getObject();
+        } else $obj->image = false;
         $obj = (object) Core::formResponse($obj);
         $_REP->addData($obj, "item");
 
@@ -38,6 +44,9 @@ try {
 
         $id = Validate::number($data->id);
         $obj = $Exercise->read($id)->getObject();
+        if ($obj->image && $sec->premium) {
+            $obj->image = $Image->read($obj->image)->getObject();
+        } else $obj->image = false;
         $obj = (object) Core::formResponse($obj);
         $_REP->addData($obj, "item");
 

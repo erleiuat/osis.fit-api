@@ -9,6 +9,7 @@ Core::startAsync(); /* Start Async-Request */
 
 // --------------- DEPENDENCIES --------------
 require_once ROOT . 'Security.php'; /* Load Security-Methods */
+require_once ROOT . 'Image.php';
 
 // ------------------ SCRIPT -----------------
 try {
@@ -20,13 +21,19 @@ try {
     $data = Core::getBody([
         'public' => ['boolean', false],
         'title' => ['string', true, ['max' => 150]],
+        'imageID' => ['number', false],
         'description' => ['string', false],
         'content' => ['string', false],
         'type' => ['string', true],
         'calories' => ['number', false],
-        'repetitions' => ['number', false],
         'bodyparts' => ['array', false]
     ]);
+
+    if ($data->imageID && $sec->premium) {
+        $Image = new Image($_DBC, $sec);
+        //$data->image = $Image->set(['id'=>$data->imageID])->read()->getObject();
+        $data->image = (object) ["id" => $data->imageID];
+    }
 
     if (!Sec::permit($sec->level, ['moderator', 'admin'])) $data->public = false;
 
@@ -34,6 +41,10 @@ try {
     $Exercise = new Exercise($_DBC, $sec);
     
     $obj = $Exercise->set($data)->create()->read()->getObject();
+    if ($obj->image && $sec->premium) {
+        $obj->image = $Image->read($obj->image->id)->getObject();
+    } else $obj->image = false;
+    
     $obj = (object) Core::formResponse($obj);
 
     $_REP->addData($obj->id, "id");

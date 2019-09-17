@@ -237,6 +237,7 @@ CREATE TABLE `ulog_activity` (
 DROP TABLE IF EXISTS `exercise`;
 CREATE TABLE `exercise` (
     account_id          VARCHAR(40) NOT NULL,
+    image_id            INT,
 
     id                  INT NOT NULL AUTO_INCREMENT,
     public              BOOLEAN NOT NULL DEFAULT 0,
@@ -246,9 +247,9 @@ CREATE TABLE `exercise` (
     content             LONGTEXT,
     type                ENUM('strength','stamina','fitness','flexibility','coordination','other') NOT NULL DEFAULT 'other',
     calories            FLOAT,
-    repetitions         FLOAT,
 
     PRIMARY KEY (id, account_id),
+    FOREIGN KEY (image_id) REFERENCES image(id),
     FOREIGN KEY (account_id) REFERENCES account(id)
 );
 
@@ -293,7 +294,7 @@ CREATE TABLE `training_uses_exercise` (
     training_id         INT NOT NULL,
     exercise_id         INT NOT NULL,
 
-    repetitions         FLOAT,
+    duration            TIME,
 
     PRIMARY KEY (id, training_id, exercise_id),
     FOREIGN KEY (training_id) REFERENCES training(id),
@@ -441,7 +442,6 @@ CREATE VIEW `v_exercise_search` AS
         ex.public AS 'public',
         ex.title AS 'title',
         ex.description AS 'description',
-        ex.repetitions AS 'repetitions',
         ex.calories AS 'calories',
         CONCAT(us.firstname, ' ', us.lastname) AS 'user',
         us.account_id AS 'account_id',

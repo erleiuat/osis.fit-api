@@ -36,13 +36,13 @@ class Training extends ApiObject {
 
             $sql = "
             INSERT INTO ".$this->t_uses_e." 
-            (`training_id`, `exercise_id`, `repetitions`) VALUES 
+            (`training_id`, `exercise_id`, `duration`) VALUES 
             ";
 
             $i = 0;
             $values = [];
             foreach ($this->exercises as $exercise) {
-                array_push($values, [$this->id, $exercise->id, $exercise->repetitions]);
+                array_push($values, [$this->id, $exercise->id, $exercise->duration]);
                 if ($i > 0) $sql .= ", ";
                 $sql .= "(?, ?, ?)";
                 $i++;
@@ -83,7 +83,7 @@ class Training extends ApiObject {
 
         $arr = [];
         foreach ($result as $value) {
-            array_push($arr, ["id" => (int)$value['exercise_id'], "repetitions" => (int)$value['repetitions']]);
+            array_push($arr, ["id" => (int)$value['exercise_id'], "duration" => date("H:i", strtotime($value['duration']))]);
         }
         $this->exercises = $arr;
 
@@ -110,13 +110,13 @@ class Training extends ApiObject {
 
             $sql = "
             REPLACE INTO ".$this->t_uses_e." 
-            (`training_id`, `exercise_id`, `repetitions`) VALUES 
+            (`training_id`, `exercise_id`, `duration`) VALUES 
             ";
 
             $i = 0;
             $values = [];
             foreach ($this->exercises as $exercise) {
-                array_push($values, [$this->id, $exercise->id, $exercise->repetitions]);
+                array_push($values, [$this->id, $exercise->id, $exercise->duration]);
                 if ($i > 0) $sql .= ", ";
                 $sql .= "(?, ?, ?)";
                 $i++;

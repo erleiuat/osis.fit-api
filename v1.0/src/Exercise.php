@@ -13,18 +13,18 @@ class Exercise extends ApiObject {
     /* ----------- BASIC PARAMS ---------- */
     protected $keys = [
         'id', 'public', 'title', 'description', 'content',
-        'type', 'calories', 'repetitions', 'bodyparts'
+        'type', 'calories', 'image', 'bodyparts'
     ];
 
     public $id;
     public $public;
 
     public $title;
+    public $image;
     public $description;
     public $content;
     public $type;
     public $calories;
-    public $repetitions;
     public $bodyparts;
 
     /* ----------------- METHODS ---------------- */
@@ -38,7 +38,7 @@ class Exercise extends ApiObject {
             'content' => null,
             'type' => null,
             'calories' => null,
-            'repetitions' => null
+            'image_id' => (isset($this->image->id) ? $this->image->id : null),
         ], (array) $this->getObject());
         $this->db->makeInsert($this->t_main, $vals);
         $this->id = $this->db->conn->lastInsertId();      
@@ -79,7 +79,7 @@ class Exercise extends ApiObject {
             'content' => null,
             'type' => null,
             'calories' => null,
-            'repetitions' => null
+            'image_id' => (isset($this->image->id) ? $this->image->id : null)
         ], (array) $this->getObject());
         
         $changed = $this->db->makeUpdate($this->t_main, $vals, $where);
@@ -161,7 +161,17 @@ class Exercise extends ApiObject {
             if ($result[0]["account_id"] !== $this->account->id) throw new ApiException(401, 'item_not_public', get_class($this));
         }
 
-        $this->set($result[0]);
+        $this->set(Core::mergeAssign([
+            'id' => null, 
+            'image' => $result[0]['image_id'], 
+            'account_id' => null,
+            'public' => null, 
+            'title' => null, 
+            'description' => null, 
+            'content' => null, 
+            'type' => null, 
+            'calories' => null
+        ], $result[0]));
 
         $where = ['exercise_id' => ($id ?: $this->id)];
         $result = $this->db->makeSelect($this->v_use_bodypart, $where);
@@ -184,7 +194,7 @@ class Exercise extends ApiObject {
 
         $stmt = $this->db->prepare("
             SELECT 
-            id, bodyparts, title, description, repetitions, calories, user, account_id, 
+            id, bodyparts, title, description, calories, user, account_id, 
             account_image_id, account_image_name, account_image_mime, 
             account_image_full, account_image_small, account_image_lazy 
             FROM 
@@ -256,7 +266,6 @@ class Exercise extends ApiObject {
             "description" => $obj['description'],
             "user" => $obj['user'],
             "bodyparts" => $obj['bodyparts'],
-            "repetitions" => ($obj["repetitions"] ? (double) $obj["repetitions"] : null),
             "calories" => ($obj["calories"] ? (double) $obj["calories"] : null),
             "image" => $img
         ];
@@ -270,13 +279,13 @@ class Exercise extends ApiObject {
 
         return (object) [
             "id" => (int) $obj->id,
+            "image" => (isset($obj->image) ? $obj->image : false),
             "public" => (boolean) $obj->public,
             "title" => $obj->title,
             "description" => $obj->description,
             "content" => $obj->content,
             "type" => ($obj->type? $obj->type:'other'),
             "calories" => ($obj->calories ? (double) $obj->calories : null),
-            "repetitions" => ($obj->repetitions ? (double) $obj->repetitions : null),
             "bodyparts" => $obj->bodyparts,
         ];
         
