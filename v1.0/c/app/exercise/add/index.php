@@ -42,7 +42,7 @@ try {
     
     $obj = $Exercise->set($data)->create()->read()->getObject();
     if ($obj->image && $sec->premium) {
-        $obj->image = $Image->read($obj->image->id)->getObject();
+        $obj->image = $Image->read($obj->image)->getObject();
     } else $obj->image = false;
     
     $obj = (object) Core::formResponse($obj);
