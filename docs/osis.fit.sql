@@ -244,7 +244,7 @@ CREATE TABLE `exercise` (
 
     title               VARCHAR(150) NOT NULL,
     description         TINYTEXT,
-    content             LONGTEXT,
+    content             TEXT,
     type                ENUM('strength','stamina','fitness','flexibility','coordination','other') NOT NULL DEFAULT 'other',
     calories            FLOAT,
 

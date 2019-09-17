@@ -2,6 +2,7 @@ ALTER TABLE `exercise` ADD `image_id` INT NULL DEFAULT NULL AFTER `account_id`;
 ALTER TABLE `exercise` ADD CONSTRAINT image_id FOREIGN KEY (image_id) REFERENCES image(id);
 ALTER TABLE `exercise` DROP `repetitions`;
 
+ALTER TABLE `exercise` CHANGE `content` `content` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
 ALTER TABLE `training_uses_exercise` CHANGE `repetitions` `duration` TIME NULL DEFAULT NULL;
 
 DROP VIEW IF EXISTS `v_exercise_search`;
