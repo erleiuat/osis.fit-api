@@ -68,7 +68,13 @@ class Core {
             $rep->setStatus((($e->getCode()) ? $e->getCode() : 500), $e->getMessage(), $e->getDetail());
             if ($e->getCode() === 204) $tLevel = 'trace';
             else $tLevel = 'error';
-            $log->setStatus($tLevel, "(" . (($e->getCode()) ? $e->getCode() : 500) . ") APIEXCEPTION Catched: | " . $e->getMessage() . " | " . (($e->getDetail()) ? $e->getDetail() : null));
+            $log->setStatus(
+                $tLevel, 
+                "(" . (($e->getCode()) ? $e->getCode() : 500) . 
+                ") APIEXCEPTION Catched: | " . $e->getMessage() . 
+                " | " . ($e->getDetail() ? 
+                json_encode($e->getDetail()) : null)
+            );
         } else {
             $rep->setStatus((($e->getCode()) ? $e->getCode() : 500), $e->getMessage());
             $log->setStatus('fatal', "(" . (($e->getCode()) ? $e->getCode() : 500) . ") Catched: | " . $e->getMessage() . " | ");
