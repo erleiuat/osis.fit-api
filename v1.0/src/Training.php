@@ -144,7 +144,7 @@ class Training extends ApiObject {
 
         $stmt = $this->db->prepare("
             SELECT 
-            id, title, user, account_id, CONCAT(SUBSTR(description, 1, 150), '...') AS description,
+            id, title, user, account_id, description,
             account_image_id, account_image_name, account_image_mime, 
             account_image_full, account_image_small, account_image_lazy 
             FROM 
