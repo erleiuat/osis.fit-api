@@ -26,7 +26,7 @@ try {
     $img->setDimension(10000, 10000); 
     $img->setMime(['jpeg', 'png']);
     
-    $dir = date('Y_m_d_H_i_s-').$img->getName();
+    $dir = date('Y_m_d_H_i_s');
     $path = ROOT ."/". Env_img::path."/".Env_img::folder."/".hash('ripemd160', $sec->id)."/".$dir;
     
     if(!mkdir($path, 0777, true)) throw new ApiException(403, 'dir_creation_failed');
