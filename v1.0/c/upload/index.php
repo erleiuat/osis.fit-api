@@ -47,7 +47,7 @@ try {
     unset($img);
 
     rename ($original.".".$mime, $original);
-    if ($mime === 'jpeg') Img::correctOrientation($original);
+    //if ($mime === 'jpeg') Img::correctOrientation($original);
     
     $full = Img::generate($original, Env_img::full, $mime);
     Img::generate($full, Env_img::lazy);
