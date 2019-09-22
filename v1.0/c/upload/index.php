@@ -97,6 +97,7 @@ try {
 
 } catch (\Exception $e) {
     $_LOG->addInfo($e);
+    $_LOG->write();
 }
 
 $Image->setSizes($done);
