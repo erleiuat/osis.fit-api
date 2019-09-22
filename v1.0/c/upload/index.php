@@ -38,7 +38,7 @@ try {
         if($img->getSize() >= Env_img::size["max"]){
             throw new ApiException(500, 'img_upload_error_full', 'file_too_large');
         } else {
-            throw new ApiException(500, 'img_upload_error_full', $img->getError());
+            throw new ApiException(500, 'img_upload_error_full', 'other');
         }
     }
     
