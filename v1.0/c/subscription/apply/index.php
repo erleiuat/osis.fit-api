@@ -28,7 +28,7 @@ try {
     $hostedPage = $result->hostedPage()->getValues();
     $output = (object) $hostedPage['content']['subscription'];
 
-    if($sec->id === $output->customer_id){
+    if ($sec->id === $output->customer_id){
         $Auth->addSubscription($output->id);
     }
 

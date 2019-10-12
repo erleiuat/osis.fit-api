@@ -22,13 +22,36 @@ try {
     if (!password_verify($pass, ENV_sec::sub_hook_pass)) throw new ApiException(403, "wrong_pass", "basic_auth");
     
     $data = json_decode(file_get_contents("php://input"));
-    if (isset($data->event_type)) {
-        if($data->event_type === "subscription_created") {
-            $_REP->addData('subscription_created', "happening");
+
+    if (!isset($data->event_type)) throw new ApiException(500, "missing", "event_type");
+
+    $_LOG->addInfo("EVENT:".$data->event_type);
+
+    require_once ROOT . 'Authentication.php';
+    $Auth = new Auth($_DBC);
+
+    if ($data->event_type === "subscription_created") {
+
+        $info = $data->content->subscription;
+        $aInfo = $Auth->getAccountInfo($info->customer_id);
+
+        $_LOG->addInfo("USER:".$info->customer_id);
+        $_LOG->addInfo("SUB_ID:".$info->id);
+
+        if ($aInfo['auth_subscription']) {
+
+            if ($aInfo['auth_subscription'] !== $info->id) {
+                $Auth->addSubscription($info->id, $info->customer_id);
+            }
+
+        } else {
+            $Auth->addSubscription($info->id, $info->customer_id);
         }
+
     }
 
-
+    //$_REP->addData('subscription_created', "happening");
+    
 } catch (\Exception $e) { Core::processException($_REP, $_LOG, $e); }
 // -------------------------------------------
 

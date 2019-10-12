@@ -28,15 +28,25 @@ class Auth extends ApiObject {
 
 
     /* ----------------- METHODS ---------------- */
-    public function addSubscription($subID) {
+    public function getAccountInfo($userID) {
 
-        $where = ['id' => $this->id];
+        $where = ['account_id' => $userID];
+        $res = $this->db->makeSelect($this->v_check, $where);
+
+        return $res[0];
+
+    }
+
+    public function addSubscription($subID, $userID = false) {
+
+        if (!$userID) $where = ['id' => $this->id];
+        else $where = ['account_id' => $userID];
+
         $res = $this->db->makeUpdate($this->t_main, [
             "subscription" => $subID
         ], $where);
         
         if ($res !== 1) throw new ApiException(500, 'sub_add_error', get_class($this));
-        
         return $this;
 
     }
