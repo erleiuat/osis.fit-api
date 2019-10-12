@@ -13,14 +13,11 @@ require_once ROOT . 'Security.php'; /* Load Security-Methods */
 // ------------------ SCRIPT -----------------
 try {
 
-    print_r($_SERVER['PHP_AUTH_USER']);
-    print_r($_SERVER['PHP_AUTH_PW']);
+    if (!isset($_SERVER['PHP_AUTH_USER'])) throw new ApiException(403, "no_permission", "auth_needed");
 
-    if (!isset(getallheaders()['Authorization'])) throw new ApiException(403, "auth_missing", "basic");
-    list($type, $authData) = explode(" ", getallheaders()['Authorization'], 2);
-    if (strcasecmp($type, "Basic") != 0) throw new ApiException(403, "token_invalid", "not_basic");
+    $user = $_SERVER['PHP_AUTH_USER'];
+    $pass = $_SERVER['PHP_AUTH_PW'];
 
-    list($user, $pass) = explode(":", base64_decode($authData));
     if ($user !== ENV_sec::sub_hook_user) throw new ApiException(403, "wrong_user", "basic_auth");
     if (!password_verify($pass, ENV_sec::sub_hook_pass)) throw new ApiException(403, "wrong_pass", "basic_auth");
     
