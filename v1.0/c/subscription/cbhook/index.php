@@ -13,6 +13,9 @@ require_once ROOT . 'Security.php'; /* Load Security-Methods */
 // ------------------ SCRIPT -----------------
 try {
 
+    print_r($_SERVER['PHP_AUTH_USER']);
+    print_r($_SERVER['PHP_AUTH_PW']);
+
     if (!isset(getallheaders()['Authorization'])) throw new ApiException(403, "auth_missing", "basic");
     list($type, $authData) = explode(" ", getallheaders()['Authorization'], 2);
     if (strcasecmp($type, "Basic") != 0) throw new ApiException(403, "token_invalid", "not_basic");
