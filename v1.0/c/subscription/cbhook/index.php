@@ -18,9 +18,10 @@ try {
     if (strcasecmp($type, "Basic") != 0) throw new ApiException(403, "token_invalid", "not_basic");
 
     list($user, $pass) = explode(":", base64_decode($authData));
+    if ($user !== ENV_sec::sub_hook_user) throw new ApiException(403, "wrong_user", "basic_auth");
+    if (!password_verify($pass, ENV_sec::sub_hook_pass)) throw new ApiException(403, "wrong_pass", "basic_auth");
+    
     $data = json_decode(file_get_contents("php://input"));
-
-
     if (isset($data->event_type)) {
         if($data->event_type === "subscription_created") {
             $_REP->addData('subscription_created', "happening");
