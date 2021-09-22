@@ -16,7 +16,7 @@ class Sec {
         */
 
         $headers = getallheaders();
-        echo to_string($headers);
+        echo strval($headers);
         if(!array_key_exists('authorization', $headers) || $headers['authorization'] == '') {
             throw new ApiException(403, "token_missing_app", "app");
         }
