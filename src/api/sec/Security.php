@@ -16,7 +16,8 @@ class Sec {
         */
 
         $headers = apache_request_headers();
-        echo implode($headers);
+        echo implode("; ", $headers);
+        echo implode("; ", $_SERVER);
         if(!array_key_exists('authorization', $headers) || $headers['authorization'] == '') {
             throw new ApiException(403, "token_missing_app", "app");
         }
