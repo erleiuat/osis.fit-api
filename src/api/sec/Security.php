@@ -6,6 +6,8 @@ class Sec {
 
     public static function auth($LOG = false) {
 
+        echo $_SERVER["HTTP_AUTHORIZATION"];
+        
         if (!isset($_COOKIE[Env_sec::c_name])) {
             //$LOG->addInfo("no_sec_cookie"); // APPLE WORKAROUND
             throw new ApiException(403, "token_missing_secure", "secure");
