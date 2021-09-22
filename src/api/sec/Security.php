@@ -6,14 +6,14 @@ class Sec {
 
     public static function auth($LOG = false) {
 
-        if (!isset(getallheaders()['Authorization']) || !isset(getallheaders()['Authorization'])) {
+        if (!isset(getallheaders()['authorization']) || !isset(getallheaders()['Authorization'])) {
             throw new ApiException(403, "token_missing_app", "app");
         } else if (!isset($_COOKIE[Env_sec::c_name])) {
             //$LOG->addInfo("no_sec_cookie"); // APPLE WORKAROUND
             throw new ApiException(403, "token_missing_secure", "secure");
         }
 
-        list($type, $data) = explode(" ", getallheaders()['Authorization'], 2);
+        list($type, $data) = explode(" ", getallheaders()['authorization'], 2);
         if (strcasecmp($type, "Bearer") != 0) {
             throw new ApiException(403, "token_invalid", "not_bearer");
         }
