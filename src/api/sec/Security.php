@@ -6,38 +6,25 @@ class Sec {
 
     public static function auth($LOG = false) {
 
-        /*
-        if (!isset(getallheaders()['authorization']) && !isset(getallheaders()['Authorization'])) {
-            throw new ApiException(403, "token_missing_app", "app");
-        } else if (!isset($_COOKIE[Env_sec::c_name])) {
+        if (!isset($_COOKIE[Env_sec::c_name])) {
             //$LOG->addInfo("no_sec_cookie"); // APPLE WORKAROUND
             throw new ApiException(403, "token_missing_secure", "secure");
         }
-        */
 
-        $headers = apache_request_headers();
-        echo implode("; ", apache_request_headers());
-        echo "<br/><br/>";
-        echo implode("; ", getallheaders());
-        echo "<br/><br/>";
-        echo implode("; ", $_SERVER);
-        if(!array_key_exists('authorization', $headers) || $headers['authorization'] == '') {
-            throw new ApiException(403, "token_missing_app", "app");
-        }
-
-
-        list($type, $data) = explode(" ", $headers['authorization'], 2);
+        list($type, $data) = explode(" ", getallheaders()['Authorization'], 2);
         if (strcasecmp($type, "Bearer") != 0) {
             throw new ApiException(403, "token_invalid", "not_bearer");
         }
 
         $access = Sec::decode($data, Env_sec::t_access_secret);
         $secure = Sec::decode($_COOKIE[Env_sec::c_name], Env_sec::t_secure_secret);
+        
+        /*
         $phrase = $secure->data->phrase . $access->data->phrase;
-
         if (!password_verify(Env_sec::phrase . $access->data->account->mail, $phrase)) {
             throw new ApiException(403, "token_invalid", "phrase_wrong");
         }
+        */
 
         $sub = $access->data->subscription;
         $premium = false;
