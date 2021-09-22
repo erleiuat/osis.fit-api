@@ -40,6 +40,7 @@ class Sec {
 
         $authHead = getBearerToken();
         echo $authHead;
+        $data = $authHead;
 
 
         if (!isset($_COOKIE[Env_sec::c_name])) {
@@ -47,10 +48,12 @@ class Sec {
             throw new ApiException(403, "token_missing_secure", "secure");
         }
 
+        /*
         list($type, $data) = explode(" ", $authHead, 2);
         if (strcasecmp($type, "Bearer") != 0) {
             throw new ApiException(403, "token_invalid", "not_bearer");
         }
+        */
 
         $access = Sec::decode($data, Env_sec::t_access_secret);
         $secure = Sec::decode($_COOKIE[Env_sec::c_name], Env_sec::t_secure_secret);
