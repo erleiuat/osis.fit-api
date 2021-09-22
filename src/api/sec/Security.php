@@ -15,7 +15,13 @@ class Sec {
         }
         */
 
-        list($type, $data) = explode(" ", getallheaders()['authorization'], 2);
+        $headers = getallheaders();
+        if(!array_key_exists('authorization', $headers) || $headers['authorization'] == '') {
+            throw new ApiException(403, "token_missing_app", "app");
+        }
+
+
+        list($type, $data) = explode(" ", $headers['authorization'], 2);
         if (strcasecmp($type, "Bearer") != 0) {
             throw new ApiException(403, "token_invalid", "not_bearer");
         }
