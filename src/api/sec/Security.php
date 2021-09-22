@@ -58,12 +58,12 @@ class Sec {
         $access = Sec::decode($data, Env_sec::t_access_secret);
         $secure = Sec::decode($_COOKIE[Env_sec::c_name], Env_sec::t_secure_secret);
         
-        /*
+        
         $phrase = $secure->data->phrase . $access->data->phrase;
         if (!password_verify(Env_sec::phrase . $access->data->account->mail, $phrase)) {
             throw new ApiException(403, "token_invalid", "phrase_wrong");
         }
-        */
+        
 
         $sub = $access->data->subscription;
         $premium = false;
