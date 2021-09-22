@@ -6,7 +6,7 @@ class Sec {
 
     public static function auth($LOG = false) {
 
-        if (!isset(getallheaders()['authorization']) || !isset(getallheaders()['Authorization'])) {
+        if (!isset(getallheaders()['authorization']) && !isset(getallheaders()['Authorization'])) {
             throw new ApiException(403, "token_missing_app", "app");
         } else if (!isset($_COOKIE[Env_sec::c_name])) {
             //$LOG->addInfo("no_sec_cookie"); // APPLE WORKAROUND
